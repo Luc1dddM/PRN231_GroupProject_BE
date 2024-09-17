@@ -1,3 +1,4 @@
+using BuildingBlocks.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Identity.API.Controllers
@@ -19,8 +20,13 @@ namespace Identity.API.Controllers
         }
 
         [HttpGet(Name = "GetWeatherForecast")]
-        public IEnumerable<WeatherForecast> Get()
+        public IEnumerable<WeatherForecast> Get(string? id)
         {
+
+            if(id == "1")
+            {
+                throw new NotFoundException("test");
+            }
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
                 Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
