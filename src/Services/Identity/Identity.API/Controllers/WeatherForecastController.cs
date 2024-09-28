@@ -8,7 +8,6 @@ namespace Identity.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    [Authorize]
     public class WeatherForecastController : ControllerBase
     {
         private static readonly string[] Summaries = new[]
@@ -24,14 +23,10 @@ namespace Identity.API.Controllers
         }
 
         [HttpGet(Name = "GetWeatherForecast")]
-        [HasPermission(Domain.Enums.Permission.UpdateUser)]
-        public IEnumerable<WeatherForecast> Get(string? id)
+      /*  [HasPermission(Domain.Enums.Permission.UpdateUser)]*/
+        public IEnumerable<WeatherForecast> Get()
         {
 
-            if(id == "1")
-            {
-                throw new NotFoundException("test");
-            }
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
                 Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
