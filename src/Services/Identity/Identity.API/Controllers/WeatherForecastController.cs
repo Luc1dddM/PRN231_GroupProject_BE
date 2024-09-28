@@ -1,10 +1,14 @@
 using BuildingBlocks.Exceptions;
+using Identity.Domain.Entities;
+using Identity.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Identity.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [Authorize]
     public class WeatherForecastController : ControllerBase
     {
         private static readonly string[] Summaries = new[]
@@ -20,6 +24,7 @@ namespace Identity.API.Controllers
         }
 
         [HttpGet(Name = "GetWeatherForecast")]
+        [HasPermission(Domain.Enums.Permission.UpdateUser)]
         public IEnumerable<WeatherForecast> Get(string? id)
         {
 

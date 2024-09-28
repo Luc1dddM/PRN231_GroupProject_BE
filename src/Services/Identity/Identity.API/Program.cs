@@ -1,4 +1,7 @@
 using BuildingBlocks.Exceptions.Handler;
+using Identity.API;
+using Identity.Application;
+using Identity.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +13,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();
+
+builder.Services.AddApplicationServices()
+                .AddInfastructureServices(builder.Configuration)
+                .AddApiServices();     
 
 var app = builder.Build();
 
