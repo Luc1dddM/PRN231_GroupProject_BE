@@ -7,11 +7,17 @@ using Microsoft.Extensions.Logging;
 
 namespace BuildingBlocks.Exceptions.Handler
 {
-    public class CustomExceptionHandler(ILogger<CustomExceptionHandler> logger) : IExceptionHandler
+    public class CustomExceptionHandler : IExceptionHandler
     {
+        ILogger<CustomExceptionHandler> _logger;
+        public CustomExceptionHandler(ILogger<CustomExceptionHandler> logger)
+        {
+            _logger = logger;
+        }
+
         public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
         {
-            logger.LogError(
+            _logger.LogError(
             "Error Message: {exceptionMessage}, Time of occurrence {time}",
             exception.Message, DateTime.UtcNow);
 
@@ -42,6 +48,7 @@ namespace BuildingBlocks.Exceptions.Handler
                     httpContext.Response.StatusCode = StatusCodes.Status404NotFound
                 ),
                 //if the exception is not including these types, the rest of the exception types will be this exception
+
                 _ =>
                 (
                     exception.Message,
