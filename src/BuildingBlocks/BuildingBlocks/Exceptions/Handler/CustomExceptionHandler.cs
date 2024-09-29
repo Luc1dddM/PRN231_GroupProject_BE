@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
+
 namespace BuildingBlocks.Exceptions.Handler
 {
     public class CustomExceptionHandler : IExceptionHandler
@@ -46,6 +47,8 @@ namespace BuildingBlocks.Exceptions.Handler
                     exception.GetType().Name,
                     httpContext.Response.StatusCode = StatusCodes.Status404NotFound
                 ),
+                //if the exception is not including these types, the rest of the exception types will be this exception
+
                 _ =>
                 (
                     exception.Message,
@@ -54,6 +57,7 @@ namespace BuildingBlocks.Exceptions.Handler
                 )
             };
 
+            //specify our problem details to identify the whole exception
             var problemDetails = new ProblemDetails
             {
                 Title = details.Title,
@@ -66,9 +70,11 @@ namespace BuildingBlocks.Exceptions.Handler
 
             if (exception is ValidationException validationException)
             {
+                //espect to expand more detail for exception
                 problemDetails.Extensions.Add("ValidationErrors", validationException.Errors);
             }
 
+            //Details in Json format are more readable and manageable to the client application
             await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken: cancellationToken);
             return true;
         }

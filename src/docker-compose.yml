@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  coupon.grpc:
+    image: ${DOCKER_REGISTRY-}coupongrpc
+    build:
+      context: .
+      dockerfile: Coupon.Grpc\Dockerfile
