@@ -1,5 +1,6 @@
 ﻿using Identity.Application.Email.Interfaces;
 using Identity.Application.Identity.Interfaces;
+using Identity.Application.RolePermission.Interfaces;
 using Identity.Domain.Entities;
 using Identity.Infrastructure.Configuration;
 using Identity.Infrastructure.Data;
@@ -58,45 +59,19 @@ namespace Identity.Infrastructure
             services.AddScoped<IFacebookAuthService, FacebookAuthService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IEmailSender, EmailSender>();
-            services.AddScoped<IPermissionService, PermissionSerivce>();
-
+            services.AddScoped<IRolePermissionService, RolePermissionSerivce>();
 
             services.Configure<DataProtectionTokenProviderOptions>(options =>
             {
                 options.TokenLifespan = TimeSpan.FromMinutes(5);
             });
 
-
             var jwtSection = configuration.GetSection("JWT");
             services.Configure<Jwt>(jwtSection);
 
             var appSettings = jwtSection.Get<Jwt>();
             var secret = Encoding.ASCII.GetBytes(appSettings.Secret);
-
-            services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-
-            }).AddJwtBearer(o =>
-            {
-                o.RequireHttpsMetadata = true;
-                o.SaveToken = true;
-                o.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidIssuer = appSettings.ValidIssuer,
-                    ValidAudience = appSettings.ValidAudience,
-                    ValidateIssuerSigningKey = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero,
-                    RequireExpirationTime = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(secret)
-                };
-
-            });
-
+            
             //Config Email settings
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
 

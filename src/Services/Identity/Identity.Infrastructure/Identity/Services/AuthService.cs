@@ -1,6 +1,7 @@
 ﻿using Identity.Application.DTOs;
 using Identity.Application.Email.Interfaces;
 using Identity.Application.Identity.Interfaces;
+using Identity.Application.RolePermission.Interfaces;
 using Identity.Application.Utils;
 using Identity.Domain.Entities;
 using Identity.Domain.Enums;
@@ -31,7 +32,7 @@ namespace Identity.Infrastructure.Identity.Services
         private readonly IUrlHelperFactory _urlHelper;
         private readonly UserManager<User> _userManager;
         private readonly Jwt _jwt;
-        private readonly IPermissionService _permissionService;
+        private readonly IRolePermissionService _permissionService;
 
         public AuthService(
             ApplicationDbContext context,
@@ -41,7 +42,7 @@ namespace Identity.Infrastructure.Identity.Services
             IUrlHelperFactory urlHelperFactory,
             UserManager<User> userManager,
             IOptions<Jwt> jwt,
-            IPermissionService permissionService)
+            IRolePermissionService permissionService)
         {
             _context = context;
             _googleAuthService = googleAuthService;

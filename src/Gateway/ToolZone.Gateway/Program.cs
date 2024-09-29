@@ -41,12 +41,12 @@ builder.Services.AddAuthentication(options =>
         RequireExpirationTime = true,
         IssuerSigningKey = new SymmetricSecurityKey(secret)
     };
-
 });
 
 var app = builder.Build();
 
 app.MapGet("/", () => "Hello World!");
+app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 

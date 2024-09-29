@@ -1,12 +1,18 @@
-﻿using Identity.Application.DTOs;
+﻿using Identity.Application.Dtos;
+using Identity.Application.DTOs;
 using Identity.Application.Identity.Commands.ConfirmEmail;
 using Identity.Application.Identity.Commands.GoogleLogin;
 using Identity.Application.Identity.Commands.InternalLogin;
 using Identity.Application.Identity.Commands.ReconfirmEmail;
 using Identity.Application.Identity.Commands.Register;
 using Identity.Application.Identity.Interfaces;
+using Identity.Application.RolePermission.Commands.AddRole;
+using Identity.Application.RolePermission.Commands.UpdatePermission;
 using Identity.Application.Utils;
+using Identity.Domain.Entities;
+using Mapster;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -94,6 +100,44 @@ namespace Identity.API.Controllers
             try
             {
                 var result = await _mediator.Send(request);
+                return ReturnResponse(result.response);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpPost]
+        [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
+        public async Task<IActionResult> UpdatePermission([FromBody] UpdatePermissionCommand request)
+        {
+            try
+            {
+                var result = await _mediator.Send(request);
+                return ReturnResponse(result.response);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpPost]
+        [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
+        public async Task<IActionResult> AddRole([FromBody] AddRoleDto request)
+        {
+            try
+            {
+                var userId = HttpContext.Request.Headers["UserId"].ToString();
+                if (userId == null) HandleError(new Exception(), "User Id Is Null" );
+                var role = new Role()
+                {
+                    Name = request.name,
+                    CreatedBy = userId,
+                };
+                var command = role.Adapt<AddRoleCommand>();
+                var result = await _mediator.Send(command);
                 return ReturnResponse(result.response);
             }
             catch (Exception ex)
