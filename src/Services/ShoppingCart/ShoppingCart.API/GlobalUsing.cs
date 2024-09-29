@@ -1,0 +1,13 @@
+﻿global using Microsoft.EntityFrameworkCore;
+global using ShoppingCart.API.Models;
+global using ShoppingCart.API.Models.Dto;
+global using System.ComponentModel.DataAnnotations;
+global using System.ComponentModel.DataAnnotations.Schema;
+global using BuildingBlocks.CQRS;
+global using BuildingBlocks.Behaviors;
+global using BuildingBlocks.Exceptions.Handler;
+global using ShoppingCart.API.Repository;
+global using ShoppingCart.API.Exceptions;
+global using Carter;
+global using Mapster;
+global using MediatR;
