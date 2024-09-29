@@ -1,4 +1,9 @@
+using BuildingBlocks.Exceptions;
+using Identity.Domain.Entities;
+using Identity.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Identity.API.Controllers
 {
@@ -19,8 +24,11 @@ namespace Identity.API.Controllers
         }
 
         [HttpGet(Name = "GetWeatherForecast")]
+      /*  [HasPermission(Domain.Enums.Permission.UpdateUser)]*/
         public IEnumerable<WeatherForecast> Get()
         {
+            var test = HttpContext.Request.Headers["UserId"].ToString();
+            Console.WriteLine(test);
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
                 Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),

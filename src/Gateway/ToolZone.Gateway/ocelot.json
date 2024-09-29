@@ -1,0 +1,56 @@
+{
+  "Routes": [
+    //Identity Routes
+
+    //1. Testing route
+    {
+      "DownstreamPathTemplate": "/WeatherForecast",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7183
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/WeatherForecast",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "RouteClaimsRequirement": {
+        "permissions": "UpdateUser"
+      }
+    },
+
+    //2. AddRole route
+    {
+      "DownstreamPathTemplate": "/api/Identity/AddRole",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7183
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/Identity/AddRole",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "RouteClaimsRequirement": {
+        "permissions": "ReadUser"
+      }
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "https://localhost:7777"
+  }
+}
