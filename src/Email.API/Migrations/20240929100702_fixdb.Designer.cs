@@ -4,6 +4,7 @@ using Email.API.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Email.API.Migrations
 {
     [DbContext(typeof(Prn231GroupProjectContext))]
-    partial class Prn231GroupProjectContextModelSnapshot : ModelSnapshot
+    [Migration("20240929100702_fixdb")]
+    partial class fixdb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -49,12 +52,16 @@ namespace Email.API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("TemplateId")
+                    b.Property<string>("TemplateId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TemplateId1")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TemplateId");
+                    b.HasIndex("TemplateId1");
 
                     b.ToTable("EmailSends");
                 });
@@ -116,7 +123,7 @@ namespace Email.API.Migrations
                 {
                     b.HasOne("Email.Models.EmailTemplate", "Template")
                         .WithMany()
-                        .HasForeignKey("TemplateId")
+                        .HasForeignKey("TemplateId1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

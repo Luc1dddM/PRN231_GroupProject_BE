@@ -18,6 +18,19 @@ namespace Email.API.Models
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<EmailSend>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Receiver)
+                      .IsRequired();
+
+                // Cấu hình mối quan hệ với EmailTemplate
+                entity.HasOne(e => e.Template)
+                      .WithMany()
+                      .HasForeignKey(e => e.TemplateId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
             modelBuilder.Entity<EmailTemplate>(entity =>
             {
                 entity.HasKey(e => e.Id);

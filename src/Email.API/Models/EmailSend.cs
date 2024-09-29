@@ -6,7 +6,7 @@ public partial class EmailSend
 
     public string EmailSendId { get; set; } = null!;
 
-    public string TemplateId { get; set; } = null!;
+    public int TemplateId { get; set; } = 0;
 
     public string SenderId { get; set; } = null!;
 
