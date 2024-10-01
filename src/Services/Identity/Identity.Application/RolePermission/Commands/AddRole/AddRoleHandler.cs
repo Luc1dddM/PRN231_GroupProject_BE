@@ -16,7 +16,7 @@ namespace Identity.Application.RolePermission.Commands.AddRole
         }
         public async Task<AddRoleReponse> Handle(AddRoleCommand request, CancellationToken cancellationToken)
         {
-            var response = await _rolePermissionService.AddNewRole(request.name, request.CreatedBy);
+            var response = await _rolePermissionService.AddNewRole(request.Name, request.CreatedBy);
             return new AddRoleReponse(response);
         }
     }

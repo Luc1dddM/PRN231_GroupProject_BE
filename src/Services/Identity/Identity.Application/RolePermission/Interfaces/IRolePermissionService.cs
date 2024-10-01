@@ -1,4 +1,4 @@
-﻿using Identity.Application.Dtos;
+﻿using Identity.Application.RolePermission.Dtos;
 using Identity.Application.Utils;
 using System;
 using System.Collections.Generic;
@@ -11,10 +11,12 @@ namespace Identity.Application.RolePermission.Interfaces
     public interface IRolePermissionService
     {
         //Welcome to hell
-        Task<List<string>> GetPermissionsAsync(string userId);
+        Task<List<string>> GetPermissionsAsync(string UserId);
 
-        Task<BaseResponse<bool>> UpdatePermission(UpdatePermissionDto updateUserDto);
+        Task<BaseResponse<bool>> UpdatePermission(string Role, List<int>? PermissionIds);
 
-        Task<BaseResponse<bool>> AddNewRole(string name, string userId);
+        Task<BaseResponse<bool>> UpdateRoles(string UserId, List<string>? Roles);
+
+        Task<BaseResponse<bool>> AddNewRole(string Name, string UserId);
     }
 }

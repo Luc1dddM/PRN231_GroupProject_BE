@@ -6,39 +6,44 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Coupon.Grpc.Services
 {
-    public class CouponService
-     (Prn231GroupProjectContext dbContext, ILogger<CouponService> logger)
-    : CouponProtoService.CouponProtoServiceBase
+    public class CouponService : CouponProtoService.CouponProtoServiceBase
     {
-            public override async Task<CouponModel> GetCoupon(GetCouponRequest request, ServerCallContext context)
+        private readonly Prn231GroupProjectContext dbContext;
+        private readonly ILogger<CouponService> logger;
+
+        public CouponService(Prn231GroupProjectContext _dbContext, ILogger<CouponService> _logger)
+        {
+            dbContext = _dbContext;
+            logger = _logger;
+        }
+        public override async Task<CouponModel> GetCoupon(GetCouponRequest request, ServerCallContext context)
+        {
+            var coupon = await dbContext
+         .Coupons
+         .FirstOrDefaultAsync(x => x.CouponCode == request.CouponCode);
+            if (coupon is null)
             {
-                var coupon = await dbContext
-             .Coupons
-             .FirstOrDefaultAsync(x => x.CouponCode == request.CouponCode);
-
-                if (coupon is null)
+                coupon = new Models.Coupon
                 {
-                    coupon = new Models.Coupon
-                    {
-                        CouponId = Guid.NewGuid().ToString(),
-                        CouponCode = "No Coupon",
-                        DiscountAmount = 0,
-                        Status = false,
-                        CreatedBy = "System",
-                        CreatedDate = DateTime.UtcNow
-                    };
-                }
-
-                logger.LogInformation("Coupon is retrieved for CouponCode: {CouponCode}, DiscountAmount: {DiscountAmount}", coupon.CouponCode, coupon.DiscountAmount);
-
-                var couponModel = coupon.Adapt<CouponModel>();
-
-                return couponModel;
+                    CouponId = Guid.NewGuid().ToString(),
+                    CouponCode = "No Coupon",
+                    DiscountAmount = 0,
+                    Status = false,
+                    CreatedBy = "System",
+                    CreatedDate = DateTime.UtcNow
+                };
             }
+
+            logger.LogInformation("Coupon is retrieved for CouponCode: {CouponCode}, DiscountAmount: {DiscountAmount}", coupon.CouponCode, coupon.DiscountAmount);
+
+            var couponModel = coupon.Adapt<CouponModel>();
+
+            return couponModel;
+        }
 
         public override async Task<GetCouponsResponse> GetCoupons(Empty request, ServerCallContext context)
         {
-         
+
             var coupons = await dbContext.Coupons.ToListAsync();
 
             var couponModels = coupons.Adapt<List<CouponModel>>();
@@ -85,7 +90,7 @@ namespace Coupon.Grpc.Services
             coupon.Status = request.Status;
             coupon.MinAmount = request.MinAmount;
             coupon.MaxAmount = request.MaxAmount;
-            coupon.UpdatedBy = "System"; 
+            coupon.UpdatedBy = "System";
             coupon.UpdatedDate = DateTime.UtcNow;
 
             await dbContext.SaveChangesAsync();

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Identity.Application.DTOs
+namespace Identity.Application.Identity
 {
     public class ReConfirmMailDto
     {

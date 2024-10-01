@@ -1,7 +1,6 @@
-﻿using Identity.Application.DTOs;
+﻿using Identity.Application.Identity.Dtos;
 using Identity.Application.Identity.Interfaces;
 using Identity.Application.Utils;
-using Identity.Domain.Entities;
 using Identity.Domain.Enums;
 using Identity.Infrastructure.Configuration;
 using Identity.Infrastructure.Data;
@@ -9,24 +8,20 @@ using Identity.Infrastructure.Identity.Utils;
 using log4net;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static Google.Apis.Auth.GoogleJsonWebSignature;
+using CUser = Identity.Domain.Entities.User;
 
 namespace Identity.Infrastructure.Identity.Services
 {
     public class GoogleAuthService : IGoogleAuthService
     {
-        private readonly UserManager<User> _userManager;
+        private readonly UserManager<CUser> _userManager;
         private readonly ApplicationDbContext _context;
         private readonly GoogleAuthConfig _googleAuthConfig;
         private readonly ILog _logger;
 
         public GoogleAuthService(
-            UserManager<User> userManager,
+            UserManager<CUser> userManager,
             ApplicationDbContext context,
             IOptions<GoogleAuthConfig> googleAuthConfig
             )
@@ -42,14 +37,14 @@ namespace Identity.Infrastructure.Identity.Services
         /// </summary>
         /// <param name="model">the model</param>
         /// <returns>Task&lt;BaseResponse&lt;User&gt;&gt;</returns>
-        public async Task<BaseResponse<User>> GoogleSignIn(GoogleSignInVM model)
+        public async Task<BaseResponse<CUser>> GoogleSignIn(string idToken)
         {
 
             Payload payload = new();
 
             try
             {
-                payload = await ValidateAsync(model.IdToken, new ValidationSettings
+                payload = await ValidateAsync(idToken, new ValidationSettings
                 {
                     Audience = new[] { _googleAuthConfig.ClientId }
                 });
@@ -58,7 +53,7 @@ namespace Identity.Infrastructure.Identity.Services
             catch (Exception ex)
             {
                 _logger.Error(ex.Message, ex);
-                return new BaseResponse<User>(null, new List<string> { "Failed to get a response" });
+                return new BaseResponse<CUser>(null, new List<string> { "Failed to get a response" });
             }
 
             //Check Account Exist
@@ -77,18 +72,18 @@ namespace Identity.Infrastructure.Identity.Services
                 var user = await _userManager.CreateUserFromSocialLogin(_context, userToBeCreated, LoginProvider.Google);
 
                 if (user is not null)
-                    return new BaseResponse<User>(user);
+                    return new BaseResponse<CUser>(user);
                 else
-                    return new BaseResponse<User>(null, new List<string> { "Unable to link a Local User to a Provider" });
+                    return new BaseResponse<CUser>(null, new List<string> { "Unable to link a Local User to a Provider" });
             }
 
             //CHECKS IF THE USER HAS NOT ALREADY BEEN LINKED TO AN IDENTITY PROVIDER
             var userGooleProvider = await _userManager.FindByLoginAsync(LoginProvider.Google.ToString(), payload.Subject);
 
             if (userGooleProvider is not null)
-                return new BaseResponse<User>(userGooleProvider);
+                return new BaseResponse<CUser>(userGooleProvider);
             else
-                return new BaseResponse<User>(null, new List<string> { "Email Already Used, Please Login By Internal Account" });
+                return new BaseResponse<CUser>(null, new List<string> { "Email Already Used, Please Login By Internal Account" });
         }
     }
 }

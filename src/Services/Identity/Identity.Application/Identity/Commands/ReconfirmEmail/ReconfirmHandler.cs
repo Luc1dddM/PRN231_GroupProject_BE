@@ -18,7 +18,7 @@ namespace Identity.Application.Identity.Commands.ReconfirmEmail
         }
         public async Task<ReconfirmResponse> Handle(ReconfirmCommand request, CancellationToken cancellationToken)
         {
-            var response = await _authService.ReConfirmEmail(request.command);
+            var response = await _authService.ReConfirmEmail(request.EmailAddress);
 
             return new ReconfirmResponse(response);
         }

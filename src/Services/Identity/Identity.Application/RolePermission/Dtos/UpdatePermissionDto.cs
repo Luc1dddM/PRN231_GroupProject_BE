@@ -6,11 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Identity.Application.Dtos
+namespace Identity.Application.RolePermission.Dtos
 {
     public class UpdatePermissionDto
     {
-        public required string role {get; set;}
-        public List<int>? permissionIds { get; set; }   
+        public required string Role { get; set; }
+        public List<int>? PermissionIds { get; set; }
     }
 }

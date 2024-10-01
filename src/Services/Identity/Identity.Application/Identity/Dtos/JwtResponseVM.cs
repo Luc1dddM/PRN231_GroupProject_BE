@@ -1,4 +1,4 @@
-﻿namespace Identity.Application.DTOs
+﻿namespace Identity.Application.Identity.Dtos
 {
     public class JwtResponseVM
     {

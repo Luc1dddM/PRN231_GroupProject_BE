@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Identity.Application.Dtos
+namespace Identity.Application.Identity.Dtos
 {
     public class FacebookTokenValidationResponse
     {

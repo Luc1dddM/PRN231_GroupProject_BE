@@ -1,0 +1,19 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Identity.Application.User.Dtos
+{
+    public class UserDto
+    {
+        public string UserName { get; set; }
+        public string PhoneNumber { get; set; }
+        public bool IsActive { get; set; }
+        public DateTime? CreatedAt { get; private set; }
+        public string? CreatedBy { get; private set; }
+        public string? UpdatedBy { get; private set; }
+        public string? UpdatedAt { get; private set; }
+    }
+}

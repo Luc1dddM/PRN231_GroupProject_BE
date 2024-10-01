@@ -1,6 +1,6 @@
-﻿namespace Identity.Application.DTOs
+﻿namespace Identity.Application.Identity.Dtos
 {
-    public class UserDto
+    public class CreateCustomerDto
     {
         public string ID { get; set; }
         public string email { get; set; }

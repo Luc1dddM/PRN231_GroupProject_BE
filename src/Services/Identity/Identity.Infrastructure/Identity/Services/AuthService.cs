@@ -1,10 +1,8 @@
-﻿using Identity.Application.DTOs;
-using Identity.Application.Email.Interfaces;
+﻿using Identity.Application.Email.Interfaces;
+using Identity.Application.Identity.Dtos;
 using Identity.Application.Identity.Interfaces;
 using Identity.Application.RolePermission.Interfaces;
 using Identity.Application.Utils;
-using Identity.Domain.Entities;
-using Identity.Domain.Enums;
 using Identity.Infrastructure.Data;
 using Identity.Infrastructure.Identity.Configuration;
 using Identity.Infrastructure.Identity.Utils;
@@ -13,13 +11,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Identity.Infrastructure.Identity.Services
 {
@@ -30,7 +24,7 @@ namespace Identity.Infrastructure.Identity.Services
         private readonly IFacebookAuthService _facebookAuthService;
         private readonly IEmailSender _emailSender;
         private readonly IUrlHelperFactory _urlHelper;
-        private readonly UserManager<User> _userManager;
+        private readonly UserManager<Domain.Entities.User> _userManager;
         private readonly Jwt _jwt;
         private readonly IRolePermissionService _permissionService;
 
@@ -40,7 +34,7 @@ namespace Identity.Infrastructure.Identity.Services
             IFacebookAuthService facebookAuthService,
             IEmailSender emailSender,
             IUrlHelperFactory urlHelperFactory,
-            UserManager<User> userManager,
+            UserManager<Domain.Entities.User> userManager,
             IOptions<Jwt> jwt,
             IRolePermissionService permissionService)
         {
@@ -59,10 +53,10 @@ namespace Identity.Infrastructure.Identity.Services
         /// </summary>
         /// <param name="model">the view model</param>
         /// <returns>Task&lt;BaseResponse&lt;JwtResponseVM&gt;&gt;</returns>
-        public async Task<BaseResponse<JwtResponseVM>> SignInWithGoogle(GoogleSignInVM model)
+        public async Task<BaseResponse<JwtResponseVM>> SignInWithGoogle(string idToken)
         {
 
-            var response = await _googleAuthService.GoogleSignIn(model);
+            var response = await _googleAuthService.GoogleSignIn(idToken);
 
             if (response.Errors.Any())
                 return new BaseResponse<JwtResponseVM>(response.ResponseMessage, response.Errors);
@@ -77,52 +71,10 @@ namespace Identity.Infrastructure.Identity.Services
             return new BaseResponse<JwtResponseVM>(data);
         }
 
-        /// <summary>
-        /// Facebook SignIn
-        /// </summary>
-        /// <param name="model">the view model</param>
-        /// <returns>Task&lt;BaseResponse&lt;JwtResponseVM&gt;&gt;</returns>
-        public async Task<BaseResponse<JwtResponseVM>> SignInWithFacebook(FacebookSignInVM model)
+        public async Task<BaseResponse<JwtResponseVM>> Login(string username, string password)
         {
-            var validatedFbToken = await _facebookAuthService.ValidateFacebookToken(model.AccessToken);
-
-            if (validatedFbToken.Errors.Any())
-                return new BaseResponse<JwtResponseVM>(validatedFbToken.ResponseMessage, validatedFbToken.Errors);
-
-            var userInfo = await _facebookAuthService.GetFacebookUserInformation(model.AccessToken);
-
-            if (userInfo.Errors.Any())
-                return new BaseResponse<JwtResponseVM>(null, userInfo.Errors);
-
-            var userToBeCreated = new CreateUserFromSocialLogin
-            {
-                FirstName = userInfo.Data.FirstName,
-                LastName = userInfo.Data.LastName,
-                Email = userInfo.Data.Email,
-                ProfilePicture = userInfo.Data.Picture.Data.Url.AbsoluteUri,
-                LoginProviderSubject = userInfo.Data.Id,
-            };
-
-            var user = await _userManager.CreateUserFromSocialLogin(_context, userToBeCreated, LoginProvider.Facebook);
-            if (user is not null)
-            {
-                var jwtResponse = await CreateJwtToken(user);
-
-                var data = new JwtResponseVM
-                {
-                    Token = jwtResponse,
-                };
-                return new BaseResponse<JwtResponseVM>(data);
-            }
-
-            return new BaseResponse<JwtResponseVM>(null, userInfo.Errors);
-
-        }
-
-        public async Task<BaseResponse<JwtResponseVM>> Login(LoginRequestDto loginRequest)
-        {
-            var user = _context.Users.FirstOrDefault(u => u.UserName.ToLower() == loginRequest.userName.ToLower());
-            bool isValid = await _userManager.CheckPasswordAsync(user, loginRequest.password);
+            var user = _context.Users.FirstOrDefault(u => u.UserName.ToLower() == username.ToLower());
+            bool isValid = await _userManager.CheckPasswordAsync(user, password);
 
             if (user == null || isValid == false)
             {
@@ -145,57 +97,53 @@ namespace Identity.Infrastructure.Identity.Services
 
         }
 
-        public async Task<BaseResponse<UserDto>> Register(RegistrationRequestDto registrationRequest)
+        public async Task<BaseResponse<CreateCustomerDto>> Register(string email, string name, string phonenumber, string password)
         {
-            User user = new()
+            Domain.Entities.User user = new()
             {
-                FullName = registrationRequest.name,
-                UserName = registrationRequest.email,
-                Email = registrationRequest.email,
-                PhoneNumber = registrationRequest.phonenumber,
-                NormalizedEmail = registrationRequest.email.ToUpper(),
+                FullName = name,
+                UserName = email,
+                Email = email,
+                PhoneNumber = phonenumber,
+                NormalizedEmail = email.ToUpper(),
             };
 
             try
             {
                 user.Id = Guid.NewGuid().ToString();
-                var result = await _userManager.CreateAsync(user, registrationRequest.password);
+                var result = await _userManager.CreateAsync(user, password);
                 if (result.Succeeded)
                 {
                     var result1 = await _userManager.AddToRoleAsync(user, "Admin");
-                    if (result1.Succeeded)
-                    {
-                        Console.WriteLine("Test");
-                    }
                     SendConfirmationEmail(user.Email, user);
-                    var userToResponse = _context.Users.First(u => u.UserName == registrationRequest.email);
-                    UserDto userDto = new()
+                    var userToResponse = _context.Users.First(u => u.UserName == email);
+                    CreateCustomerDto userDto = new()
                     {
                         email = userToResponse.Email,
                         ID = userToResponse.Id,
                         name = userToResponse.FullName,
                         phonenumber = userToResponse.PhoneNumber
                     };
-                    return new BaseResponse<UserDto>(userDto);
+                    return new BaseResponse<CreateCustomerDto>(userDto);
                 }
-                return new BaseResponse<UserDto>(null, new List<string>() { "Cannot Create User!" });
+                return new BaseResponse<CreateCustomerDto>(null, new List<string>() { "Cannot Create User!" });
             }
             catch (Exception ex)
             {
-                return new BaseResponse<UserDto>(null, new List<string>() { ex.Message });
+                return new BaseResponse<CreateCustomerDto>(null, new List<string>() { ex.Message });
             }
         }
 
-        public async Task<BaseResponse<string>> ReConfirmEmail(ReConfirmMailDto reConfirmMailDto)
+        public async Task<BaseResponse<string>> ReConfirmEmail(string emailAddress)
         {
             try
             {
-                var user = await _userManager.FindByEmailAsync(reConfirmMailDto.EmailAddress);
+                var user = await _userManager.FindByEmailAsync(emailAddress);
                 if (user == null)
                 {
                     return new BaseResponse<string>(null, new List<string>() { "User not found" });
                 }
-                await SendConfirmationEmail(reConfirmMailDto.EmailAddress, user);
+                await SendConfirmationEmail(emailAddress, user);
                 return new BaseResponse<string>(null, "Thank you for confirming your email");
             }
             catch (Exception ex)
@@ -233,7 +181,7 @@ namespace Identity.Infrastructure.Identity.Services
             }
         }
 
-        private async Task SendConfirmationEmail(string? email, User? user)
+        private async Task SendConfirmationEmail(string? email, Domain.Entities.User? user)
         {
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var confirmationLink = $"https://localhost:7183/api/Identity/ConfirmEmail?UserId={user.Id}&Token={token}";
@@ -245,7 +193,7 @@ namespace Identity.Infrastructure.Identity.Services
         /// </summary>
         /// <param name="user">the user</param>
         /// <returns>System.String</returns>
-        private async Task<string> CreateJwtToken(User user)
+        private async Task<string> CreateJwtToken(Domain.Entities.User user)
         {
 
             var key = Encoding.ASCII.GetBytes(_jwt.Secret);
@@ -269,7 +217,7 @@ namespace Identity.Infrastructure.Identity.Services
         /// </summary>
         /// <param name="user">the User</param>
         /// <returns>List&lt;System.Security.Claims&gt;</returns>
-        private async Task<List<Claim>> BuildUserClaims(User user)
+        private async Task<List<Claim>> BuildUserClaims(Domain.Entities.User user)
         {
             var userClaims = new List<Claim>()
             {

@@ -1,8 +1,8 @@
-﻿using Identity.Application.DTOs;
-using Identity.Domain.Entities;
+﻿using Identity.Application.Identity.Dtos;
 using Identity.Domain.Enums;
 using Identity.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
+using CUser = Identity.Domain.Entities.User;
 
 namespace Identity.Infrastructure.Identity.Utils
 {
@@ -17,9 +17,9 @@ namespace Identity.Infrastructure.Identity.Utils
         /// <param name="loginProvider">the login provider</param>
         /// <returns>System.Threading.Tasks.Task&lt;User&gt;</returns>
 
-        public static async Task<User> CreateUserFromSocialLogin(this UserManager<User> userManager, ApplicationDbContext context, CreateUserFromSocialLogin model, LoginProvider loginProvider)
+        public static async Task<CUser> CreateUserFromSocialLogin(this UserManager<CUser> userManager, ApplicationDbContext context, CreateUserFromSocialLogin model, LoginProvider loginProvider)
         {
-            var user = new User
+            var user = new CUser
             {
                 FullName = model.LastName + " " + model.FirstName,
                 Email = model.Email,
