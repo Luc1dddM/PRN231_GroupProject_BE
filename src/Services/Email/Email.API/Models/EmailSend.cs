@@ -16,10 +16,6 @@ public partial class EmailSend
 
     public string Receiver { get; set; } = null!;
 
-    public string CouponCode { get; set; } = null!;  // Thêm thuộc tính CouponCode
-
-    public string TemplateType { get; set; } = null!; // Thêm thuộc tính TemplateType
-
-    public EmailTemplate Template { get; set; } = null!;
+    public string? CouponCode { get; set; } = null!; 
 }
 

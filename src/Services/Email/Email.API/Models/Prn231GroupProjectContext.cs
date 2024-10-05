@@ -26,11 +26,6 @@ namespace Email.API.Models
                 entity.Property(e => e.Receiver)
                       .IsRequired();
 
-                // Cấu hình mối quan hệ với EmailTemplate
-                entity.HasOne(e => e.Template)
-                      .WithMany()
-                      .HasForeignKey(e => e.TemplateId)
-                      .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<EmailTemplate>(entity =>
@@ -41,7 +36,8 @@ namespace Email.API.Models
                 entity.Property(e => e.Body).IsRequired();
             });
         }
+    }
 
     }
 
-}
+

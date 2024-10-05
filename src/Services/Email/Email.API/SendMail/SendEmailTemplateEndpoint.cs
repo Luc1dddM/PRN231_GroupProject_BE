@@ -1,4 +1,5 @@
 ﻿using Carter;
+using Coupon.Grpc;
 using Email.API.Models;
 using Email.API.Repository;
 using Email.Models;
@@ -11,24 +12,34 @@ namespace Email.API.SendMail;
 
 public class SendEmailTemplateEndpoint : ICarterModule
 {
+    private readonly CouponProtoService.CouponProtoServiceClient _couponServiceClient;
+    public SendEmailTemplateEndpoint(CouponProtoService.CouponProtoServiceClient couponServiceClient)
+    {
+        _couponServiceClient = couponServiceClient;
+    }
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/send-email-template", async (HttpContext httpContext, EmailSend emailSend, ISenderEmail emailSender) =>
+        app.MapPost("/send-email-template", async (HttpContext httpContext, string emailTemplateId, string userEmail, string? couponCode, IEmailRepository emailRepository) =>
         {
             try
             {
-                // Lấy UserId từ headers
-                var userId = httpContext.Request.Headers["UserId"].ToString();
-                emailSend.SenderId = userId; // Gán UserId cho SenderId
+                var senderId = httpContext.Request.Headers["UserId"].ToString();
 
+                var emailTemplate = await emailRepository.GetEmailTemplateById(emailTemplateId);
 
-                // Gửi email theo template
-                await emailSender.SendEmailByEmailTemplate(emailSend.Template, emailSend.Receiver);
+                if (emailTemplate == null)
+                {
+                    return Results.Problem($"Email template with ID '{emailTemplateId}' not found.", statusCode: StatusCodes.Status404NotFound);
+                }
 
-                // Tạo bản ghi EmailSend
-                emailSend.EmailSendId = Guid.NewGuid().ToString();
-                emailSend.Sendate = DateTime.UtcNow;
-
+                if (!string.IsNullOrEmpty(couponCode))
+                {
+                    await emailRepository.SendEmailCoupon(emailTemplate, senderId, userEmail, couponCode);
+                }
+                else
+                {
+                    await emailRepository.SendEmailByEmailTemplate(emailTemplate, senderId, userEmail);
+                }
 
                 return Results.Ok("Email sent successfully using template!");
             }
@@ -48,27 +59,29 @@ public class SendEmailTemplateEndpoint : ICarterModule
         .WithDescription("Sends an email based on the provided email template and receiver.");
 
 
-        app.MapPost("/send-email-to-all", async (HttpContext httpContext, EmailSend emailSend, ISenderEmail emailSender) =>
+        app.MapPost("/send-email-to-all", async (HttpContext httpContext, string emailTemplateId, string? couponCode, IEmailRepository emailRepository) =>
         {
             try
             {
-                // Lấy danh sách người dùng thông qua SenderEmail repository
-                var users = await emailSender.GetUsersAsync();
+                var senderId = httpContext.Request.Headers["UserId"].ToString();
 
-                // Lấy UserId từ headers
-                var userId = httpContext.Request.Headers["UserId"].ToString();
-                emailSend.SenderId = userId;
+                var emailTemplate = await emailRepository.GetEmailTemplateById(emailTemplateId);
 
-                // Gửi email tới tất cả người dùng
-                foreach (var user in users)
+                if (emailTemplate == null)
                 {
-                    await emailSender.SendEmailByEmailTemplate(emailSend.Template, user.Email);
-
-                    // Tạo bản ghi EmailSend cho mỗi người dùng (nếu cần)
-                    emailSend.EmailSendId = Guid.NewGuid().ToString();
-                    emailSend.Receiver = user.Email;
-                    emailSend.Sendate = DateTime.UtcNow;
+                    return Results.Problem($"Email template with ID '{emailTemplateId}' not found.", statusCode: StatusCodes.Status404NotFound);
                 }
+
+
+                if (!string.IsNullOrEmpty(couponCode))
+                {
+                    await emailRepository.SendCouponToAll(emailTemplate, senderId, couponCode);
+                }
+                else
+                {
+                    await emailRepository.SendEmailToAll(emailTemplate, senderId);
+                }
+
 
                 return Results.Ok("Emails sent successfully to all users!");
             }
