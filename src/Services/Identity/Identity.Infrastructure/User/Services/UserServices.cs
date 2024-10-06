@@ -8,6 +8,7 @@ using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.JSInterop.Infrastructure;
 
 namespace Identity.Infrastructure.User.Services
 {
@@ -23,11 +24,16 @@ namespace Identity.Infrastructure.User.Services
             _fileService = fileSerivce;
         }
 
-        public async Task<BaseResponse<Domain.Entities.User>> CreateNewUser(CreateNewUserDto dto)
+        public async Task<BaseResponse<UserDto>> CreateNewUser(CreateNewUserDto dto)
         {
             try
             {
                 var user = dto.Adapt<Domain.Entities.User>();
+
+                //Check if User is also Customer and Employee?
+                if (dto.Role.Contains("Customer") && dto.Role.Count > 1){
+                    return new BaseResponse<UserDto>(null, new List<string>() { "User cannot be also Customer and Employee" });
+                };
 
                 if (dto.ImageFile is not null)
                 {
@@ -46,19 +52,20 @@ namespace Identity.Infrastructure.User.Services
                 var result = await _userManager.CreateAsync(user);
                 if (result.Succeeded)
                 {
-                    result = await _userManager.AddToRoleAsync(user, dto.Role);
-                    return new BaseResponse<Domain.Entities.User>(user);
+                    result = await _userManager.AddToRolesAsync(user, dto.Role);
+                    var userDto = user.Adapt<UserDto>();
+                    return new BaseResponse<UserDto>(userDto);
                 }
                 var errorMessages = string.Join(", ", result.Errors.Select(e => e.Description));
-                return new BaseResponse<Domain.Entities.User>(null, errorMessages);
+                return new BaseResponse<UserDto>(null, errorMessages);
             }
             catch (Exception ex)
             {
-                return new BaseResponse<Domain.Entities.User>(null, new List<string>() { ex.Message });
+                return new BaseResponse<UserDto>(null, new List<string>() { ex.Message });
             }
         }
 
-        public async Task<BaseResponse<PaginatedList<Domain.Entities.User>>> GetAllUser(GetListUserParamsDto parameters)
+        public async Task<BaseResponse<PaginatedList<UserDto>>> GetAllUser(GetListUserParamsDto parameters)
         {
             try
             {
@@ -90,14 +97,34 @@ namespace Identity.Infrastructure.User.Services
                     }
                 }
 
-                // Step 6: Apply pagination on the filtered employee list
-                var employees = await PaginatedList<Domain.Entities.User>.CreateAsync(employeeList.AsQueryable(), parameters.PageNumber, parameters.PageSize);
+                var listEmployeesDto = employeeList.Adapt<List<UserDto>>();
 
-                return new BaseResponse<PaginatedList<Domain.Entities.User>>(employees);
+                // Step 6: Apply pagination on the filtered employee list
+                var employees = await PaginatedList<UserDto>.CreateAsync(listEmployeesDto.AsQueryable(), parameters.PageNumber, parameters.PageSize);
+               
+                return new BaseResponse<PaginatedList<UserDto>>(employees);
             }
             catch (Exception ex)
             {
-                return new BaseResponse<PaginatedList<Domain.Entities.User>>(null, new List<string>() { ex.Message });
+                return new BaseResponse<PaginatedList<UserDto>>(null, new List<string>() { ex.Message });
+            }
+        }
+
+        public async Task<BaseResponse<UserDto>> GetUserById(string id)
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(id);
+                var userDto = user.Adapt<UserDto>();
+                if (user is not null)
+                {
+                    return new BaseResponse<UserDto>(userDto);
+                }
+                return new BaseResponse<UserDto>(null, "User Not Found!");
+            }
+            catch (Exception ex)
+            {
+                return new BaseResponse<UserDto>(null, new List<string> { ex.Message });
             }
         }
 
@@ -116,6 +143,12 @@ namespace Identity.Infrastructure.User.Services
                     return new BaseResponse<bool>(null, new List<string>() { $"User With Id: {id} does not exist! " });
                 }
 
+                //Check if User is also Customer and Employee?
+                if (request.Roles.Contains("Customer") && request.Roles.Count > 1)
+                {
+                    return new BaseResponse<bool>(null, new List<string>() { "User cannot be also Customer and Employee" });
+                };
+
                 if (request.ImageFile != null)
                 {
                     var fileResult = _fileService.SaveImage(request.ImageFile);
@@ -133,7 +166,7 @@ namespace Identity.Infrastructure.User.Services
                         throw new Exception(errorMessages);
                     }
 
-                    result = await _userManager.AddToRoleAsync(User, request.Role);
+                    result = await _userManager.AddToRolesAsync(User, request.Roles);
 
                     if (!result.Succeeded)
                     {
@@ -171,8 +204,11 @@ namespace Identity.Infrastructure.User.Services
             {
                 return new BaseResponse<bool>(null, new List<string>() { ex.Message });
             }
+            return new BaseResponse<bool>(true);
+
 
         }
+
 
         private IQueryable<Domain.Entities.User> Filter(string[] statuses, DateOnly? dob, IQueryable<Domain.Entities.User> list)
         {
@@ -188,8 +224,7 @@ namespace Identity.Infrastructure.User.Services
             return list;
         }
 
-
-
+   
         private IQueryable<Domain.Entities.User> Search(IQueryable<Domain.Entities.User> list, string searchTerm)
         {
             if (!string.IsNullOrEmpty(searchTerm))

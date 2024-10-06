@@ -4,6 +4,7 @@ using Identity.Application.Identity.Commands.GoogleLogin;
 using Identity.Application.Identity.Commands.InternalLogin;
 using Identity.Application.Identity.Commands.ReconfirmEmail;
 using Identity.Application.Identity.Commands.Register;
+using Identity.Application.Identity.Commands.RenewToken;
 using Identity.Application.Identity.Dtos;
 using Identity.Application.Identity.Interfaces;
 using Identity.Application.RolePermission.Commands.AddRole;
@@ -30,7 +31,7 @@ namespace Identity.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
-        public async Task<IActionResult> GoogleSignIn(GoogleSignInVM request, CancellationToken cancellation = default)
+        public async Task<IActionResult> GoogleSignIn(GoogleSignInVM request)
         {
             try
             {
@@ -76,6 +77,21 @@ namespace Identity.API.Controllers
             }
         }
 
+        [HttpPost]
+        [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
+        public async Task<IActionResult> RenewToken([FromBody] JwtModelVM request)
+        {
+            try
+            {
+                var command = new RenewTokenCommand(request);
+                var result = await _mediator.Send(command);
+                return ReturnResponse(result.response);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
 
 
         [HttpGet]

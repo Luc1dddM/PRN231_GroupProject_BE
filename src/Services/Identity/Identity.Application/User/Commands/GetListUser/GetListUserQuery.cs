@@ -6,5 +6,5 @@ using Identity.Application.Utils;
 namespace Identity.Application.User.Commands.GetListUser
 {
     public record GetListUsersQuery(GetListUserParamsDto parameters) : IQuery<GetListUsersResponse>;
-    public record GetListUsersResponse(BaseResponse<PaginatedList<Domain.Entities.User>> response);
+    public record GetListUsersResponse(BaseResponse<PaginatedList<UserDto>> response);
 }

@@ -6,5 +6,5 @@ using Microsoft.AspNetCore.Identity.Data;
 namespace Identity.Application.Identity.Commands.InternalLogin
 {
     public record InternalLoginQuery(string UserName, string Password) : IQuery<InternalLoginResult>;
-    public record InternalLoginResult(BaseResponse<JwtResponseVM> response);
+    public record InternalLoginResult(BaseResponse<JwtModelVM> response);
 }

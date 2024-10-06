@@ -7,9 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Identity.Application.Identity.Commands.GoogleLogin
+namespace Identity.Application.Identity.Commands.RenewToken
 {
-    public record GoogleLoginQuery(string Token) : IQuery<GoogleLoginResponse>;
-
-    public record GoogleLoginResponse(BaseResponse<JwtModelVM> response);
+    public record RenewTokenCommand(JwtModelVM request) : ICommand<RenewTokenResponse>;
+    public record RenewTokenResponse(BaseResponse<JwtModelVM> response);
 }

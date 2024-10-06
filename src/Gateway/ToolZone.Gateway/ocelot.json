@@ -72,6 +72,26 @@
       "RouteClaimsRequirement": {
         "permissions": "ReadUser"
       }
+    },
+    //3. Get User By Id
+    {
+      "DownstreamPathTemplate": "/api/User/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7183
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/User/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST","PUT" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "RouteClaimsRequirement": {
+        "permissions": "ReadUser"
+      }
     }
   ],
   "GlobalConfiguration": {

@@ -74,6 +74,9 @@ namespace Identity.Infrastructure
             var jwtSection = configuration.GetSection("JWT");
             services.Configure<Jwt>(jwtSection);
 
+            var refreshSection = configuration.GetSection("RefreshToken");
+            services.Configure<Identity.Configuration.RefreshToken>(refreshSection);
+
             var appSettings = jwtSection.Get<Jwt>();
             var secret = Encoding.ASCII.GetBytes(appSettings.Secret);
             

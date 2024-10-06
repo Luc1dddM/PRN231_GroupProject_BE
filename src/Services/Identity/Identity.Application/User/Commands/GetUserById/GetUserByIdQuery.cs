@@ -7,9 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Identity.Application.User.Commands.CreateUser
+namespace Identity.Application.User.Commands.GetUserById
 {
-    public record CreateUserCommand(CreateNewUserDto Dto) : ICommand<CreateUserResponse>;
-
-    public record CreateUserResponse(BaseResponse<UserDto> response);
+    public record GetUserByIdQuery(string id) : IQuery<GetUserByIdResponse>;
+    public record GetUserByIdResponse(BaseResponse<UserDto> response);
 }

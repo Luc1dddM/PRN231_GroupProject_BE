@@ -1,6 +1,7 @@
 ﻿using Identity.Application.Identity.Commands.GoogleLogin;
 using Identity.Application.User.Commands.CreateUser;
 using Identity.Application.User.Commands.GetListUser;
+using Identity.Application.User.Commands.GetUserById;
 using Identity.Application.User.Commands.Updateuser;
 using Identity.Application.User.Dtos;
 using Identity.Application.Utils;
@@ -32,6 +33,22 @@ namespace Identity.API.Controllers
                 return ReturnResponse(reponse.response);
             }
             catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [Route("{id}")]
+        [HttpGet]
+        [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
+        public async Task<IActionResult> GetUserById(string id)
+        {
+            try
+            {
+                var query = new GetUserByIdQuery(id);
+                var reponse = await _mediator.Send(query);
+                return ReturnResponse(reponse.response);
+            }catch (Exception ex)
             {
                 return HandleError(ex);
             }
