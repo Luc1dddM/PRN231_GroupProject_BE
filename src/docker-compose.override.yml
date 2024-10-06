@@ -1,6 +1,15 @@
 version: '3.4'
 
 services:
+  toolzone_order:
+    container_name: toolzone_order
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Sa12345678
+    restart: always
+    ports:
+      - "1433:1433" 
+
   coupon.grpc:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
