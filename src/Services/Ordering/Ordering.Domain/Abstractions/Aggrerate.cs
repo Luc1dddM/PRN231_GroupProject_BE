@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Ordering.Domain.Abstractions
 {
+    //represents a group of related objects that are treated as a single unit.
     public abstract class Aggrerate<TId> : Entity<TId>, IAggregate<TId>
     {
         private readonly List<IDomainEvent> _domainEvents = new();

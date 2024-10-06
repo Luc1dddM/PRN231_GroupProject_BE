@@ -15,26 +15,13 @@ namespace Ordering.Infrastructure.Data.Configurations
                             orderId => orderId.Value,
                             dbId => OrderId.Of(dbId));
 
-            //config the relationship between the Customer table and the OrderItem table
-            builder.HasOne<Customer>()
-            .WithMany()
-            .HasForeignKey(o => o.CustomerId)
-            .IsRequired();
+            builder.Property(o => o.CustomerId).HasConversion(
+                            customerId => customerId.Value,
+                            dbcustomerId => CustomerId.Of(dbcustomerId)).IsRequired();
 
             builder.HasMany(o => o.OrderItems)
                 .WithOne()
                 .HasForeignKey(oi => oi.OrderId);
-
-            //config for complex properties for EF to store in DB
-            builder.ComplexProperty(
-                o => o.OrderName, nameBuilder =>
-                    {
-                        nameBuilder.Property(n => n.Value)
-                            .HasColumnName(nameof(Order.OrderName))
-                            .HasMaxLength(100)
-                            .IsRequired();
-                    }
-            );
 
             builder.ComplexProperty(
                 o => o.ShippingAddress, addressBuilder =>
@@ -47,6 +34,10 @@ namespace Ordering.Infrastructure.Data.Configurations
                             .HasMaxLength(50)
                             .IsRequired();
 
+                        addressBuilder.Property(a => a.Phone)
+                            .HasMaxLength(10)
+                            .IsRequired();
+
                        addressBuilder.Property(a => a.EmailAddress)
                            .HasMaxLength(50);
 
@@ -54,45 +45,17 @@ namespace Ordering.Infrastructure.Data.Configurations
                            .HasMaxLength(180)
                            .IsRequired();
 
-                       addressBuilder.Property(a => a.Country)
-                           .HasMaxLength(50);
+                        addressBuilder.Property(a => a.City)
+                            .HasMaxLength(50)
+                            .IsRequired();
 
-                       addressBuilder.Property(a => a.State)
-                           .HasMaxLength(50);
+                        addressBuilder.Property(a => a.District)
+                            .HasMaxLength(50)
+                            .IsRequired();
 
-                       addressBuilder.Property(a => a.ZipCode)
-                           .HasMaxLength(5)
-                           .IsRequired();
-                    }
-            );
-
-            builder.ComplexProperty(
-                o => o.BillingAddress, addressBuilder =>
-                    {
-                      addressBuilder.Property(a => a.FirstName)
+                       addressBuilder.Property(a => a.Ward)
                            .HasMaxLength(50)
                            .IsRequired();
-
-                      addressBuilder.Property(a => a.LastName)
-                           .HasMaxLength(50)
-                           .IsRequired();
-
-                      addressBuilder.Property(a => a.EmailAddress)
-                          .HasMaxLength(50);
-
-                      addressBuilder.Property(a => a.AddressLine)
-                          .HasMaxLength(180)
-                          .IsRequired();
-
-                      addressBuilder.Property(a => a.Country)
-                          .HasMaxLength(50);
-
-                      addressBuilder.Property(a => a.State)
-                          .HasMaxLength(50);
-
-                      addressBuilder.Property(a => a.ZipCode)
-                          .HasMaxLength(5)
-                          .IsRequired();
                     }
             );
 
@@ -122,6 +85,8 @@ namespace Ordering.Infrastructure.Data.Configurations
             .HasConversion(
                 s => s.ToString(),
                 dbStatus => (OrderStatus)Enum.Parse(typeof(OrderStatus), dbStatus));
+
+            builder.Property(o => o.CouponId);
 
             builder.Property(o => o.TotalPrice);
             //-----------------------------------------------------

@@ -3,5 +3,6 @@
     public record OrderItemDto(Guid OrderId, 
                                Guid ProductId, 
                                int Quantity, 
-                               decimal Price);
+                               decimal Price,
+                               string Color);
 }

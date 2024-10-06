@@ -8,10 +8,9 @@ namespace Ordering.Application.Dtos
     //to perform our business logic
     public record OrderDto(Guid Id,
                            Guid CustomerId,
-                           string OrderName,
                            AddressDto ShippingAddress,
-                           AddressDto BillingAddress,
                            PaymentDto Payment,
                            OrderStatus Status,
-                           List<OrderItemDto> OrderItems);
+                           List<OrderItemDto> OrderItems,
+                           string? CouponId);
 }

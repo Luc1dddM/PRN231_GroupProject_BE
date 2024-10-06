@@ -13,13 +13,15 @@ namespace Ordering.Infrastructure.Data.Configurations
                                        orderItemId => orderItemId.Value,
                                        dbId => OrderItemId.Of(dbId));
 
-            builder.HasOne<Product>()
-            .WithMany()
-            .HasForeignKey(oi => oi.ProductId);
+            builder.Property(oi => oi.ProductId).HasConversion(
+                                        proId => proId.Value,
+                                        dbproId => ProductId.Of(dbproId)).IsRequired();
 
             builder.Property(oi => oi.Quantity).IsRequired();
 
             builder.Property(oi => oi.Price).IsRequired();
+
+            builder.Property(oi => oi.Color).IsRequired();
 
         }
     }

@@ -27,13 +27,13 @@ namespace Ordering.Infrastructure.Data.Interceptors
             {
                 if (entry.State == EntityState.Added)
                 {
-                    entry.Entity.CreatedBy = "mehmet"; //change it to user name by get username with Id to store 
+                    entry.Entity.CreatedBy = "USER_ID"; //change it to user name by get username with Id to store 
                     entry.Entity.CreatedAt = DateTime.UtcNow;
                 }
 
                 if (entry.State == EntityState.Added || entry.State == EntityState.Modified || entry.HasChangedOwnedEntities())
                 {
-                    entry.Entity.LastModifiedBy = "mehmet";
+                    entry.Entity.LastModifiedBy = "USER_ID";
                     entry.Entity.LastModified = DateTime.UtcNow;
                 }
             }

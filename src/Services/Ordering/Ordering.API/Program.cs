@@ -14,7 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 //Web API - Carter, Heathcheck
 
 builder.Services
-    .AddApplicationServices()
+    .AddApplicationServices(builder.Configuration)
     .AddInfrastructureServices(builder.Configuration)
     .AddApiServices();
 //-------------------------------

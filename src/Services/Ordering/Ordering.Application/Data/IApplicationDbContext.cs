@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Ordering.Domain.Models;
+﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Ordering.Application.Data
 {
@@ -9,11 +9,9 @@ namespace Ordering.Application.Data
         //remains independent of specific database implementation and also not including any infrastructure implementation
         //like SQL server, database provider and so on.
 
-        DbSet<Customer> Customers { get; }
-        DbSet<Product> Products { get; }
         DbSet<Order> Orders { get; }
         DbSet<OrderItem> OrderItems { get; }
 
-        Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

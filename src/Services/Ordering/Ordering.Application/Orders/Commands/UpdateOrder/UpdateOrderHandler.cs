@@ -1,54 +1,67 @@
 ﻿namespace Ordering.Application.Orders.Commands.UpdateOrder
 {
-
-
     public class UpdateOrderHandler : ICommandHandler<UpdateOrderCommand, UpdateOrderResult>
     {
         private readonly IApplicationDbContext _context;
+        private readonly ILogger<UpdateOrderHandler> _logger;
+        private const int MaxRetries = 3;
 
-        public UpdateOrderHandler(IApplicationDbContext context)
+        public UpdateOrderHandler(IApplicationDbContext context, ILogger<UpdateOrderHandler> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<UpdateOrderResult> Handle(UpdateOrderCommand command, CancellationToken cancellationToken)
         {
-            //Update Order entity from command object
-            //save to database
-            //return result
-
-            //getting the Order to update
-            var orderId = OrderId.Of(command.Order.Id);
-            var order = await _context.Orders.FindAsync([orderId], cancellationToken: cancellationToken);
-
-            if (order is null)
+            try
             {
-                throw new OrderNotFoundException(command.Order.Id);
+                //getting the Order to update
+                var orderId = OrderId.Of(command.Order.Id);
+
+                var order = await _context.Orders.Include(o => o.OrderItems)
+                    .FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken: cancellationToken);
+
+                if (order is null)
+                {
+                    _logger.LogWarning($"Order not found for ID: {orderId.Value}");
+                    throw new OrderNotFoundException(command.Order.Id);
+                }
+
+
+
+                //update the order with the new data from the Dto object: command.Order
+                UpdateOrderWithNewValues(order, command.Order);
+
+                _context.Orders.Update(order);
+                await _context.SaveChangesAsync(cancellationToken);
+
+                return new UpdateOrderResult(true);
             }
-
-            //update the order with the new data from the Dto object: command.Order
-            UpdateOrderWithNewValues(order, command.Order);
-
-            _context.Orders.Update(order);
-            await _context.SaveChangesAsync(cancellationToken);
-
-            return new UpdateOrderResult(true);
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
         }
 
-
-
-        private void UpdateOrderWithNewValues(Order order, OrderDto orderDto)
+        private Order UpdateOrderWithNewValues(Order order, OrderDto orderDto)
         {
-            var updatedShippingAddress = Address.Of(orderDto.ShippingAddress.FirstName, orderDto.ShippingAddress.LastName, orderDto.ShippingAddress.EmailAddress, orderDto.ShippingAddress.AddressLine, orderDto.ShippingAddress.Country, orderDto.ShippingAddress.State, orderDto.ShippingAddress.ZipCode);
-            var updatedBillingAddress = Address.Of(orderDto.BillingAddress.FirstName, orderDto.BillingAddress.LastName, orderDto.BillingAddress.EmailAddress, orderDto.BillingAddress.AddressLine, orderDto.BillingAddress.Country, orderDto.BillingAddress.State, orderDto.BillingAddress.ZipCode);
-            var updatedPayment = Payment.Of(orderDto.Payment.CardName, orderDto.Payment.CardNumber, orderDto.Payment.Expiration, orderDto.Payment.Cvv, orderDto.Payment.PaymentMethod);
+            var updatedShippingAddress = Address.Of(orderDto.ShippingAddress.FirstName,
+                                                    orderDto.ShippingAddress.LastName,
+                                                    orderDto.ShippingAddress.Phone,
+                                                    orderDto.ShippingAddress.EmailAddress,
+                                                    orderDto.ShippingAddress.AddressLine,
+                                                    orderDto.ShippingAddress.City,
+                                                    orderDto.ShippingAddress.District,
+                                                    orderDto.ShippingAddress.Ward);
 
             order.Update(
-            orderName: OrderName.Of(orderDto.OrderName),
             shippingAddress: updatedShippingAddress,
-            billingAddress: updatedBillingAddress,
-            payment: updatedPayment,
             status: orderDto.Status);
+
+            return order;
         }
+
     }
 }
+

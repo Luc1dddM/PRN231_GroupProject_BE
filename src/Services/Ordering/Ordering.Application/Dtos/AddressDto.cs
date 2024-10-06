@@ -1,10 +1,11 @@
 ﻿namespace Ordering.Application.Dtos
 {
     public record AddressDto(string FirstName, 
-                             string LastName, 
+                             string LastName,
+                             string Phone,
                              string EmailAddress, 
                              string AddressLine, 
-                             string Country, 
-                             string State, 
-                             string ZipCode);
+                             string City, 
+                             string District, 
+                             string Ward);
 }

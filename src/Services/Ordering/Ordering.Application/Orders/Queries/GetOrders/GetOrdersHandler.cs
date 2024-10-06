@@ -18,7 +18,6 @@ namespace Ordering.Application.Orders.Queries.GetOrders
             var orders = await _context.Orders
             .Include(o => o.OrderItems)
                         .AsNoTracking()
-                        .OrderBy(o => o.OrderName.Value)
                         .ToListAsync(cancellationToken);
 
             return new GetOrdersResult(orders.ToOrderDtoList());
