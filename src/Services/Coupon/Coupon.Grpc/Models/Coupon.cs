@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Coupon.Grpc.Models
 {
@@ -8,9 +9,9 @@ namespace Coupon.Grpc.Models
         public int Id { get; set; }
 
         public string CouponId { get; set; } = Guid.NewGuid().ToString();
-
+        
         public string CouponCode { get; set; } = null!;
-
+       
         public double DiscountAmount { get; set; }
 
         public bool Status { get; set; }
@@ -26,5 +27,4 @@ namespace Coupon.Grpc.Models
 
         public DateTime? UpdatedDate { get; set; }
     }
-
 }
