@@ -1,0 +1,30 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.Extensions.Logging;
+using Ordering.Application.Data;
+using Ordering.Domain.Models;
+using System.Reflection;
+
+namespace Ordering.Infrastructure.Data
+{
+    public class ApplicationDbContext : DbContext, IApplicationDbContext
+    {
+        private readonly ILogger<ApplicationDbContext> _logger;
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options,
+            ILogger<ApplicationDbContext> logger) : base(options)
+        {
+            _logger = logger;
+        }
+
+        public DbSet<Order> Orders => Set<Order>();
+        public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            //all of model configuration will be done in separate folder of "Configurations"
+            builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+            base.OnModelCreating(builder);
+        }
+    }
+}
