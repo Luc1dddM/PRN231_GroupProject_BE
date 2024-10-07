@@ -10,19 +10,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BuildingBlocks", "BuildingB
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildingBlocks", "BuildingBlocks\BuildingBlocks\BuildingBlocks.csproj", "{196855D7-C3D1-44B1-87C1-0E890FC8F733}"
 EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{45ABD27E-5800-41ED-984F-AF81A61D4F7A}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Identity.API", "Services\Identity\Identity.API\Identity.API.csproj", "{D9ABCC43-40E2-40E4-ABA6-33D2E565BF56}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Coupon", "Coupon", "{6BA613E6-2187-4CD5-97F7-2F445478BC4F}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Coupon.Grpc", "Coupon.Grpc\Coupon.Grpc.csproj", "{DDB5682C-32F2-47C3-9811-EF0F0CA92343}"
-EndProject
-Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{45ABD27E-5800-41ED-984F-AF81A61D4F7A}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Email", "Email", "{7E76AFDB-55EF-4A60-9990-1CFF4236A41F}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Email.API", "Email.API\Email.API.csproj", "{6A7EA9F0-4EE5-47B6-8851-E3673DFD7651}"
-EndProject
-Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{45ABD27E-5800-41ED-984F-AF81A61D4F7A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Identity.Domain", "Services\Identity\Identity.Domain\Identity.Domain.csproj", "{EBD25BE6-95E4-4922-B981-F07B8BE1CCE3}"
 EndProject
@@ -60,7 +50,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Email.API", "Services\Email
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Coupon", "Coupon", "{525EA0BF-73D2-49FF-B857-5F2BE3ADEF25}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Coupon.Grpc", "Services\Coupon\Coupon.Grpc\Coupon.Grpc.csproj", "{1FAD8D85-9AA7-48DC-BB4F-13C17F504FBB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Coupon.Grpc", "Services\Coupon\Coupon.Grpc\Coupon.Grpc.csproj", "{1FAD8D85-9AA7-48DC-BB4F-13C17F504FBB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
