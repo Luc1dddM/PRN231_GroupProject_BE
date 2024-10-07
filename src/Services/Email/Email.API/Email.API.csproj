@@ -28,14 +28,14 @@
 
 	<ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks\BuildingBlocks.csproj" />
-    <ProjectReference Include="..\..\..\Coupon.Grpc\Coupon.Grpc.csproj" />
   </ItemGroup>
 
 
 	<ItemGroup>
-	  <Protobuf Include="..\..\..\Coupon.Grpc\Protos\coupon.proto" GrpcServices="Client">
+	  <Protobuf Include="..\..\Coupon\Coupon.Grpc\Protos\coupon.proto" GrpcServices="Client">
 	    <Link>Protos\coupon.proto</Link>
 	  </Protobuf>
 	</ItemGroup>
+
 
 </Project>
