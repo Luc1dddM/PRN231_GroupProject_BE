@@ -11,7 +11,7 @@ namespace Identity.Application.Identity.Commands.Register
         }
         public async Task<RegisterResult> Handle(RegisterCommand request, CancellationToken cancellationToken)
         {
-           var usrDto = await _authService.Register(request.request);
+           var usrDto = await _authService.Register(request.Email, request.Name, request.Phonenumber, request.Password);
             return new RegisterResult(usrDto);
         }
     }

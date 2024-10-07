@@ -17,7 +17,7 @@ namespace Identity.Application.Identity.Commands.InternalLogin
         }
         public async Task<InternalLoginResult> Handle(InternalLoginQuery request, CancellationToken cancellationToken)
         {
-            var result = await _authService.Login(request.request);
+            var result = await _authService.Login(request.UserName, request.Password);
             return new InternalLoginResult(result);
         }
     }

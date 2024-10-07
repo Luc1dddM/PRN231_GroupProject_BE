@@ -1,4 +1,4 @@
-﻿using Identity.Application.Dtos;
+﻿using Identity.Application.Identity.Dtos;
 using Identity.Application.Utils;
 using System;
 using System.Collections.Generic;

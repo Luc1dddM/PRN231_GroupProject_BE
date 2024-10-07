@@ -18,7 +18,7 @@ namespace Identity.Application.RolePermission.Commands.UpdatePermission
         }
         public async Task<UpdatePermissionResponse> Handle(UpdatePermissionCommand request, CancellationToken cancellationToken)
         {
-           var response = await _service.UpdatePermission(request.command);
+           var response = await _service.UpdatePermission(request.Role, request.PermissionIds);
            return new UpdatePermissionResponse(response);
         }
     }

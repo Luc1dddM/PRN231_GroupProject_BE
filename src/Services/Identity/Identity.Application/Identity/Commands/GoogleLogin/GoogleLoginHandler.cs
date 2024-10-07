@@ -16,7 +16,7 @@ namespace Identity.Application.Identity.Commands.GoogleLogin
         }
         public async Task<GoogleLoginResponse> Handle(GoogleLoginQuery request, CancellationToken cancellationToken)
         {
-            var response = await _authService.SignInWithGoogle(request.request);
+            var response = await _authService.SignInWithGoogle(request.Token);
             return new GoogleLoginResponse(response);
 
         }

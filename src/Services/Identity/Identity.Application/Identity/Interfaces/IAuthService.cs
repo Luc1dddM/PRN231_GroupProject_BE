@@ -1,4 +1,4 @@
-﻿using Identity.Application.DTOs;
+﻿using Identity.Application.Identity.Dtos;
 using Identity.Application.Utils;
 using System;
 using System.Collections.Generic;
@@ -10,11 +10,12 @@ namespace Identity.Application.Identity.Interfaces
 {
     public interface IAuthService
     {
-        Task<BaseResponse<JwtResponseVM>> SignInWithGoogle(GoogleSignInVM model);
-        Task<BaseResponse<JwtResponseVM>> SignInWithFacebook(FacebookSignInVM model);
-        Task<BaseResponse<UserDto>> Register(RegistrationRequestDto registrationRequest);
-        Task<BaseResponse<JwtResponseVM>> Login(LoginRequestDto loginRequest);
+        Task<BaseResponse<JwtModelVM>> SignInWithGoogle(string idToken);
+        Task<BaseResponse<CreateCustomerDto>> Register(string email, string name, string phonenumber, string password);
+        Task<BaseResponse<JwtModelVM>> Login(string username, string password);
         Task<BaseResponse<string>> ConfirmEmail(string userId, string token);
-        Task<BaseResponse<string>> ReConfirmEmail(ReConfirmMailDto reConfirmMailDto);
+        Task<BaseResponse<string>> ReConfirmEmail(string emailaddress);
+        Task<BaseResponse<JwtModelVM>> RenewToken(JwtModelVM request);
+
     }
 }

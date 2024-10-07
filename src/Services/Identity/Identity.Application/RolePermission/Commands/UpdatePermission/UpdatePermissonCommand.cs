@@ -1,5 +1,5 @@
 ﻿using BuildingBlocks.CQRS;
-using Identity.Application.Dtos;
+using Identity.Application.RolePermission.Dtos;
 using Identity.Application.Utils;
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Identity.Application.RolePermission.Commands.UpdatePermission
 {
-    public record UpdatePermissionCommand(UpdatePermissionDto command) : ICommand<UpdatePermissionResponse>;
+    public record UpdatePermissionCommand(string Role, List<int>? PermissionIds) : ICommand<UpdatePermissionResponse>;
 
     public record UpdatePermissionResponse(BaseResponse<bool> response);
 }

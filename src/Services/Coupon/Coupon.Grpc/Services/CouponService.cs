@@ -1,20 +1,26 @@
 ﻿using Coupon.Grpc.Models;
+using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 
 namespace Coupon.Grpc.Services
 {
-    public class CouponService
-  (Prn231GroupProjectContext dbContext, ILogger<CouponService> logger)
- : CouponProtoService.CouponProtoServiceBase
+    public class CouponService : CouponProtoService.CouponProtoServiceBase
     {
+        private readonly Prn231GroupProjectContext dbContext;
+        private readonly ILogger<CouponService> logger;
+
+        public CouponService(Prn231GroupProjectContext _dbContext, ILogger<CouponService> _logger)
+        {
+            dbContext = _dbContext;
+            logger = _logger;
+        }
         public override async Task<CouponModel> GetCoupon(GetCouponRequest request, ServerCallContext context)
         {
             var coupon = await dbContext
          .Coupons
          .FirstOrDefaultAsync(x => x.CouponCode == request.CouponCode);
-
             if (coupon is null)
             {
                 coupon = new Models.Coupon
@@ -91,6 +97,8 @@ namespace Coupon.Grpc.Services
 
             return coupon.Adapt<CouponModel>();
         }
+
+
 
     }
 }

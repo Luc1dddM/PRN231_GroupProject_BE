@@ -3,8 +3,14 @@
     public record StoreCartCommand(CartHeader CartHeader) : ICommand<StoreCartResult>;
     public record StoreCartResult(bool IsSuccess, string Message);
 
-    public class StoreCartHandler(ICartRepository repository) : ICommandHandler<StoreCartCommand, StoreCartResult>
+    public class StoreCartHandler : ICommandHandler<StoreCartCommand, StoreCartResult>
     {
+
+        private readonly ICartRepository repository;
+        public StoreCartHandler(ICartRepository _repository)
+        {
+            repository = _repository;
+        }
         public async Task<StoreCartResult> Handle(StoreCartCommand command, CancellationToken cancellationToken)
         {
             try
