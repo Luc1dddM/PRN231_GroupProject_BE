@@ -1,12 +1,6 @@
-version: '3.4'
-
 services:
-  #backing services: toolzone_order Db using sql server Db from Docker 
-  toolzone_order:
-    image: mcr.microsoft.com/mssql/server
-    
   coupon.grpc:
     image: ${DOCKER_REGISTRY-}coupongrpc
     build:
       context: .
-      dockerfile: Coupon.Grpc\Dockerfile
+      dockerfile: Services/Coupon/Coupon.Grpc/Dockerfile
