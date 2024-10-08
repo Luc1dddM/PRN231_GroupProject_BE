@@ -1,7 +1,6 @@
 ﻿using BuildingBlocks.CQRS;
+using BuildingBlocks.Models;
 using Identity.Application.Identity.Dtos;
-using Identity.Application.Utils;
-using Microsoft.AspNetCore.Identity.Data;
 
 namespace Identity.Application.Identity.Commands.InternalLogin
 {

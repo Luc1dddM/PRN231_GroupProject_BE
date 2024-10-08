@@ -1,5 +1,5 @@
 ﻿using BuildingBlocks.CQRS;
-using Identity.Application.Utils;
+using BuildingBlocks.Models;
 
 namespace Identity.Application.RolePermission.Commands.AddRole
 {

@@ -1,4 +1,6 @@
-﻿using Identity.Application.Identity;
+﻿using BuildingBlocks.Exceptions;
+using BuildingBlocks.Models;
+using Identity.Application.Identity;
 using Identity.Application.Identity.Commands.ConfirmEmail;
 using Identity.Application.Identity.Commands.GoogleLogin;
 using Identity.Application.Identity.Commands.InternalLogin;
@@ -6,12 +8,11 @@ using Identity.Application.Identity.Commands.ReconfirmEmail;
 using Identity.Application.Identity.Commands.Register;
 using Identity.Application.Identity.Commands.RenewToken;
 using Identity.Application.Identity.Dtos;
-using Identity.Application.Identity.Interfaces;
 using Identity.Application.RolePermission.Commands.AddRole;
 using Identity.Application.RolePermission.Commands.UpdatePermission;
 using Identity.Application.RolePermission.Commands.UpdateRoles;
 using Identity.Application.RolePermission.Dtos;
-using Identity.Application.Utils;
+using Identity.Application.User.Dtos;
 using Identity.Domain.Entities;
 using Mapster;
 using MediatR;
@@ -21,7 +22,7 @@ namespace Identity.API.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class IdentityController : BaseController
+    public class IdentityController : ControllerBase
     {
         private readonly IMediator _mediator;
         public IdentityController(IMediator mediator)
@@ -30,18 +31,17 @@ namespace Identity.API.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
         public async Task<IActionResult> GoogleSignIn(GoogleSignInVM request)
         {
             try
             {
                 var command = request.Adapt<GoogleLoginQuery>();
                 var reponse = await _mediator.Send(command);
-                return ReturnResponse(reponse.response);
+                return Ok(reponse.response);
             }
             catch (Exception ex)
             {
-                return HandleError(ex);
+                return NotFound(ex);
             }
         }
 
@@ -53,11 +53,11 @@ namespace Identity.API.Controllers
             {
                 var command = request.Adapt<RegisterCommand>();
                 var result = await _mediator.Send(command);
-                return ReturnResponse(result.result);
+                return Ok(result.result);
             }
             catch (Exception ex)
             {
-                return HandleError(ex);
+                return BadRequest(ex);
             }
         }
 
@@ -69,11 +69,24 @@ namespace Identity.API.Controllers
             {
                 var query = request.Adapt<InternalLoginQuery>();
                 var result = await _mediator.Send(query);
-                return ReturnResponse(result.response);
+                return Ok(result.response);
+            }
+            catch (UnAuthorizeException ex)
+            {
+                return StatusCode(401, new BaseResponse<UserDto>
+                {
+                    IsSuccess = false,
+                    Message = ex.Message
+                });
             }
             catch (Exception ex)
             {
-                return HandleError(ex);
+                return StatusCode(500,
+                    new BaseResponse<UserDto>
+                    {
+                        IsSuccess = false,
+                        Message = ex.Message
+                    });
             }
         }
 
@@ -85,11 +98,11 @@ namespace Identity.API.Controllers
             {
                 var command = new RenewTokenCommand(request);
                 var result = await _mediator.Send(command);
-                return ReturnResponse(result.response);
+                return Ok(result.response);
             }
             catch (Exception ex)
             {
-                return HandleError(ex);
+                return BadRequest(ex);
             }
         }
 
@@ -102,11 +115,11 @@ namespace Identity.API.Controllers
             {
                 var command = new ConfirmEmailCommand(UserId, Token);
                 var result = await _mediator.Send(command);
-                return ReturnResponse(result.result);
+                return Ok(result.result);
             }
             catch (Exception ex)
             {
-                return HandleError(ex);
+                return BadRequest(ex);
             }
         }
 
@@ -118,11 +131,11 @@ namespace Identity.API.Controllers
             {
                 var query =  request.Adapt<ReconfirmCommand>();
                 var result = await _mediator.Send(query);
-                return ReturnResponse(result.response);
+                return Ok(result.response);
             }
             catch (Exception ex)
             {
-                return HandleError(ex);
+                return BadRequest(ex);
             }
         }
 
@@ -134,11 +147,11 @@ namespace Identity.API.Controllers
             {
                 var command = request.Adapt<UpdatePermissionCommand>();
                 var result = await _mediator.Send(command);
-                return ReturnResponse(result.response);
+                return Ok(result.response);
             }
             catch (Exception ex)
             {
-                return HandleError(ex);
+                return BadRequest(ex);
             }
         }
 
@@ -150,11 +163,11 @@ namespace Identity.API.Controllers
             {
                 var command = request.Adapt<UpdateRolesCommand>();
                 var result = await _mediator.Send(command);
-                return ReturnResponse(result.response);
+                return Ok(result.response);
             }
             catch (Exception ex)
             {
-                return HandleError(ex);
+                return BadRequest(ex);
             }
         }
 
@@ -165,7 +178,7 @@ namespace Identity.API.Controllers
             try
             {
                 var userId = HttpContext.Request.Headers["UserId"].ToString();
-                if (userId == null) HandleError(new Exception(), "User Id Is Null" );
+                if (userId == null) BadRequest( "User Id Is Null" );
                 var role = new Role()
                 {
                     Name = request.name,
@@ -173,11 +186,11 @@ namespace Identity.API.Controllers
                 };
                 var command = role.Adapt<AddRoleCommand>();
                 var result = await _mediator.Send(command);
-                return ReturnResponse(result.response);
+                return Ok(result.response);
             }
             catch (Exception ex)
             {
-                return HandleError(ex);
+                return BadRequest(ex);
             }
         }
     }
