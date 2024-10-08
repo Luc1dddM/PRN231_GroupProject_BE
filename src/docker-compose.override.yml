@@ -10,14 +10,25 @@ services:
     ports:
       - "1433:1433" 
 
-  coupon.grpc:
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_HTTP_PORTS=8080
-      - ASPNETCORE_HTTPS_PORTS=8081
+ # coupon.grpc:
+   # environment:
+    #  - ASPNETCORE_ENVIRONMENT=Development
+     # - ASPNETCORE_HTTP_PORTS=8080
+     # - ASPNETCORE_HTTPS_PORTS=8081
+   # ports:
+    #  - "8080"
+    #  - "8081"
+   # volumes:
+   #   - ${APPDATA}/Microsoft/UserSecrets:C:\Users\ContainerUser\AppData\Roaming\Microsoft\UserSecrets:ro
+   #   - ${APPDATA}/ASP.NET/Https:C:\Users\ContainerUser\AppData\Roaming\ASP.NET\Https:ro
+
+  messagebroker:
+    container_name: messagebroker
+    hostname: ecommrece-mq
+    environment: 
+      - RABBITMQ_DEFAUT_USER=guest
+      - RABBITMQ_DEFAUT_PASS=guest
+    restart: always
     ports:
-      - "8080"
-      - "8081"
-    volumes:
-      - ${APPDATA}/Microsoft/UserSecrets:C:\Users\ContainerUser\AppData\Roaming\Microsoft\UserSecrets:ro
-      - ${APPDATA}/ASP.NET/Https:C:\Users\ContainerUser\AppData\Roaming\ASP.NET\Https:ro
+      - "5672:5672"
+      - "15672:15672"

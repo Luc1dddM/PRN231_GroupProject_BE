@@ -5,8 +5,11 @@ services:
   toolzone_order:
     image: mcr.microsoft.com/mssql/server
     
-  coupon.grpc:
-    image: ${DOCKER_REGISTRY-}coupongrpc
-    build:
-      context: .
-      dockerfile: Coupon.Grpc\Dockerfile
+  #coupon.grpc:
+   # image: ${DOCKER_REGISTRY-}coupongrpc
+    #build:
+     # context: .
+      #dockerfile: Coupon.Grpc\Dockerfile
+
+  messagebroker:
+    image: rabbitmq:management 
