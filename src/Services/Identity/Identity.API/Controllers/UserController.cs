@@ -1,20 +1,18 @@
-﻿using Identity.Application.Identity.Commands.GoogleLogin;
+﻿using BuildingBlocks.Models;
 using Identity.Application.User.Commands.CreateUser;
 using Identity.Application.User.Commands.GetListUser;
 using Identity.Application.User.Commands.GetUserById;
 using Identity.Application.User.Commands.Updateuser;
 using Identity.Application.User.Dtos;
-using Identity.Application.Utils;
-using Mapster;
+using Identity.Infrastructure.Exceptions;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Identity.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : BaseController
+    public class UserController : ControllerBase
     {
         private readonly IMediator _mediator;
         public UserController(IMediator mediator)
@@ -30,27 +28,37 @@ namespace Identity.API.Controllers
             {
                 var query = new GetListUsersQuery(request);
                 var reponse = await _mediator.Send(query);
-                return ReturnResponse(reponse.response);
+                return Ok(reponse.response);
             }
             catch (Exception ex)
             {
-                return HandleError(ex);
+                return BadRequest(ex);
             }
         }
 
         [Route("{id}")]
         [HttpGet]
-        [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
         public async Task<IActionResult> GetUserById(string id)
         {
             try
             {
                 var query = new GetUserByIdQuery(id);
                 var reponse = await _mediator.Send(query);
-                return ReturnResponse(reponse.response);
+                return Ok(reponse.response);
+            }catch (UserNotFoundException ex)
+            {
+                return NotFound(new BaseResponse<UserDto>
+                {
+                    IsSuccess = false,
+                    Message = ex.Message
+                });
             }catch (Exception ex)
             {
-                return HandleError(ex);
+                return StatusCode(500, new BaseResponse<UserDto>
+                {
+                    IsSuccess = false,
+                    Message = ex.Message
+                });
             }
         }
 
@@ -61,15 +69,15 @@ namespace Identity.API.Controllers
             try
             {
                 var userId = HttpContext.Request.Headers["UserId"].ToString();
-                if (string.IsNullOrEmpty(userId)) return HandleError(new Exception("User Id Is Null"));
+                if (string.IsNullOrEmpty(userId)) return BadRequest(new Exception("User Id Is Null"));
                 Request.CreatedBy = userId;
                 var query = new CreateUserCommand(Request);
                 var reponse = await _mediator.Send(query);
-                return ReturnResponse(reponse.response);
+                return Ok(reponse.response);
             }
             catch (Exception ex)
             {
-                return HandleError(ex);
+                return BadRequest(ex);
             }
         }
 
@@ -81,15 +89,15 @@ namespace Identity.API.Controllers
             try
             {
                 var userId = HttpContext.Request.Headers["UserId"].ToString();
-                if (string.IsNullOrEmpty(userId)) return HandleError(new Exception("User Id Is Null"));
+                if (string.IsNullOrEmpty(userId)) return BadRequest(new Exception("User Id Is Null"));
                 Request.UpdatedBy = userId;
                 var query = new UpdateUserCommand(id, Request);
                 var reponse = await _mediator.Send(query);
-                return ReturnResponse(reponse.response);
+                return Ok(reponse.response);
             }
             catch (Exception ex)
             {
-                return HandleError(ex);
+                return BadRequest(ex);
             }
         }
     }

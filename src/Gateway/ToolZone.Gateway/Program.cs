@@ -5,6 +5,7 @@ using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Values;
 using System.Text;
+using System.Text.Json;
 using ToolZone.Gateway.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,6 +42,28 @@ builder.Services.AddAuthentication(options =>
         RequireExpirationTime = true,
         IssuerSigningKey = new SymmetricSecurityKey(secret)
     };
+
+    o.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            if (context.Exception is SecurityTokenExpiredException)
+            {
+                context.Response.StatusCode = 410;
+                context.Response.ContentType = "application/json";
+
+                var result = JsonSerializer.Serialize(new
+                {
+                    message = "Token has expired."
+                });
+
+                return context.Response.WriteAsync(result);
+            }
+
+            return Task.CompletedTask;
+        }
+    };
+
 });
 
 var app = builder.Build();
