@@ -1,4 +1,7 @@
-﻿using Coupon.Grpc;
+﻿using BuildingBlocks.Messaging.Events;
+using Coupon.Grpc;
+using Mapster;
+using MassTransit;
 
 namespace Ordering.Application.Orders.Commands.CreateOrder
 {
@@ -7,11 +10,16 @@ namespace Ordering.Application.Orders.Commands.CreateOrder
         private readonly IApplicationDbContext _context;
 
         private readonly CouponProtoService.CouponProtoServiceClient _couponProto;
+        private readonly IPublishEndpoint _publishEndpoint;
         
-        public CreateOrderHandler(IApplicationDbContext context, CouponProtoService.CouponProtoServiceClient couponProto)
+        public CreateOrderHandler(
+            IApplicationDbContext context, 
+            CouponProtoService.CouponProtoServiceClient couponProto,
+            IPublishEndpoint publishEndpoint)
         {
             _context = context;
             _couponProto = couponProto;
+            _publishEndpoint = publishEndpoint;
         }
 
         public async Task<CreateOrderResult> Handle(CreateOrderCommand command, CancellationToken cancellationToken)
@@ -23,6 +31,7 @@ namespace Ordering.Application.Orders.Commands.CreateOrder
 
             //save to database
             _context.Orders.Add(order);
+
             await _context.SaveChangesAsync(cancellationToken);
 
             //return result 

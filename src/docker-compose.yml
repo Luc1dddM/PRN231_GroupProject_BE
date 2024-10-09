@@ -1,6 +1,11 @@
 services:
+
   coupon.grpc:
     image: ${DOCKER_REGISTRY-}coupongrpc
     build:
       context: .
       dockerfile: Services/Coupon/Coupon.Grpc/Dockerfile
+
+  messagebroker:
+    image: rabbitmq:management 
+

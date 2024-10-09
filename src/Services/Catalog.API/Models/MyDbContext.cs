@@ -26,6 +26,7 @@ namespace Catalog.API.Models
                     entity.HasData(
                         new Product
                         {
+                            Id = 1,
                             ProductId = Guid.NewGuid().ToString(),
                             Name = "Razer Pro Click Humanscale Mouse | Wireless",
                             Price = 2290000,
@@ -39,6 +40,7 @@ namespace Catalog.API.Models
                         },
                         new Product
                         {
+                            Id = 2,
                             ProductId = Guid.NewGuid().ToString(),
                             Name = "Razer DeathAdder V2 Pro Mouse | Wireless",
                             Price = 1990000,
@@ -62,6 +64,7 @@ namespace Catalog.API.Models
                     entity.HasData(
                         new Category
                         {
+                            Id = 1,
                             CategoryId = Guid.NewGuid().ToString(),
                             Name = "Asus",
                             Type = "Brand",
@@ -73,6 +76,7 @@ namespace Catalog.API.Models
                         },
                         new Category
                         {
+                            Id = 2,
                             CategoryId = Guid.NewGuid().ToString(),
                             Name = "Razer",
                             Type = "Brand",

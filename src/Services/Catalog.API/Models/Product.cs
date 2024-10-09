@@ -7,6 +7,8 @@ namespace Catalog.API.Models
     {
         [Key]
         [Required]
+        public int Id { get; set; }
+        [Required]
         public string ProductId { get; set; }
         [Required]
         public string Name { get; set; } = default!;
