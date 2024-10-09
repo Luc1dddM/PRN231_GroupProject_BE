@@ -1,4 +1,5 @@
-﻿using Email.Models;
+﻿using Email.API.Models;
+using Email.Models;
 
 namespace Email.API.Repository
 {
@@ -15,7 +16,8 @@ namespace Email.API.Repository
         // send by template
         public Task SendEmailByEmailTemplate(EmailTemplate template, string senderId, string to);
 
-
+        // send email by order
+        public Task SendEmailOrder(string orderId, string userEmail, string couponCode);
 
         public Task<EmailTemplate> GetEmailTemplateById(string id);
     }

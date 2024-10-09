@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Email.API.Emails.GetEmailList;
 
-public record GetEmailsQuery() : IQuery<GetEmailsResult>; // gửi request query lấy từ dtb
+public record GetEmailsQuery(string? Category = null, string? Name = null, string? Subject = null, bool? Status = null) : IQuery<GetEmailsResult>;
 public record GetEmailsResult(IEnumerable<EmailTemplate> Emails);
 
 internal class GetEmailTemplatesListHandler : IQueryHandler<GetEmailsQuery, GetEmailsResult>
@@ -19,13 +19,29 @@ internal class GetEmailTemplatesListHandler : IQueryHandler<GetEmailsQuery, GetE
 
     public async Task<GetEmailsResult> Handle(GetEmailsQuery query, CancellationToken cancellationToken)
     {
-        // get all list from dtb
-        var emails = await _context.EmailTemplates.ToListAsync(cancellationToken);
+        IQueryable<EmailTemplate> emailQuery = _context.EmailTemplates;
 
-        /*var emails = await _context.EmailTemplates
-            .Skip((query.PageNumber ?? 1 - 1) * (query.PageSize ?? 10))
-            .Take(query.PageSize ?? 10)
-            .ToListAsync(cancellationToken);*/
+        if (!string.IsNullOrWhiteSpace(query.Category))
+        {
+            emailQuery = emailQuery.Where(email => email.Category.Contains(query.Category));
+        }
+
+       /* if (!string.IsNullOrWhiteSpace(query.Name))
+        {
+            emailQuery = emailQuery.Where(email => email.Name.Contains(query.Name));
+        }*/
+
+       /* if (!string.IsNullOrWhiteSpace(query.Subject))
+        {
+            emailQuery = emailQuery.Where(email => email.Subject.Contains(query.Subject));
+        }
+*/
+        if (query.Status.HasValue)
+        {
+            emailQuery = emailQuery.Where(email => email.Active == query.Status.Value);
+        }
+
+        var emails = await emailQuery.ToListAsync(cancellationToken);
 
         return new GetEmailsResult(emails);
     }
