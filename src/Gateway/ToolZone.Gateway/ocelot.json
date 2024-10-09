@@ -16,7 +16,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/WeatherForecast",
-      "UpstreamHttpMethod": ["GET"],
+      "UpstreamHttpMethod": [ "GET" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
@@ -40,7 +40,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/Identity/AddRole",
-      "UpstreamHttpMethod": ["POST"],
+      "UpstreamHttpMethod": [ "POST" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
@@ -49,6 +49,178 @@
         "permissions": "ReadUser"
       }
     },
+
+
+
+    //Email Routes
+    //1. GetEmail route
+    {
+      "DownstreamPathTemplate": "/emails",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7090
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/emails",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+
+    //2. GetEmailById route
+    {
+      "DownstreamPathTemplate": "/emails/{id}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7090
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/emails/{id}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+
+    //3. CreateEmail route
+    {
+      "DownstreamPathTemplate": "/emails",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7090
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/emails",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+
+    //4. UpdateEmail route
+    {
+      "DownstreamPathTemplate": "/emails",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7090
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/emails",
+      "UpstreamHttpMethod": [ "Put" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+
+    //5. DetailSendMail route
+    {
+      "DownstreamPathTemplate": "/sent-emails/{id}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7090
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/sent-emails/{id}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+
+    //6. SendMail route
+    {
+      "DownstreamPathTemplate": "/send-email-template",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7090
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/send-email-template",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+
+    //7. SendMailToAll route
+    {
+      "DownstreamPathTemplate": "/send-email-to-all",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7090
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/send-email-to-all",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+
+    //8. SendMail order route
+    {
+      "DownstreamPathTemplate": "/send-email-order",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7090
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/send-email-order",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+
 
     //Catalog Routes
     //1. CreateProduct route
@@ -65,7 +237,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/products",
-      "UpstreamHttpMethod": ["Post"],
+      "UpstreamHttpMethod": [ "Post" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
@@ -85,7 +257,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/products",
-      "UpstreamHttpMethod": ["Get"],
+      "UpstreamHttpMethod": [ "Get" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
@@ -105,7 +277,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/productsForCustomer",
-      "UpstreamHttpMethod": ["Get"],
+      "UpstreamHttpMethod": [ "Get" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
@@ -125,7 +297,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/products/{id}",
-      "UpstreamHttpMethod": ["Get"],
+      "UpstreamHttpMethod": [ "Get" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
@@ -145,7 +317,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/products",
-      "UpstreamHttpMethod": ["Put"],
+      "UpstreamHttpMethod": [ "Put" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
@@ -165,7 +337,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/products/AddColor",
-      "UpstreamHttpMethod": ["Post"],
+      "UpstreamHttpMethod": [ "Post" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
@@ -185,7 +357,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/categories",
-      "UpstreamHttpMethod": ["Get"],
+      "UpstreamHttpMethod": [ "Get" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
@@ -205,7 +377,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/categories/{id}",
-      "UpstreamHttpMethod": ["Get"],
+      "UpstreamHttpMethod": [ "Get" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
@@ -225,7 +397,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/categories",
-      "UpstreamHttpMethod": ["Post"],
+      "UpstreamHttpMethod": [ "Post" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
@@ -245,7 +417,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/categories",
-      "UpstreamHttpMethod": ["Put"],
+      "UpstreamHttpMethod": [ "Put" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
@@ -265,7 +437,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/categories/color/{id}",
-      "UpstreamHttpMethod": ["Get"],
+      "UpstreamHttpMethod": [ "Get" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []

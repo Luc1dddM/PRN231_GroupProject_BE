@@ -7,6 +7,7 @@
             return orders.Select(order => new OrderDto(
                 Id: order.Id.Value,
                 CustomerId: order.CustomerId.Value,
+                TotalPrice: order.TotalPrice, // add
                 ShippingAddress: new AddressDto(order.ShippingAddress.FirstName, 
                                                 order.ShippingAddress.LastName, 
                                                 order.ShippingAddress.Phone, 
