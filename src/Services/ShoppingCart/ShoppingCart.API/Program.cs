@@ -26,7 +26,7 @@ builder.Services.AddStackExchangeRedisCache(opt =>
     opt.Configuration = builder.Configuration.GetConnectionString("Redis");
 });
 
-//Async Communication Services
+//Async Communication Services to Publish Event for other services
 builder.Services.AddMessageBroker(builder.Configuration);
 
 //Cross-cutting Services

@@ -49,6 +49,16 @@ namespace ShoppingCart.API.Repository
             return cart;
         }
 
+        public async Task<CartHeader> GetCartById(string cartId, CancellationToken cancellationToken = default)
+        {
+            var cart = await _repository.GetCartById(cartId, cancellationToken);
+            if (cart is null)
+            {
+                return null;
+            }
+            return cart;
+        }
+
         public async Task<CartHeader> GetCartHeaderByUserId(string userId, CancellationToken cancellationToken = default)
         {
             //we don't cache just the cart header, as we want to keep the full cart object in cache
@@ -202,6 +212,23 @@ namespace ShoppingCart.API.Repository
                     }
                 }
             }
+            return true;
+        }
+
+        public async Task<bool> DeleteCart(string userId, CancellationToken cancellationToken = default)
+        {
+            var cartToDelete = await GetCartHeaderByUserId(userId);
+            var cacheKey = $"cart:{cartToDelete.CreatedBy}";
+
+            if (cartToDelete == null)
+            {
+                return false;
+            }
+
+            await _repository.DeleteCart(userId, cancellationToken);
+
+            await _cache.RemoveAsync(cacheKey, cancellationToken);
+            
             return true;
         }
 

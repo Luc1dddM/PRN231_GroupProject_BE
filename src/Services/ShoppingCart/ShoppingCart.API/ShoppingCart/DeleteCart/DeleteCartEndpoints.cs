@@ -7,9 +7,9 @@
     {
         public void AddRoutes(IEndpointRouteBuilder app)
         {
-            app.MapDelete("/cart/{cartDetailId}", async (string cartDetailId, ISender sender) =>
+            app.MapDelete("/cart/{userId}", async (string userId, ISender sender) =>
             {
-                var result = await sender.Send(new DeleteCartCommand(cartDetailId));
+                var result = await sender.Send(new DeleteCartCommand(userId));
 
                 var response = result.Adapt<DeleteCartResponse>();
 

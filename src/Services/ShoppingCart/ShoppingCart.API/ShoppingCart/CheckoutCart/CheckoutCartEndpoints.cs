@@ -10,7 +10,7 @@
         {
             app.MapPost("/cart/checkout", async (CheckoutCartRequest request, ISender sender) =>
             {
-                var command = request.Adapt<CheckoutcartCommand>();
+                var command = request.Adapt<CheckoutCartCommand>();
 
                 var result = await sender.Send(command);
 

@@ -16,6 +16,7 @@ namespace BuildingBlocks.Messaging.MassTransit
             {
                 config.SetKebabCaseEndpointNameFormatter();
 
+                //if assembly is not null, add consumer for handling event
                 if (assembly != null)
                 {
                     config.AddConsumers(assembly);

@@ -100,5 +100,22 @@
             await _context.SaveChangesAsync(cancellationToken);
             return true;
         }
+
+        public async Task<bool> DeleteCart(string userId, CancellationToken cancellationToken = default)
+        {
+            var cartHeader = await GetCartHeaderByUserId(userId, cancellationToken);
+            _context.CartHeaders.Remove(cartHeader);
+            await _context.SaveChangesAsync(cancellationToken);
+            return true;
+        }
+
+        public async Task<CartHeader> GetCartById(string cartId, CancellationToken cancellationToken = default)
+        {
+            //get cart header and it correspond cart detail 
+            var cHeader = await _context.CartHeaders.Include(ch => ch.CartDetails)
+                                                    .FirstOrDefaultAsync(c => c.CartHeaderId.Equals(cartId), cancellationToken);
+
+            return cHeader;
+        }
     }
 }
