@@ -1,5 +1,5 @@
-﻿using Identity.Application.Identity.Dtos;
-using Identity.Application.Utils;
+﻿using BuildingBlocks.Models;
+using Identity.Application.Identity.Dtos;
 using Identity.Domain.Entities;
 namespace Identity.Application.Identity.Interfaces
 {

@@ -1,6 +1,6 @@
-﻿using Identity.Application.Identity.Dtos;
+﻿using BuildingBlocks.Models;
+using Identity.Application.Identity.Dtos;
 using Identity.Application.Identity.Interfaces;
-using Identity.Application.Utils;
 using Identity.Infrastructure.Configuration;
 using log4net;
 using Microsoft.Extensions.Options;
@@ -89,5 +89,14 @@ namespace Identity.Infrastructure.FacebookAuthentication
 
         }
 
+        Task<BaseResponse<FacebookTokenValidationResponse>> IFacebookAuthService.ValidateFacebookToken(string accessToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<BaseResponse<FacebookUserInfoResponse>> IFacebookAuthService.GetFacebookUserInformation(string accessToken)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using BuildingBlocks.Models;
 using Identity.Application.User.Dtos;
-using Identity.Application.Utils;
 
 namespace Identity.Application.User.Interfaces
 {

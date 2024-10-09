@@ -1,13 +1,11 @@
-version: '3.4'
-
 services:
-  #backing services: toolzone_order Db using sql server Db from Docker 
 
-  #coupon.grpc:
-   # image: ${DOCKER_REGISTRY-}coupongrpc
-    #build:
-     # context: .
-      #dockerfile: Coupon.Grpc\Dockerfile
+  coupon.grpc:
+    image: ${DOCKER_REGISTRY-}coupongrpc
+    build:
+      context: .
+      dockerfile: Services/Coupon/Coupon.Grpc/Dockerfile
 
   messagebroker:
     image: rabbitmq:management 
+

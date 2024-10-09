@@ -1,5 +1,5 @@
-﻿using Identity.Application.RolePermission.Interfaces;
-using Identity.Application.Utils;
+﻿using BuildingBlocks.Models;
+using Identity.Application.RolePermission.Interfaces;
 using Identity.Domain.Entities;
 using Identity.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;

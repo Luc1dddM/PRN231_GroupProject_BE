@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Email.API.Emails.GetEmailList;
 
-public record GetEmailsRequest(); // request get list
+public record GetEmailsRequest(string? Category = null, string? Name = null, string? Subject = null, bool? Status = null);
 public record GetEmailsResponse(IEnumerable<EmailTemplate> Emails);
 
 public class GetEmailTemplatesListEndpoint : ICarterModule
@@ -15,10 +15,8 @@ public class GetEmailTemplatesListEndpoint : ICarterModule
     {
         app.MapGet("/emails", async ([AsParameters] GetEmailsRequest request, ISender sender) =>
         {
-            /*var query = new GetEmailsQuery(request.PageNumber, request.PageSize);*/
 
-            // gửi request lấy ds tới handler
-            var result = await sender.Send(new GetEmailsQuery());
+            var result = await sender.Send(new GetEmailsQuery(request.Category, request.Name, request.Subject, request.Status));
             var response = new GetEmailsResponse(result.Emails);
 
             return Results.Ok(response);

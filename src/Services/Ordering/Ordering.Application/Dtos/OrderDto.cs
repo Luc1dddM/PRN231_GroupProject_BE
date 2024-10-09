@@ -9,6 +9,7 @@ namespace Ordering.Application.Dtos
     public record OrderDto(Guid Id,
                            Guid CustomerId,
                            AddressDto ShippingAddress,
+                           decimal TotalPrice,
                            PaymentDto Payment,
                            OrderStatus Status,
                            List<OrderItemDto> OrderItems,

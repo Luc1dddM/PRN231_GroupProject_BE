@@ -1,6 +1,6 @@
-﻿using Identity.Application.Identity.Dtos;
+﻿using BuildingBlocks.Models;
+using Identity.Application.Identity.Dtos;
 using Identity.Application.Identity.Interfaces;
-using Identity.Application.Utils;
 using Identity.Domain.Enums;
 using Identity.Infrastructure.Configuration;
 using Identity.Infrastructure.Data;
@@ -53,7 +53,7 @@ namespace Identity.Infrastructure.Identity.Services
             catch (Exception ex)
             {
                 _logger.Error(ex.Message, ex);
-                return new BaseResponse<CUser>(null, new List<string> { "Failed to get a response" });
+                return new BaseResponse<CUser>("Failed to get a response");
             }
 
             //Check Account Exist
@@ -74,7 +74,7 @@ namespace Identity.Infrastructure.Identity.Services
                 if (user is not null)
                     return new BaseResponse<CUser>(user);
                 else
-                    return new BaseResponse<CUser>(null, new List<string> { "Unable to link a Local User to a Provider" });
+                    return new BaseResponse<CUser>("Unable to link a Local User to a Provider");
             }
 
             //CHECKS IF THE USER HAS NOT ALREADY BEEN LINKED TO AN IDENTITY PROVIDER
@@ -83,7 +83,7 @@ namespace Identity.Infrastructure.Identity.Services
             if (userGooleProvider is not null)
                 return new BaseResponse<CUser>(userGooleProvider);
             else
-                return new BaseResponse<CUser>(null, new List<string> { "Email Already Used, Please Login By Internal Account" });
+                return new BaseResponse<CUser>("Email Already Used, Please Login By Internal Account");
         }
     }
 }

@@ -19,6 +19,33 @@ public class SendEmailTemplateEndpoint : ICarterModule
     }
     public void AddRoutes(IEndpointRouteBuilder app)
     {
+        app.MapPost("/send-email-order", async (HttpContext httpContext, string orderId, string userEmail, string couponCode, IEmailRepository emailRepository) =>
+        {
+            try
+            {
+                var senderId = httpContext.Request.Headers["UserId"].ToString();
+
+
+                await emailRepository.SendEmailOrder(orderId, userEmail, couponCode);
+
+                return Results.Ok("Email sent successfully using template!");
+            }
+            catch (ValidationException ex)
+            {
+                return Results.Problem("Validation failed: " + ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem("An unexpected error occurred: " + ex.Message);
+            }
+        })
+        .WithName("SendEmailOrder")
+        .Produces(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .WithSummary("Send Email Order")
+        .WithDescription("Sends an email based on the order.");
+
+
         app.MapPost("/send-email-template", async (HttpContext httpContext, string emailTemplateId, string userEmail, string? couponCode, IEmailRepository emailRepository) =>
         {
             try
