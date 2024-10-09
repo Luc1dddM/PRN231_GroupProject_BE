@@ -24,7 +24,14 @@ namespace Catalog.API.Migrations
 
             modelBuilder.Entity("Catalog.API.Models.Category", b =>
                 {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<string>("CategoryId")
+                        .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(450)")
                         .HasDefaultValueSql("(CONVERT([nvarchar](36),newid()))");
@@ -54,7 +61,7 @@ namespace Catalog.API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("CategoryId");
+                    b.HasKey("Id");
 
                     b.HasIndex("CategoryId")
                         .IsUnique();
@@ -64,34 +71,37 @@ namespace Catalog.API.Migrations
                     b.HasData(
                         new
                         {
-                            CategoryId = "3da5cd25-4aa6-41f7-b511-9a79e0a63c1f",
-                            CreatedAt = new DateTime(2024, 9, 30, 8, 57, 25, 502, DateTimeKind.Local).AddTicks(4911),
+                            Id = 1,
+                            CategoryId = "2e167242-59e7-448b-9ebe-893f4c2bc7fb",
+                            CreatedAt = new DateTime(2024, 10, 9, 7, 16, 23, 905, DateTimeKind.Local).AddTicks(3938),
                             CreatedBy = "Test",
                             Name = "Asus",
                             Status = true,
                             Type = "Brand",
-                            UpdatedAt = new DateTime(2024, 9, 30, 8, 57, 25, 502, DateTimeKind.Local).AddTicks(4914),
+                            UpdatedAt = new DateTime(2024, 10, 9, 7, 16, 23, 905, DateTimeKind.Local).AddTicks(3942),
                             UpdatedBy = "Test"
                         },
                         new
                         {
-                            CategoryId = "7dcaa0ae-4576-42e3-bc82-88bb78393e4a",
-                            CreatedAt = new DateTime(2024, 9, 30, 8, 57, 25, 502, DateTimeKind.Local).AddTicks(4917),
+                            Id = 2,
+                            CategoryId = "691ff56c-98fd-45dc-b90d-936dfd9baf56",
+                            CreatedAt = new DateTime(2024, 10, 9, 7, 16, 23, 905, DateTimeKind.Local).AddTicks(3962),
                             CreatedBy = "Test",
                             Name = "Razer",
                             Status = true,
                             Type = "Brand",
-                            UpdatedAt = new DateTime(2024, 9, 30, 8, 57, 25, 502, DateTimeKind.Local).AddTicks(4918),
+                            UpdatedAt = new DateTime(2024, 10, 9, 7, 16, 23, 905, DateTimeKind.Local).AddTicks(3963),
                             UpdatedBy = "Test"
                         });
                 });
 
             modelBuilder.Entity("Catalog.API.Models.Product", b =>
                 {
-                    b.Property<string>("ProductId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(450)")
-                        .HasDefaultValueSql("(CONVERT([nvarchar](36),newid()))");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CreateBy")
                         .IsRequired()
@@ -115,6 +125,12 @@ namespace Catalog.API.Migrations
                     b.Property<float>("Price")
                         .HasColumnType("real");
 
+                    b.Property<string>("ProductId")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(450)")
+                        .HasDefaultValueSql("(CONVERT([nvarchar](36),newid()))");
+
                     b.Property<bool>("Status")
                         .HasColumnType("bit");
 
@@ -125,7 +141,7 @@ namespace Catalog.API.Migrations
                     b.Property<DateTime>("UpdateDate")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("ProductId");
+                    b.HasKey("Id");
 
                     b.HasIndex("ProductId")
                         .IsUnique();
@@ -135,38 +151,41 @@ namespace Catalog.API.Migrations
                     b.HasData(
                         new
                         {
-                            ProductId = "b12da1fc-4bd5-40c3-b445-75b47e6db14b",
+                            Id = 1,
                             CreateBy = "Test",
-                            CreateDate = new DateTime(2024, 9, 30, 8, 57, 25, 502, DateTimeKind.Local).AddTicks(3857),
+                            CreateDate = new DateTime(2024, 10, 9, 7, 16, 23, 905, DateTimeKind.Local).AddTicks(2541),
                             Description = "Razer Pro Click Humanscale Mouse | Wireless",
                             ImageUrl = "Test",
                             Name = "Razer Pro Click Humanscale Mouse | Wireless",
                             Price = 2290000f,
+                            ProductId = "b1267079-b139-44b3-99bb-c6d831c8dda7",
                             Status = true,
                             UpdateBy = "Test",
-                            UpdateDate = new DateTime(2024, 9, 30, 8, 57, 25, 502, DateTimeKind.Local).AddTicks(3868)
+                            UpdateDate = new DateTime(2024, 10, 9, 7, 16, 23, 905, DateTimeKind.Local).AddTicks(2557)
                         },
                         new
                         {
-                            ProductId = "c63003ba-b30d-4f87-9680-b634cab1317c",
+                            Id = 2,
                             CreateBy = "Test",
-                            CreateDate = new DateTime(2024, 9, 30, 8, 57, 25, 502, DateTimeKind.Local).AddTicks(3873),
+                            CreateDate = new DateTime(2024, 10, 9, 7, 16, 23, 905, DateTimeKind.Local).AddTicks(2563),
                             Description = "Razer DeathAdder V2 Pro Mouse | Wireless",
                             ImageUrl = "Test",
                             Name = "Razer DeathAdder V2 Pro Mouse | Wireless",
                             Price = 1990000f,
+                            ProductId = "73a5e39d-e28e-4753-826a-b7439adf14a2",
                             Status = true,
                             UpdateBy = "Test",
-                            UpdateDate = new DateTime(2024, 9, 30, 8, 57, 25, 502, DateTimeKind.Local).AddTicks(3873)
+                            UpdateDate = new DateTime(2024, 10, 9, 7, 16, 23, 905, DateTimeKind.Local).AddTicks(2564)
                         });
                 });
 
             modelBuilder.Entity("Catalog.API.Models.ProductCategory", b =>
                 {
-                    b.Property<string>("ProductCategoryId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(450)")
-                        .HasDefaultValueSql("(CONVERT([nvarchar](36),newid()))");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CategoryId")
                         .IsRequired()
@@ -178,6 +197,12 @@ namespace Catalog.API.Migrations
                     b.Property<string>("CreatedBy")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProductCategoryId")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(450)")
+                        .HasDefaultValueSql("(CONVERT([nvarchar](36),newid()))");
 
                     b.Property<string>("ProductId")
                         .IsRequired()
@@ -196,7 +221,7 @@ namespace Catalog.API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("ProductCategoryId");
+                    b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
 
@@ -213,12 +238,14 @@ namespace Catalog.API.Migrations
                     b.HasOne("Catalog.API.Models.Category", "Category")
                         .WithMany("ProductCategories")
                         .HasForeignKey("CategoryId")
+                        .HasPrincipalKey("CategoryId")
                         .IsRequired()
                         .HasConstraintName("FK_Product_Category_Category");
 
                     b.HasOne("Catalog.API.Models.Product", "Product")
                         .WithMany("ProductCategories")
                         .HasForeignKey("ProductId")
+                        .HasPrincipalKey("ProductId")
                         .IsRequired()
                         .HasConstraintName("FK_Product_Category_Product");
 

@@ -38,6 +38,7 @@
       ],
       "AddHeadersToRequest": {
         "UserId": "Claims[id] > value"
+
       },
       "UpstreamPathTemplate": "/gateway/Identity/AddRole",
       "UpstreamHttpMethod": ["POST"],

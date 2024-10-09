@@ -10,7 +10,6 @@ namespace BuildingBlocks.Messaging.Events
     {
         public string color { get; set; }
         public string productId { get; set; }
-        public bool status { get; set; }
         public int quantity { get; set; }
         public string user { get; set; }
         public bool IsCancel {  get; set; }
