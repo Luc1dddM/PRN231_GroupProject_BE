@@ -1,10 +1,11 @@
-﻿using FluentValidation;
+﻿using BuildingBlocks.Models;
+using FluentValidation;
 
 namespace Ordering.Application.Orders.Commands.CreateOrder
 {
     public record CreateOrderCommand(OrderDtoRequest Order) : ICommand<CreateOrderResult>;
 
-    public record CreateOrderResult(Guid Id);
+    public record CreateOrderResult(BaseResponse<OrderDto> Result);
 
     public class CreateOrderCommandValidator : AbstractValidator<CreateOrderCommand>
     {

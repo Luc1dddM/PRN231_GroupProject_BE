@@ -3,7 +3,6 @@ using Identity.Application.Email.Interfaces;
 using Identity.Application.Identity.Dtos;
 using Identity.Application.Identity.Interfaces;
 using Identity.Application.RolePermission.Interfaces;
-using Identity.Application.Utils;
 using Identity.Domain.Entities;
 using Identity.Domain.Enums;
 using Identity.Infrastructure.Data;

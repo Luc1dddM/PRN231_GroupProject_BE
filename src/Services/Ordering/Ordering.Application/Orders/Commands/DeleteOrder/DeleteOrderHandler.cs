@@ -1,4 +1,6 @@
-﻿namespace Ordering.Application.Orders.Commands.DeleteOrder
+﻿using BuildingBlocks.Models;
+
+namespace Ordering.Application.Orders.Commands.DeleteOrder
 {
     public class DeleteOrderHandler : ICommandHandler<DeleteOrderCommand, DeleteOrderResult>
     {
@@ -14,24 +16,48 @@
             //Delete Order entity from command object
             //save to database
             //return result
-
-            //find order ot delete
-            var orderId = OrderId.Of(command.OrderId);
-
-            //when we are passing the orderId, orderId is a primary key and the type is OrderId strongly type ID
-            //That's why Entity Framework core expecting this strongly type ID
-            //When seeking the table, it has conversion definition into configurations that is getting the great value and seek table with the great value.
-            var order = await _context.Orders.FindAsync([orderId], cancellationToken: cancellationToken);
-
-            if (order is null)
+            try
             {
-                throw new OrderNotFoundException(command.OrderId);
+                //find order ot delete
+                var orderId = OrderId.Of(command.EntityId);
+
+                //when we are passing the orderId, orderId is a primary key and the type is OrderId strongly type ID
+                //That's why Entity Framework core expecting this strongly type ID
+                //When seeking the table, it has conversion definition into configurations that is getting the great value and seek table with the great value.
+                var order = await _context.Orders.FirstOrDefaultAsync(o => o.EntityId == orderId, cancellationToken: cancellationToken);
+
+                if (order is null)
+                {
+                    throw new OrderNotFoundException(command.EntityId);
+                }
+
+                _context.Orders.Remove(order);
+                await _context.SaveChangesAsync(cancellationToken);
+
+                return new DeleteOrderResult(new BaseResponse<object>
+                {
+                    IsSuccess = true,
+                    Message = "Order Delete Successful."
+                });
             }
+            catch (OrderNotFoundException e)
+            {
+                // Catch and return specific error message for 404
+                return new DeleteOrderResult(new BaseResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = $"Order with ID {OrderId.Of(command.EntityId)} not found."
+                });
+            }
+            catch (Exception e)
+            {
 
-            _context.Orders.Remove(order);
-            await _context.SaveChangesAsync(cancellationToken);
-
-            return new DeleteOrderResult(true);
+                return new DeleteOrderResult(new BaseResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = e.Message
+                });
+            }
         }
     }
 }

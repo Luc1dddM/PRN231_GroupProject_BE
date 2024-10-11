@@ -1,4 +1,5 @@
-﻿using Ordering.Application.Orders.Commands.DeleteOrder;
+﻿using BuildingBlocks.Models;
+using Ordering.Application.Orders.Commands.DeleteOrder;
 
 namespace Ordering.API.Endpoints
 {
@@ -8,20 +9,36 @@ namespace Ordering.API.Endpoints
     //- Returns a success or not found response.
 
     //public record DeleteOrderRequest(Guid Id);
-    public record DeleteOrderResponse(bool IsSuccess);
+    public record DeleteOrderResponse(BaseResponse<object> Response);
 
 
     public class DeleteOrder : ICarterModule
     {
         public void AddRoutes(IEndpointRouteBuilder app)
-        {
-            app.MapDelete("/orders/{id}", async (Guid Id, ISender sender) =>
+        {   //the "orderId" in the route must be identical as the one need to be send 
+            app.MapDelete("/orders/{orderId}", async (Guid orderId, ISender sender) =>
             {
-                var result = await sender.Send(new DeleteOrderCommand(Id));
+                try
+                {
+                    var result = await sender.Send(new DeleteOrderCommand(orderId));
 
-                var response = result.Adapt<DeleteOrderResponse>();
+                    if (result.Result.IsSuccess)
+                    {
+                        return Results.Ok(new DeleteOrderResponse(result.Result));
+                    }
+                    return Results.BadRequest(new DeleteOrderResponse(result.Result));
+                }
+                catch (Exception e)
+                {
+                    // Return 500 with the custom BaseResponse format
+                    var errorResponse = new BaseResponse<object>
+                    {
+                        IsSuccess = false,
+                        Message = e.Message
+                    };
 
-                return Results.Ok(response);
+                    return Results.Json(new DeleteOrderResponse(errorResponse), statusCode: StatusCodes.Status500InternalServerError);
+                }
             })
             .WithName("DeleteOrder")
             .Produces<DeleteOrderResponse>(StatusCodes.Status200OK)

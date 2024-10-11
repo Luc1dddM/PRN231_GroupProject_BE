@@ -20,11 +20,11 @@
 
 
 
-        public static Order Create(OrderId id, CustomerId customerId, Address shippingAddress, Payment payment, string couponId)
+        public static Order Create(OrderId orderId, CustomerId customerId, Address shippingAddress, Payment payment, string couponId)
         {
             var order = new Order
             {
-                Id = id,
+                EntityId = orderId,
                 CustomerId = customerId,
                 ShippingAddress = shippingAddress,
                 Payment = payment,
@@ -48,12 +48,12 @@
 
 
         //this method for adding OrderItem in the Order
-        public void Add(ProductId productId, int quantity, decimal price, string color)
+        public void Add(ProductId productId, string productCategoryId, int quantity, decimal price, string color)
         {
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity);
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(price);
 
-            var orderItem = new OrderItem(Id, productId, quantity, price, color);
+            var orderItem = new OrderItem(EntityId, productId, productCategoryId, quantity, price, color);
             _orderItems.Add(orderItem); //this Add() method belong to the List<>, like: List<OrderItems> list => list.Add(newOrderItems)
 
             // Update total price when adding an item

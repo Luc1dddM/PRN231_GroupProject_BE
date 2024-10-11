@@ -1,7 +1,9 @@
-﻿namespace ShoppingCart.API.ShoppingCart.CheckoutCart
+﻿using ShoppingCart.API.ShoppingCart.DeleteCart;
+
+namespace ShoppingCart.API.ShoppingCart.CheckoutCart
 {
     public record CheckoutCartRequest(CartCheckoutDto CartCheckoutDto);
-    public record CheckoutCartResponse(bool IsSuccess);
+    public record CheckoutCartResponse(BaseResponse<object> Response);
 
 
     public class CheckoutCartEndpoints : ICarterModule
@@ -10,13 +12,30 @@
         {
             app.MapPost("/cart/checkout", async (CheckoutCartRequest request, ISender sender) =>
             {
-                var command = request.Adapt<CheckoutcartCommand>();
+                try
+                {
+                    var command = request.Adapt<CheckoutCartCommand>();
 
-                var result = await sender.Send(command);
+                    var result = await sender.Send(command);
 
-                var response = result.Adapt<CheckoutCartResponse>();
+                    if (result.Result.IsSuccess)
+                    {
+                        return Results.Ok(new CheckoutCartResponse(result.Result));
+                    }
+                    return Results.BadRequest(new CheckoutCartResponse(result.Result));
+                }
+                catch (Exception e)
+                {
+                    // Return 500 with the custom BaseResponse format
+                    var errorResponse = new BaseResponse<object>
+                    {
+                        IsSuccess = false,
+                        Message = e.Message
+                    };
 
-                return Results.Ok(response);
+                    return Results.Json(new CheckoutCartResponse(errorResponse), statusCode: StatusCodes.Status500InternalServerError);
+                }
+
             })
             .WithName("CheckoutBasket")
             .Produces<CheckoutCartResponse>(StatusCodes.Status201Created)

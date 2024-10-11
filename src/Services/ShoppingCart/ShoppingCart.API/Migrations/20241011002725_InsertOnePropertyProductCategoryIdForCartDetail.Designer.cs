@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShoppingCart.API.Models;
 
@@ -11,9 +12,11 @@ using ShoppingCart.API.Models;
 namespace ShoppingCart.API.Migrations
 {
     [DbContext(typeof(CartDBContext))]
-    partial class CartDBContextModelSnapshot : ModelSnapshot
+    [Migration("20241011002725_InsertOnePropertyProductCategoryIdForCartDetail")]
+    partial class InsertOnePropertyProductCategoryIdForCartDetail
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

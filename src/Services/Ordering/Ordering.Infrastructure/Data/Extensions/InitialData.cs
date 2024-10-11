@@ -21,8 +21,8 @@ namespace Ordering.Infrastructure.Data.Extensions
                                 shippingAddress: address1,
                                 payment1,
                                 null);
-                order1.Add(ProductId.Of(new Guid("5334c996-8457-4cf0-815c-ed2b77c4ff61")), 2, 500, "Red");
-                order1.Add(ProductId.Of(new Guid("c67d6323-e8b1-4bdf-9a75-b0d0d2e7e914")), 1, 400, "Green");
+                order1.Add(ProductId.Of(new Guid("5334c996-8457-4cf0-815c-ed2b77c4ff61")), "6885EBEB-5104-4D75-AEF6-52044131632F", 2, 500, "Red");
+                order1.Add(ProductId.Of(new Guid("c67d6323-e8b1-4bdf-9a75-b0d0d2e7e914")), "3B9CEBB9-305B-4C29-B1D3-B29D2C82622D", 1, 400, "Green");
 
                 var order2 = Order.Create(
                                 OrderId.Of(Guid.NewGuid()),
@@ -30,8 +30,8 @@ namespace Ordering.Infrastructure.Data.Extensions
                                 shippingAddress: address2,
                                 payment2,
                                 "68cc65ca-0829-4032-9374-80db70631f65");
-                order2.Add(ProductId.Of(new Guid("4f136e9f-ff8c-4c1f-9a33-d12f689bdab8")), 1, 650, "Black");
-                order2.Add(ProductId.Of(new Guid("6ec1297b-ec0a-4aa1-be25-6726e3b51a27")), 2, 450, "Royal Blue");
+                order2.Add(ProductId.Of(new Guid("4f136e9f-ff8c-4c1f-9a33-d12f689bdab8")), "36CF519B-52CA-4D8C-BC89-581021126D42", 1, 650, "Black");
+                order2.Add(ProductId.Of(new Guid("6ec1297b-ec0a-4aa1-be25-6726e3b51a27")), "5F5BE5EB-DD39-477D-A56D-40D28EDEF44A", 2, 450, "Royal Blue");
 
                 return new List<Order> { order1, order2 };
             }

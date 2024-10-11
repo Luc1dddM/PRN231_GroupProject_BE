@@ -1,4 +1,5 @@
-﻿using Ordering.Application.Orders.Commands.UpdateOrder;
+﻿using BuildingBlocks.Models;
+using Ordering.Application.Orders.Commands.UpdateOrder;
 
 namespace Ordering.API.Endpoints
 {
@@ -7,8 +8,8 @@ namespace Ordering.API.Endpoints
     //- Sends the command for processing.
     //- Returns a success or error response based on the outcome.
 
-    public record UpdateOrderRequest(OrderDto Order);
-    public record UpdateOrderResponse(bool IsSuccess);
+    public record UpdateOrderRequest(OrderDtoUpdateRequest Order);
+    public record UpdateOrderResponse(BaseResponse<OrderDto> Response);
 
     public class UpdateOrder : ICarterModule
     {
@@ -16,13 +17,30 @@ namespace Ordering.API.Endpoints
         {
             app.MapPut("/orders", async (UpdateOrderRequest request, ISender sender) =>
             {
-                var command = request.Adapt<UpdateOrderCommand>();
+                try
+                {
+                    var command = request.Adapt<UpdateOrderCommand>();
 
-                var result = await sender.Send(command);
+                    var result = await sender.Send(command);
 
-                var response = result.Adapt<UpdateOrderResponse>();
+                    if (result.Result.IsSuccess)
+                    {
+                        return Results.Ok(new UpdateOrderResponse(result.Result));
+                    }
+                    return Results.BadRequest(new UpdateOrderResponse(result.Result));
+                    
+                }
+                catch (Exception e)
+                {
+                    // Return 500 with the custom BaseResponse format
+                    var errorResponse = new BaseResponse<OrderDto>
+                    {
+                        IsSuccess = false,
+                        Message = e.Message
+                    };
 
-                return Results.Ok(response);
+                    return Results.Json(new UpdateOrderResponse(errorResponse), statusCode: StatusCodes.Status500InternalServerError);
+                }
             })
             .WithName("UpdateOrder")
             .Produces<UpdateOrderResponse>(StatusCodes.Status200OK)

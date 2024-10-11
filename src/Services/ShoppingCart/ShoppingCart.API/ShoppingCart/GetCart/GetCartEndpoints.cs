@@ -1,7 +1,9 @@
-﻿namespace ShoppingCart.API.ShoppingCart.GetCart
+﻿using ShoppingCart.API.ShoppingCart.StoreCart;
+
+namespace ShoppingCart.API.ShoppingCart.GetCart
 {
 
-    public record GetCartResponse(CartHeaderDto CartHeader, ICollection<CartDetailDto> CartDetails);
+    public record GetCartResponse(BaseResponse<CartDto> Response);
 
     public class GetCartEndpoints : ICarterModule
     {
@@ -9,11 +11,29 @@
         {
             app.MapGet("/cart/{userId}", async (string userId, ISender sender) =>
             {
-                var result = await sender.Send(new GetCartQuery(userId));
+                try
+                {
+                    var result = await sender.Send(new GetCartQuery(userId));
 
-                var response = new GetCartResponse(result.Cart.CartHeader, result.Cart.CartDetails);
+                    if (result.Result.IsSuccess)
+                    {
+                        return Results.Ok(new GetCartResponse(result.Result));
+                    }
 
-                return response;
+                    return Results.BadRequest(new GetCartResponse(result.Result));
+                }
+                catch (Exception ex)
+                {
+                    // Return 500 with the custom BaseResponse format
+                    var errorResponse = new BaseResponse<CartDto>
+                    {
+                        IsSuccess = false,
+                        Message = ex.Message
+                    };
+
+                    return Results.Json(new GetCartResponse(errorResponse), statusCode: StatusCodes.Status500InternalServerError);
+                }
+
             })
             .WithName("GetCartByUserId")
             .Produces<GetCartResponse>(StatusCodes.Status200OK)
