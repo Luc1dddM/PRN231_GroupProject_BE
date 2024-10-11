@@ -2,11 +2,15 @@ using Ordering.API;
 using Ordering.Application;
 using Ordering.Infrastructure;
 using Ordering.Infrastructure.Data.Extensions;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 
 //add services to container
+
+//Add  HttpContext
+builder.Services.AddHttpContextAccessor();
 
 //-------------------------------
 //Application - EF core

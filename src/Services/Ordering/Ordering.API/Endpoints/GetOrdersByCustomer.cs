@@ -1,5 +1,7 @@
 ﻿
+using BuildingBlocks.Models;
 using Ordering.Application.Orders.Queries.GetOrdersByCustomer;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Ordering.API.Endpoints
 {
@@ -8,7 +10,7 @@ namespace Ordering.API.Endpoints
     //- Returns the list of orders for that customer.
 
     //public record GetOrdersByCustomerRequest(Guid CustomerId);
-    public record GetOrdersByCustomerResponse(IEnumerable<OrderDto> Orders);
+    public record GetOrdersByCustomerResponse(BaseResponse<IEnumerable<OrderDto>> Response);
 
     public class GetOrdersByCustomer : ICarterModule
     {
@@ -16,11 +18,32 @@ namespace Ordering.API.Endpoints
         {
             app.MapGet("/orders/customer/{customerId}", async (Guid customerId, ISender sender) =>
             {
-                var result = await sender.Send(new GetOrdersByCustomerQuery(customerId));
+                try
+                {
+                    var result = await sender.Send(new GetOrdersByCustomerQuery(customerId));
 
-                var response = result.Adapt<GetOrdersByCustomerResponse>();
+                    if (result.Result.IsSuccess)
+                    {
+                        return Results.Ok(new GetOrdersByCustomerResponse(result.Result));
+                    }
+                    if (result.Result.Message.Contains($"User with Id {customerId} does not have any order yet."))
+                    {
+                        return Results.NotFound(new GetOrdersByCustomerResponse(result.Result));
+                    }
+                    return Results.BadRequest(new GetOrdersByCustomerResponse(result.Result));
+                }
+                catch (Exception e)
+                {
+                    // Return 500 with the custom BaseResponse format
+                    var errorResponse = new BaseResponse<IEnumerable<OrderDto>>
+                    {
+                        IsSuccess = false,
+                        Message = e.Message
+                    };
 
-                return Results.Ok(response);
+                    return Results.Json(new GetOrdersByCustomerResponse(errorResponse), statusCode: StatusCodes.Status500InternalServerError);
+                }
+
             })
             .WithName("GetOrdersByCustomer")
             .Produces<GetOrdersByCustomerResponse>(StatusCodes.Status200OK)

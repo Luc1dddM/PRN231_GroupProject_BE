@@ -1,47 +1,81 @@
 ﻿using BuildingBlocks.Messaging.Events;
+using BuildingBlocks.Models;
 using Coupon.Grpc;
 using Mapster;
 using MassTransit;
+using Microsoft.AspNetCore.Http;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Ordering.Application.Orders.Commands.CreateOrder
 {
     public class CreateOrderHandler : ICommandHandler<CreateOrderCommand, CreateOrderResult>
     {
         private readonly IApplicationDbContext _context;
-
+        private readonly IHttpContextAccessor _contextAccessor;
         private readonly CouponProtoService.CouponProtoServiceClient _couponProto;
         private readonly IPublishEndpoint _publishEndpoint;
-        
+
         public CreateOrderHandler(
-            IApplicationDbContext context, 
+            IApplicationDbContext context,
             CouponProtoService.CouponProtoServiceClient couponProto,
-            IPublishEndpoint publishEndpoint)
+            IPublishEndpoint publishEndpoint,
+            IHttpContextAccessor contextAccessor)
         {
             _context = context;
             _couponProto = couponProto;
+            _contextAccessor = contextAccessor;
             _publishEndpoint = publishEndpoint;
         }
 
         public async Task<CreateOrderResult> Handle(CreateOrderCommand command, CancellationToken cancellationToken)
         {
-            // Add debug logging
-            Console.WriteLine($"CouponCode in command: {command.Order.CouponCode}");
-            //create Order entity from command object
-            var order = await CreateNewOrder(command.Order);
+            try
+            {
+                // Try to get userId from HTTP context first
+                var userId = _contextAccessor.HttpContext?.Request.Headers["UserId"].ToString();
 
-            //save to database
-            _context.Orders.Add(order);
+                // If userId is null (RabbitMQ scenario), use CustomerId from the command
+                if (string.IsNullOrEmpty(userId))
+                {
+                    userId = command.Order.CustomerId.ToString();
+                }
 
-            await _context.SaveChangesAsync(cancellationToken);
+                // Add debug logging
+                Console.WriteLine($"CouponCode in command: {command.Order.CouponCode}");
+                //create Order entity from command object
+                var order = await CreateNewOrder(command.Order, userId);
 
-            //return result 
-            return new CreateOrderResult(order.Id.Value);
+                //save to database
+                _context.Orders.Add(order);
+
+                await _context.SaveChangesAsync(cancellationToken);
+
+                
+                //return result 
+                return new CreateOrderResult(new BaseResponse<OrderDto>
+                {
+                    IsSuccess = true,
+                    Result = order.ToOrderDto(),
+                    Message = "Order Created Successful."
+                });
+            }
+            catch (Exception e)
+            {
+
+                return new CreateOrderResult(new BaseResponse<OrderDto>
+                {
+                    IsSuccess = false,
+                    Message = e.Message
+                });
+            }
+
         }
 
 
 
-        private async Task<Order> CreateNewOrder(OrderDtoRequest orderDto)
+        private async Task<Order> CreateNewOrder(OrderDtoRequest orderDto, string userId)
         {
+
             var shippingAddress = Address.Of(orderDto.ShippingAddress.FirstName,
                                              orderDto.ShippingAddress.LastName,
                                              orderDto.ShippingAddress.Phone,
@@ -52,8 +86,8 @@ namespace Ordering.Application.Orders.Commands.CreateOrder
                                              orderDto.ShippingAddress.Ward);
 
             var newOrder = Order.Create(
-                id: OrderId.Of(Guid.NewGuid()),
-                customerId: CustomerId.Of(orderDto.CustomerId),
+                orderId: OrderId.Of(Guid.NewGuid()),
+                customerId: CustomerId.Of(Guid.Parse(userId)),
                 shippingAddress: shippingAddress,
                 payment: Payment.Of(orderDto.Payment.CardName,
                                     orderDto.Payment.CardNumber,
@@ -65,7 +99,7 @@ namespace Ordering.Application.Orders.Commands.CreateOrder
 
             foreach (var orderItemDto in orderDto.OrderItems)
             {
-                newOrder.Add(ProductId.Of(orderItemDto.ProductId), orderItemDto.Quantity, orderItemDto.Price, orderItemDto.Color);
+                newOrder.Add(ProductId.Of(orderItemDto.ProductId), orderItemDto.ProductCategoryId, orderItemDto.Quantity, orderItemDto.Price, orderItemDto.Color);
             }
 
             var totalPrice = newOrder.TotalPrice;

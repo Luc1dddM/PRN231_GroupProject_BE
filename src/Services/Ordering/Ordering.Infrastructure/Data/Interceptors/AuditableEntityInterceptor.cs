@@ -1,11 +1,24 @@
-﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Logging;
+using Ordering.Application.Interfaces;
+using System.Security.Claims;
 
 
 namespace Ordering.Infrastructure.Data.Interceptors
 {
     public class AuditableEntityInterceptor : SaveChangesInterceptor
     {
+        private readonly ICurrentUserService _currentUserService;
+        private readonly ILogger<AuditableEntityInterceptor> _logger;
+
+        public AuditableEntityInterceptor(ICurrentUserService currentUserService, ILogger<AuditableEntityInterceptor> logger)
+        {
+            _currentUserService = currentUserService;
+            _logger = logger;
+        }
+
         public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
         {
             UpdateEntities(eventData.Context);
@@ -21,20 +34,22 @@ namespace Ordering.Infrastructure.Data.Interceptors
 
         public void UpdateEntities(DbContext? context)
         {
+            var userId = _currentUserService.GetCurrentUserId();
+
             if (context == null) return;
 
             foreach (var entry in context.ChangeTracker.Entries<IEntity>())
             {
                 if (entry.State == EntityState.Added)
                 {
-                    entry.Entity.CreatedBy = "USER_ID"; //change it to user name by get username with Id to store 
-                    entry.Entity.CreatedAt = DateTime.UtcNow;
+                    entry.Entity.CreatedBy = userId; //change it to user name by get username with Id to store 
+                    entry.Entity.CreatedAt = DateTime.Now;
                 }
 
                 if (entry.State == EntityState.Added || entry.State == EntityState.Modified || entry.HasChangedOwnedEntities())
                 {
-                    entry.Entity.LastModifiedBy = "USER_ID";
-                    entry.Entity.LastModified = DateTime.UtcNow;
+                    entry.Entity.LastModifiedBy = userId;
+                    entry.Entity.LastModified = DateTime.Now;
                 }
             }
         }
@@ -49,4 +64,5 @@ namespace Ordering.Infrastructure.Data.Interceptors
                 r.TargetEntry.Metadata.IsOwned() &&
                 (r.TargetEntry.State == EntityState.Added || r.TargetEntry.State == EntityState.Modified));
     }
+
 }

@@ -1,6 +1,8 @@
-﻿namespace Ordering.Application.Orders.Queries.GetOrders
+﻿using BuildingBlocks.Models;
+
+namespace Ordering.Application.Orders.Queries.GetOrders
 {
     public record GetOrdersQuery() : IQuery<GetOrdersResult>;
 
-    public record GetOrdersResult(IEnumerable<OrderDto> Orders);
+    public record GetOrdersResult(BaseResponse<IEnumerable<OrderDto>> Result);
 }

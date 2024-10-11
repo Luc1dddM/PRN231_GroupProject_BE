@@ -5,6 +5,9 @@ var builder = WebApplication.CreateBuilder(args);
 //*add services to container
 var assembly = typeof(Program).Assembly;
 
+//Add  HttpContext
+builder.Services.AddHttpContextAccessor();
+
 //Application Services
 builder.Services.AddCarter();
 builder.Services.AddMediatR(config =>

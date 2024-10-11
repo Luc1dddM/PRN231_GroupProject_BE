@@ -13,8 +13,8 @@ using Ordering.Infrastructure.Data;
 namespace Ordering.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241005084955_InitialDb")]
-    partial class InitialDb
+    [Migration("20241009170654_InitOrderDb")]
+    partial class InitOrderDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -28,8 +28,11 @@ namespace Ordering.Infrastructure.Migrations
 
             modelBuilder.Entity("Ordering.Domain.Models.Order", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CouponId")
                         .HasColumnType("nvarchar(max)");
@@ -41,6 +44,9 @@ namespace Ordering.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("CustomerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("EntityId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("LastModified")
@@ -132,13 +138,19 @@ namespace Ordering.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EntityId")
+                        .IsUnique();
+
                     b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("Ordering.Domain.Models.OrderItem", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Color")
                         .IsRequired()
@@ -149,6 +161,9 @@ namespace Ordering.Infrastructure.Migrations
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("EntityId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("LastModified")
                         .HasColumnType("datetime2");
@@ -162,6 +177,10 @@ namespace Ordering.Infrastructure.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("ProductCategoryId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uniqueidentifier");
 
@@ -169,6 +188,10 @@ namespace Ordering.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EntityId")
+                        .IsUnique()
+                        .HasFilter("[EntityId] IS NOT NULL");
 
                     b.HasIndex("OrderId");
 
@@ -180,6 +203,7 @@ namespace Ordering.Infrastructure.Migrations
                     b.HasOne("Ordering.Domain.Models.Order", null)
                         .WithMany("OrderItems")
                         .HasForeignKey("OrderId")
+                        .HasPrincipalKey("EntityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
