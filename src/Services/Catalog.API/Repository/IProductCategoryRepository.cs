@@ -9,9 +9,10 @@ namespace Catalog.API.Repository
         public void CreateProductCategories(ProductCategory productCategory, string brand, string device, string user);
 
         //Update
-        public void UpdateColor(string brand, string productId, bool status, int quantity, string user);
+        public void UpdateColor(string color, string productId, bool status, int quantity, string user);
         public void UpdateBrand(string brand, string productId, bool status, string user);
         public void UpdateDevice(string device, string productId, bool status, string user);
+        public Task UpdateQuantityForOrder(string color, string productId, int quantity, string user, bool isCancel);
 
         //Disable
         public void DisableByCategory(string CategoryId, string user);

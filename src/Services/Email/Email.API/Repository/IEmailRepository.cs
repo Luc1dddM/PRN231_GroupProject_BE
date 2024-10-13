@@ -1,4 +1,6 @@
-﻿using Email.Models;
+﻿using Email.API.Models;
+using Email.DTOs;
+using Email.Models;
 
 namespace Email.API.Repository
 {
@@ -15,8 +17,14 @@ namespace Email.API.Repository
         // send by template
         public Task SendEmailByEmailTemplate(EmailTemplate template, string senderId, string to);
 
+        // send email by order
+        public Task SendEmailOrder(string orderId, string userEmail, string couponCode);
 
-
+        // crud email
+        public Task<EmailListDTO> GetList(string[] statusesParam, string[] categoriesParam, string searchterm, string sortBy, string sortOrder, int pageNumberParam, int pageSizeParam);
+        public Task<List<EmailTemplate>> GetList();
+        public Task<EmailTemplate> AddEmailTemplate(EmailTemplate newEmailTemplate);
+        public Task<EmailTemplate> UpdateEmailTemplate(EmailTemplate newEmailTemplate);
         public Task<EmailTemplate> GetEmailTemplateById(string id);
     }
 }

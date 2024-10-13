@@ -8,6 +8,7 @@
         public int Quantity { get; set; } = default!;
         public string Color { get; set; } = null!;
         public double Price { get; set; } = default!;
+        public string ProductCategoryId { get; set; } = default!;
         public string CartHeaderId { get; set; } = null!;
     }
 }

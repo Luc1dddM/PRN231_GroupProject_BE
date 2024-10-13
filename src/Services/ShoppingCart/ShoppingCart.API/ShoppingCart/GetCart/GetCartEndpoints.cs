@@ -1,7 +1,7 @@
 ﻿namespace ShoppingCart.API.ShoppingCart.GetCart
 {
 
-    public record GetCartResponse(CartHeaderDto CartHeader, ICollection<CartDetailDto> CartDetails);
+    public record GetCartResponse(BaseResponse<CartDto> Response);
 
     public class GetCartEndpoints : ICarterModule
     {
@@ -9,11 +9,12 @@
         {
             app.MapGet("/cart/{userId}", async (string userId, ISender sender) =>
             {
+
                 var result = await sender.Send(new GetCartQuery(userId));
 
-                var response = new GetCartResponse(result.Cart.CartHeader, result.Cart.CartDetails);
 
-                return response;
+                return Results.Ok(new GetCartResponse(result.Result));
+
             })
             .WithName("GetCartByUserId")
             .Produces<GetCartResponse>(StatusCodes.Status200OK)

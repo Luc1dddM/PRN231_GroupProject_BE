@@ -3,8 +3,13 @@ using Coupon.Grpc;
 using Email.API.Models;
 using Email.API.Repository;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
+using Email.API;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddMessageBroker(builder.Configuration, Assembly.GetExecutingAssembly());
+
 
 // Config DB
 builder.Services.AddDbContext<Prn231GroupProjectContext>(options =>
@@ -18,10 +23,13 @@ builder.Services.AddCors(options =>
                           .AllowAnyHeader());
 });
 
+//Add  HttpContext
+builder.Services.AddHttpContextAccessor();
+
 
 builder.Services.AddGrpcClient<CouponProtoService.CouponProtoServiceClient>(options =>
 {
-    options.Address = new Uri("https://localhost:3010");
+    options.Address = new Uri("https://localhost:7003");
 });
 
 builder.Services.AddCarter();

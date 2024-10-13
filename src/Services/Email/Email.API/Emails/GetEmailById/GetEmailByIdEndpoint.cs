@@ -1,4 +1,6 @@
-﻿using Carter;
+﻿using BuildingBlocks.Models;
+using Carter;
+using Email.API.Repository;
 using Email.Models;
 using MediatR;
 
@@ -11,26 +13,12 @@ public class GetEmailByIdEndpoint : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/emails/{id}", async (string id, ISender sender) =>
+        app.MapGet("/emails/{id}", async (string id, IEmailRepository emailRepository) =>
         {
-            try
-            {
-                var result = await sender.Send(new GetEmailByIdQuery(id));
+            var result = await emailRepository.GetEmailTemplateById(id);
+            var response = new GetEmailByIdResponse(result);
 
-                var response = new GetEmailByIdResponse(result.EmailTemplate);
-
-                return Results.Ok(response);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                // Trả về 404 Not Found với thông báo lỗi nếu không tìm thấy email
-                return Results.NotFound(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                // Xử lý các ngoại lệ không mong muốn khác
-                return Results.Problem("An unexpected error occurred: " + ex.Message);
-            }
+            return Results.Ok(new BaseResponse<GetEmailByIdResponse>(response));
         })
         .WithName("GetEmailById")
         .Produces<GetEmailByIdResponse>(StatusCodes.Status200OK)

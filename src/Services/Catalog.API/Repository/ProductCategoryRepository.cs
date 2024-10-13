@@ -360,5 +360,37 @@ namespace Catalog.API.Repository
                 throw new Exception(ex.Message);
             }
         }
+
+        public Task UpdateQuantityForOrder(string color, string productId, int quantity, string user, bool isCancel)
+        {
+
+            try
+            {
+                ProductCategory newProductCategory = _dbContext.ProductCategories.FirstOrDefault(c => c.CategoryId.Equals(color) && c.ProductId.Equals(productId));
+                newProductCategory.Updatedby = user;
+                newProductCategory.UpdatedAt = DateTime.Now;
+                
+                newProductCategory.Quantity = 
+                    isCancel? 
+                    newProductCategory.Quantity + quantity : 
+                    newProductCategory.Quantity - quantity;
+
+
+                if (quantity != 0)
+                {
+                    newProductCategory.Status = true;
+                }
+                else
+                {
+                    newProductCategory.Status = false;
+                }
+                _dbContext.SaveChanges();
+                return Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }

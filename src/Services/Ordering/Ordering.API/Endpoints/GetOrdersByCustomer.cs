@@ -1,5 +1,7 @@
 ﻿
+using BuildingBlocks.Models;
 using Ordering.Application.Orders.Queries.GetOrdersByCustomer;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Ordering.API.Endpoints
 {
@@ -8,7 +10,7 @@ namespace Ordering.API.Endpoints
     //- Returns the list of orders for that customer.
 
     //public record GetOrdersByCustomerRequest(Guid CustomerId);
-    public record GetOrdersByCustomerResponse(IEnumerable<OrderDto> Orders);
+    public record GetOrdersByCustomerResponse(BaseResponse<IEnumerable<OrderDto>> Response);
 
     public class GetOrdersByCustomer : ICarterModule
     {
@@ -16,16 +18,14 @@ namespace Ordering.API.Endpoints
         {
             app.MapGet("/orders/customer/{customerId}", async (Guid customerId, ISender sender) =>
             {
+
                 var result = await sender.Send(new GetOrdersByCustomerQuery(customerId));
 
-                var response = result.Adapt<GetOrdersByCustomerResponse>();
+                return Results.Ok(new GetOrdersByCustomerResponse(result.Result));
 
-                return Results.Ok(response);
             })
             .WithName("GetOrdersByCustomer")
             .Produces<GetOrdersByCustomerResponse>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status404NotFound)
             .WithSummary("Get Orders By Customer")
             .WithDescription("Get Orders By Customer");
         }
