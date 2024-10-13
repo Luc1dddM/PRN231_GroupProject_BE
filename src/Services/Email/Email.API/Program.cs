@@ -3,8 +3,13 @@ using Coupon.Grpc;
 using Email.API.Models;
 using Email.API.Repository;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
+using Email.API;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddMessageBroker(builder.Configuration, Assembly.GetExecutingAssembly());
+
 
 // Config DB
 builder.Services.AddDbContext<Prn231GroupProjectContext>(options =>
@@ -17,6 +22,9 @@ builder.Services.AddCors(options =>
                           .AllowAnyMethod()
                           .AllowAnyHeader());
 });
+
+//Add  HttpContext
+builder.Services.AddHttpContextAccessor();
 
 
 builder.Services.AddGrpcClient<CouponProtoService.CouponProtoServiceClient>(options =>

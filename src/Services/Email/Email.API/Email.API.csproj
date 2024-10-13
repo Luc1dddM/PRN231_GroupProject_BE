@@ -5,8 +5,10 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>0f4d496c-6c4b-4934-b200-adbfcb40a3bb</UserSecretsId>
-    <DockerDefaultTargetOS>Windows</DockerDefaultTargetOS>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..\..</DockerfileContext>
+    <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
+    <EnableSdkContainerDebugging>True</EnableSdkContainerDebugging>
   </PropertyGroup>
 
 	<ItemGroup>
@@ -15,6 +17,8 @@
 		<PackageReference Include="Mapster" Version="7.4.1-pre01" />
 
 		<PackageReference Include="Marten" Version="7.27.0" />
+
+		<PackageReference Include="MassTransit.RabbitMQ" Version="8.2.6-develop.2045" />
 		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.4" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.4" />
@@ -27,6 +31,7 @@
 
 
 	<ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Messaging\BuildingBlocks.Messaging.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks\BuildingBlocks.csproj" />
   </ItemGroup>
 
@@ -35,6 +40,13 @@
 	  <Protobuf Include="..\..\Coupon\Coupon.Grpc\Protos\coupon.proto" GrpcServices="Client">
 	    <Link>Protos\coupon.proto</Link>
 	  </Protobuf>
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <ContainerEnvironmentVariable Include="ASPNETCORE_HTTPS_PORTS">
+	    <Value>8081</Value>
+	  </ContainerEnvironmentVariable>
 	</ItemGroup>
 
 

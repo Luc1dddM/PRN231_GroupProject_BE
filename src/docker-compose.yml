@@ -5,6 +5,12 @@ services:
     build:
       context: .
       dockerfile: Services/Coupon/Coupon.Grpc/Dockerfile
+
+  email.service:
+    image: ${DOCKER_REGISTRY-}emailservice
+    build:
+      context: .
+      dockerfile: Services/Email/Email.API/Dockerfile
       
   coupon.api:
     image: ${DOCKER_REGISTRY-}couponapi
@@ -29,3 +35,4 @@ services:
     build:
       context: .
       dockerfile: Services/ShoppingCart/ShoppingCart.API/Dockerfile
+
