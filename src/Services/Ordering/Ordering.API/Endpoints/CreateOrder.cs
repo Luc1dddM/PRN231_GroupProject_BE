@@ -1,4 +1,5 @@
-﻿using Ordering.Application.Orders.Commands.CreateOrder;
+﻿using BuildingBlocks.Models;
+using Ordering.Application.Orders.Commands.CreateOrder;
 using Ordering.Domain.Models;
 using Ordering.Domain.ValueObjects;
 
@@ -10,7 +11,7 @@ namespace Ordering.API.Endpoints
     //- Returns a response with the created order's ID.
 
     public record CreateOrderRequest(OrderDtoRequest Order);
-    public record CreateOrderResponse(Guid Id);
+    public record CreateOrderResponse(BaseResponse<OrderDto> Response);
 
 
     public class CreateOrder : ICarterModule
@@ -19,6 +20,7 @@ namespace Ordering.API.Endpoints
         {
             app.MapPost("/orders", async (CreateOrderRequest request, ISender sender, HttpClient httpClient) =>
             {
+
                 var shippingAddress = request.Order.ShippingAddress;
                 var customerId = request.Order.CustomerId;
                 string customerEmail;
@@ -53,18 +55,20 @@ namespace Ordering.API.Endpoints
 
                 var result = await sender.Send(command);
 
-                var response = result.Adapt<CreateOrderResponse>();
 
+                // Return 201 Created with the order URL and response
+                var orderId = result.Result.Result.EntityId;
+                var locationUri = $"/orders/{orderId}";
 
-                var url = $"https://localhost:7090/send-email-order?orderId={response.Id}&userEmail={Uri.EscapeDataString(customerEmail)}&couponCode={Uri.EscapeDataString(request.Order.CouponCode)}";
+                //var url = $"https://localhost:7090/send-email-order?orderId={response.Id}&userEmail={Uri.EscapeDataString(customerEmail)}&couponCode={Uri.EscapeDataString(request.Order.CouponCode)}";
 
-                await httpClient.PostAsync(url, null);
+                //await httpClient.PostAsync(url, null);
 
-                return Results.Created($"/order/{response.Id}", response);
+                return Results.Created(locationUri, new CreateOrderResponse(result.Result));
+
             })
             .WithName("CreateOrder")
             .Produces<CreateOrderResponse>(StatusCodes.Status201Created)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
             .WithSummary("Create Order")
             .WithDescription("Create Order");
         }

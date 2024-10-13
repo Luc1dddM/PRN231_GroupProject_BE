@@ -9,3 +9,5 @@ global using Microsoft.Extensions.Logging;
 global using Ordering.Domain.Events;
 global using Microsoft.EntityFrameworkCore;
 global using Ordering.Application.Extensions;
+global using BuildingBlocks.Models;
+global using BuildingBlocks.Exceptions;
