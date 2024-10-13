@@ -12,29 +12,12 @@ namespace ShoppingCart.API.ShoppingCart.CheckoutCart
         {
             app.MapPost("/cart/checkout", async (CheckoutCartRequest request, ISender sender) =>
             {
-                try
-                {
-                    var command = request.Adapt<CheckoutCartCommand>();
 
-                    var result = await sender.Send(command);
+                var command = request.Adapt<CheckoutCartCommand>();
 
-                    if (result.Result.IsSuccess)
-                    {
-                        return Results.Ok(new CheckoutCartResponse(result.Result));
-                    }
-                    return Results.BadRequest(new CheckoutCartResponse(result.Result));
-                }
-                catch (Exception e)
-                {
-                    // Return 500 with the custom BaseResponse format
-                    var errorResponse = new BaseResponse<object>
-                    {
-                        IsSuccess = false,
-                        Message = e.Message
-                    };
+                var result = await sender.Send(command);
 
-                    return Results.Json(new CheckoutCartResponse(errorResponse), statusCode: StatusCodes.Status500InternalServerError);
-                }
+                return Results.Ok(new CheckoutCartResponse(result.Result));
 
             })
             .WithName("CheckoutBasket")

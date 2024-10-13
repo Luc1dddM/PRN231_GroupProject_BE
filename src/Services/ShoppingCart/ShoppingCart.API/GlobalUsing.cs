@@ -12,3 +12,5 @@ global using Carter;
 global using Mapster;
 global using MediatR;
 global using BuildingBlocks.Models;
+
+global using BuildingBlocks.Exceptions;

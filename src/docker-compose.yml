@@ -9,3 +9,5 @@ services:
   messagebroker:
     image: rabbitmq:management 
 
+  rediscache:
+    image: redis

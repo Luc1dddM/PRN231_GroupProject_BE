@@ -1,4 +1,4 @@
-﻿using BuildingBlocks.Exceptions;
+﻿
 
 namespace ShoppingCart.API.Exceptions;
 
