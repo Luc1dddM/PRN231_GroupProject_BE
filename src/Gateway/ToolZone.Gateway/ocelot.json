@@ -253,8 +253,8 @@
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5050
+          "Host": "Catalog.API",
+          "Port": 6006
         }
       ],
       "AddHeadersToRequest": {
@@ -273,8 +273,8 @@
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5050
+          "Host": "Catalog.API",
+          "Port": 6006
         }
       ],
       "AddHeadersToRequest": {
@@ -293,8 +293,8 @@
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5050
+          "Host": "Catalog.API",
+          "Port": 6006
         }
       ],
       "AddHeadersToRequest": {
@@ -313,8 +313,8 @@
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5050
+          "Host": "Catalog.API",
+          "Port": 6006
         }
       ],
       "AddHeadersToRequest": {
@@ -333,8 +333,8 @@
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5050
+          "Host": "Catalog.API",
+          "Port": 6006
         }
       ],
       "AddHeadersToRequest": {
@@ -353,8 +353,8 @@
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5050
+          "Host": "Catalog.API",
+          "Port": 6006
         }
       ],
       "AddHeadersToRequest": {
@@ -373,8 +373,8 @@
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5050
+          "Host": "Catalog.API",
+          "Port": 6006
         }
       ],
       "AddHeadersToRequest": {
@@ -393,8 +393,8 @@
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5050
+          "Host": "Catalog.API",
+          "Port": 6006
         }
       ],
       "AddHeadersToRequest": {
@@ -413,8 +413,8 @@
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5050
+          "Host": "Catalog.API",
+          "Port": 6006
         }
       ],
       "AddHeadersToRequest": {
@@ -433,8 +433,8 @@
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5050
+          "Host": "Catalog.API",
+          "Port": 6006
         }
       ],
       "AddHeadersToRequest": {
@@ -453,8 +453,8 @@
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5050
+          "Host": "Catalog.API",
+          "Port": 6006
         }
       ],
       "AddHeadersToRequest": {

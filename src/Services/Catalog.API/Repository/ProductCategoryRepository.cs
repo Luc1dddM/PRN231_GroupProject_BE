@@ -426,7 +426,7 @@ namespace Catalog.API.Repository
 
             try
             {
-                ProductCategory newProductCategory = _dbContext.ProductCategories.Find(productCategoryId);
+                ProductCategory newProductCategory = _dbContext.ProductCategories.FirstOrDefault(p => p.ProductCategoryId.Equals(productCategoryId));
                 newProductCategory.Updatedby = user;
                 newProductCategory.UpdatedAt = DateTime.Now;
 

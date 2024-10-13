@@ -9,3 +9,10 @@ services:
   messagebroker:
     image: rabbitmq:management 
 
+
+  catalog.api:
+    image: ${DOCKER_REGISTRY-}catalogapi
+    build:
+      context: .
+      dockerfile: Services/Catalog.API/Dockerfile
+
