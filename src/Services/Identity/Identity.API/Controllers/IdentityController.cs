@@ -7,6 +7,7 @@ using Identity.Application.Identity.Commands.InternalLogin;
 using Identity.Application.Identity.Commands.ReconfirmEmail;
 using Identity.Application.Identity.Commands.Register;
 using Identity.Application.Identity.Commands.RenewToken;
+using Identity.Application.Identity.Commands.ResetPassword;
 using Identity.Application.Identity.Dtos;
 using Identity.Application.RolePermission.Commands.AddRole;
 using Identity.Application.RolePermission.Commands.UpdatePermission;
@@ -33,77 +34,38 @@ namespace Identity.API.Controllers
         [HttpPost]
         public async Task<IActionResult> GoogleSignIn(GoogleSignInVM request)
         {
-            try
-            {
-                var command = request.Adapt<GoogleLoginQuery>();
-                var reponse = await _mediator.Send(command);
-                return Ok(reponse.response);
-            }
-            catch (Exception ex)
-            {
-                return NotFound(ex);
-            }
+
+            var command = request.Adapt<GoogleLoginQuery>();
+            var reponse = await _mediator.Send(command);
+            return Ok(reponse.response);
+
         }
 
         [HttpPost]
         [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
         public async Task<IActionResult> Register([FromBody] RegistrationRequestDto request, CancellationToken cancellationToken = default)
         {
-            try
-            {
-                var command = request.Adapt<RegisterCommand>();
-                var result = await _mediator.Send(command);
-                return Ok(result.result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex);
-            }
+            var command = request.Adapt<RegisterCommand>();
+            var result = await _mediator.Send(command);
+            return Ok(result.result);
         }
 
         [HttpPost]
         [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto request, CancellationToken cancellationToken = default)
         {
-            try
-            {
-                var query = request.Adapt<InternalLoginQuery>();
-                var result = await _mediator.Send(query);
-                return Ok(result.response);
-            }
-            catch (UnAuthorizeException ex)
-            {
-                return StatusCode(401, new BaseResponse<UserDto>
-                {
-                    IsSuccess = false,
-                    Message = ex.Message
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500,
-                    new BaseResponse<UserDto>
-                    {
-                        IsSuccess = false,
-                        Message = ex.Message
-                    });
-            }
+            var query = request.Adapt<InternalLoginQuery>();
+            var result = await _mediator.Send(query);
+            return Ok(result.response);
         }
 
         [HttpPost]
         [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
         public async Task<IActionResult> RenewToken([FromBody] JwtModelVM request)
         {
-            try
-            {
-                var command = new RenewTokenCommand(request);
-                var result = await _mediator.Send(command);
-                return Ok(result.response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex);
-            }
+            var command = new RenewTokenCommand(request);
+            var result = await _mediator.Send(command);
+            return Ok(result.response);
         }
 
 
@@ -111,87 +73,56 @@ namespace Identity.API.Controllers
         [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
         public async Task<IActionResult> ConfirmEmail(string UserId, string Token)
         {
-            try
-            {
-                var command = new ConfirmEmailCommand(UserId, Token);
-                var result = await _mediator.Send(command);
-                return Ok(result.result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex);
-            }
+            var command = new ConfirmEmailCommand(UserId, Token);
+            var result = await _mediator.Send(command);
+            return Ok(result.result);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+        {
+            var query = new ResetPasswordQuery(dto.EmailAddress);
+            var result = await _mediator.Send(query);
+            return Ok(result.response);
         }
 
         [HttpPost]
         [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
         public async Task<IActionResult> ReConfirmAccount([FromBody] ReConfirmMailDto request)
         {
-            try
-            {
-                var query =  request.Adapt<ReconfirmCommand>();
-                var result = await _mediator.Send(query);
-                return Ok(result.response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex);
-            }
+
+            var query = request.Adapt<ReconfirmCommand>();
+            var result = await _mediator.Send(query);
+            return Ok(result.response);
+
         }
 
         [HttpPost]
         [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
         public async Task<IActionResult> UpdatePermission([FromBody] UpdatePermissionDto request)
         {
-            try
-            {
-                var command = request.Adapt<UpdatePermissionCommand>();
-                var result = await _mediator.Send(command);
-                return Ok(result.response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex);
-            }
+            var command = request.Adapt<UpdatePermissionCommand>();
+            var result = await _mediator.Send(command);
+            return Ok(result.response);
         }
 
         [HttpPost]
         [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
         public async Task<IActionResult> UpdateRoles([FromBody] UpdateRolesDto request)
         {
-            try
-            {
-                var command = request.Adapt<UpdateRolesCommand>();
-                var result = await _mediator.Send(command);
-                return Ok(result.response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex);
-            }
+            var command = request.Adapt<UpdateRolesCommand>();
+            var result = await _mediator.Send(command);
+            return Ok(result.response);
         }
 
         [HttpPost]
         [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
         public async Task<IActionResult> AddRole([FromBody] AddRoleDto request)
         {
-            try
-            {
-                var userId = HttpContext.Request.Headers["UserId"].ToString();
-                if (userId == null) BadRequest( "User Id Is Null" );
-                var role = new Role()
-                {
-                    Name = request.name,
-                    CreatedBy = userId,
-                };
-                var command = role.Adapt<AddRoleCommand>();
-                var result = await _mediator.Send(command);
-                return Ok(result.response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex);
-            }
+            var command = new AddRoleCommand(request.name);
+            var result = await _mediator.Send(command);
+            return Ok(result.response);
         }
     }
 }

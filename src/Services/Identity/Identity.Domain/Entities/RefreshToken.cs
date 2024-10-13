@@ -13,7 +13,7 @@ namespace Identity.Domain.Entities
         [Key]
         public Guid Id { get; set; }
         public string UserId { get; set; }
-        [ForeignKey(nameof(UserId))]
+        [ForeignKey("UserId")]
         public User User { get; set; }
         public string Token { get; set; }
         public string JwtId { get; set; }

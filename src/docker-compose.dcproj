@@ -7,6 +7,7 @@
     <ProjectGuid>b9b714fc-e4ee-4771-9e8b-9d9ae17fe44a</ProjectGuid>
     <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
     <DockerServiceUrl>{Scheme}://localhost:{ServicePort}/swagger</DockerServiceUrl>
+    <DockerServiceName>identity.api</DockerServiceName>
     <DockerServiceName>coupon.api</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>
