@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Coupon.Grpc.Migrations
 {
     [DbContext(typeof(Prn231GroupProjectContext))]
-    [Migration("20241007011600_db")]
+    [Migration("20241013120833_db")]
     partial class db
     {
         /// <inheritdoc />
@@ -57,6 +57,9 @@ namespace Coupon.Grpc.Migrations
                     b.Property<double?>("MinAmount")
                         .HasColumnType("float");
 
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
                     b.Property<bool>("Status")
                         .HasColumnType("bit");
 
@@ -69,6 +72,34 @@ namespace Coupon.Grpc.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Coupons");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CouponCode = "WELCOME10",
+                            CouponId = "81d422f6-9c43-4467-96aa-2d564a19b11a",
+                            CreatedBy = "Admin",
+                            CreatedDate = new DateTime(2024, 10, 13, 12, 8, 32, 108, DateTimeKind.Utc).AddTicks(5417),
+                            DiscountAmount = 10.0,
+                            MaxAmount = 200.0,
+                            MinAmount = 50.0,
+                            Quantity = 100,
+                            Status = true
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CouponCode = "SUMMER20",
+                            CouponId = "22816d9c-52b8-4916-a6c7-422110ec8a43",
+                            CreatedBy = "Admin",
+                            CreatedDate = new DateTime(2024, 10, 13, 12, 8, 32, 108, DateTimeKind.Utc).AddTicks(5428),
+                            DiscountAmount = 20.0,
+                            MaxAmount = 500.0,
+                            MinAmount = 100.0,
+                            Quantity = 50,
+                            Status = true
+                        });
                 });
 #pragma warning restore 612, 618
         }
