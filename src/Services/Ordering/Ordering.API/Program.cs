@@ -1,3 +1,4 @@
+using BuildingBlocks.Exceptions.Handler;
 using Ordering.API;
 using Ordering.Application;
 using Ordering.Infrastructure;
@@ -23,6 +24,8 @@ builder.Services
     .AddApiServices();
 //-------------------------------
 
+//Add cross-cutting concern
+builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 var app = builder.Build();
 
 
@@ -33,5 +36,5 @@ if (app.Environment.IsDevelopment())
 {
     await app.InitialiseDatabaseAsync();
 }
-
+app.UseExceptionHandler(opts => { });
 app.Run();

@@ -14,37 +14,14 @@ namespace Ordering.API.Endpoints
         {
             app.MapGet("/orders", async (ISender sender) =>
             {
-                try
-                {
-                    var result = await sender.Send(new GetOrdersQuery());
 
-                    if (result.Result.IsSuccess)
-                    {
-                        return Results.Ok(new GetOrdersResponse(result.Result));
-                    }
+                var result = await sender.Send(new GetOrdersQuery());
 
-                    if (result.Result.Message.Contains("No Order Data."))
-                    {
-                        return Results.NotFound(new GetOrdersResponse(result.Result));
-                    }
-                    return Results.BadRequest(new GetOrdersResponse(result.Result));
-                }
-                catch (Exception e)
-                {
-                    // Return 500 with the custom BaseResponse format
-                    var errorResponse = new BaseResponse<IEnumerable<OrderDto>>
-                    {
-                        IsSuccess = false,
-                        Message = e.Message
-                    };
-
-                    return Results.Json(new GetOrdersResponse(errorResponse), statusCode: StatusCodes.Status500InternalServerError);
-                }
+                return Results.Ok(new GetOrdersResponse(result.Result));
+            
             })
             .WithName("GetOrders")
             .Produces<GetOrdersResponse>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status404NotFound)
             .WithSummary("Get Orders")
             .WithDescription("Get Orders");
         }
