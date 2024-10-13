@@ -11,7 +11,17 @@ services:
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
-
+  coupon.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+    ports:
+      - "6005:8080"
+      - "6015:8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
   messagebroker:
     container_name: messagebroker
     hostname: ecommrece-mq
@@ -22,13 +32,11 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
-
   rediscache:
     container_name: rediscache
     restart: always
     ports:
       - "6379:6379"
-
 
   ordering.api:
     environment:
@@ -44,7 +52,6 @@ services:
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
-
   shoppingcart.api:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development

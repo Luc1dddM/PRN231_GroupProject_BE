@@ -5,7 +5,13 @@ services:
     build:
       context: .
       dockerfile: Services/Coupon/Coupon.Grpc/Dockerfile
-
+      
+  coupon.api:
+    image: ${DOCKER_REGISTRY-}couponapi
+    build:
+      context: .
+      dockerfile: Services/Coupon/Coupon.API/Dockerfile
+      
   messagebroker:
     image: rabbitmq:management 
 
@@ -17,11 +23,9 @@ services:
     build:
       context: .
       dockerfile: Services/Ordering/Ordering.API/Dockerfile
-
-
+      
   shoppingcart.api:
     image: ${DOCKER_REGISTRY-}shoppingcartapi
     build:
       context: .
       dockerfile: Services/ShoppingCart/ShoppingCart.API/Dockerfile
-
