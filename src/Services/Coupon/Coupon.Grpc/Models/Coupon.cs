@@ -5,6 +5,7 @@ namespace Coupon.Grpc.Models
 {
     public class Coupon
     {
+        [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
@@ -14,7 +15,10 @@ namespace Coupon.Grpc.Models
        
         public double DiscountAmount { get; set; }
 
+        public int Quantity { get; set; }
+
         public bool Status { get; set; }
+
         public double? MinAmount { get; set; }
 
         public double? MaxAmount { get; set; }

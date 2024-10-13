@@ -71,10 +71,10 @@ namespace Feedback.API.Controllers
                 var ordersResponse = JsonSerializer.Deserialize<GetOrdersByCustomerResponse>(strResult, options);
 
                 // Kiểm tra xem người dùng đã hoàn thành đơn hàng với OrderId và ProductId này hay không
-                return ordersResponse.Orders.Any(order =>
+                return ordersResponse.Response.Result.Any(order =>
                     order.CustomerId == userId &&                         // Kiểm tra CustomerId
-                    order.Id == Guid.Parse(orderId) &&                   // Kiểm tra OrderId
-                    order.Status == OrderStatus.Completed &&              // Kiểm tra Status
+                    order.EntityId == Guid.Parse(orderId) &&                   // Kiểm tra OrderId
+                    order.Status.Equals(OrderStatus.Completed) &&              // Kiểm tra Status
                     order.OrderItems.Any(item => item.ProductId == Guid.Parse(productId))); // Kiểm tra ProductId
             }
 

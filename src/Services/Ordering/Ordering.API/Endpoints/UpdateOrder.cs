@@ -1,4 +1,5 @@
-﻿using Ordering.Application.Orders.Commands.UpdateOrder;
+﻿using BuildingBlocks.Models;
+using Ordering.Application.Orders.Commands.UpdateOrder;
 
 namespace Ordering.API.Endpoints
 {
@@ -7,8 +8,8 @@ namespace Ordering.API.Endpoints
     //- Sends the command for processing.
     //- Returns a success or error response based on the outcome.
 
-    public record UpdateOrderRequest(OrderDto Order);
-    public record UpdateOrderResponse(bool IsSuccess);
+    public record UpdateOrderRequest(OrderDtoUpdateRequest Order);
+    public record UpdateOrderResponse(BaseResponse<OrderDto> Response);
 
     public class UpdateOrder : ICarterModule
     {
@@ -16,17 +17,16 @@ namespace Ordering.API.Endpoints
         {
             app.MapPut("/orders", async (UpdateOrderRequest request, ISender sender) =>
             {
+
                 var command = request.Adapt<UpdateOrderCommand>();
 
                 var result = await sender.Send(command);
 
-                var response = result.Adapt<UpdateOrderResponse>();
+                return Results.Ok(new UpdateOrderResponse(result.Result));
 
-                return Results.Ok(response);
             })
             .WithName("UpdateOrder")
             .Produces<UpdateOrderResponse>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
             .WithSummary("Update Order")
             .WithDescription("Update Order");
         }

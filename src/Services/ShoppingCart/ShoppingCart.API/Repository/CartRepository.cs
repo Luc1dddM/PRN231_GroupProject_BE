@@ -1,4 +1,6 @@
-﻿namespace ShoppingCart.API.Repository
+﻿using ShoppingCart.API.Models;
+
+namespace ShoppingCart.API.Repository
 {
     public class CartRepository : ICartRepository
     {
@@ -10,13 +12,17 @@
 
         public async Task<CartDto> GetCart(string userId, CancellationToken cancellationToken = default)
         {
+
             //this method purpose serve as a wiat to get all the data of Cart Header including CartDetail since map from GetCartResult to GetCartResponse won't work
             var cart = await _context.CartHeaders.Include(ch => ch.CartDetails)
                                                  .FirstOrDefaultAsync(c => c.CreatedBy.Equals(userId), cancellationToken);
-
-            return cart is null ?
-                throw new CartNotFoundException(userId) :
-                new CartDto
+            if (cart == null)
+            {
+                throw new NotFoundException($"Cart of user with ID {userId} did not exist.");
+            }
+            else
+            {
+                return new CartDto
                 {
                     CartHeader = new CartHeaderDto
                     {
@@ -31,74 +37,236 @@
                         Quantity = cd.Quantity,
                         Color = cd.Color,
                         Price = cd.Price,
+                        ProductCategoryId = cd.ProductCategoryId,
                         CartHeaderId = cart.CartHeaderId
                     }).ToList()
                 };
+            }
         }
 
+        public async Task<CartHeader> GetCartById(string cartId, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                //get cart header and it correspond cart detail 
+                var cHeader = await _context.CartHeaders.Include(ch => ch.CartDetails)
+                                                        .FirstOrDefaultAsync(c => c.CartHeaderId.Equals(cartId), cancellationToken);
+
+                return cHeader;
+            }
+            catch (Exception e)
+            {
+
+                throw new Exception(e.Message);
+            }
+
+        }
 
         public async Task<CartHeader> GetCartHeaderByUserId(string userId, CancellationToken cancellationToken = default)
         {
-            //get cart header and it correspond cart detail 
-            var cHeader = await _context.CartHeaders.Include(ch => ch.CartDetails)
-                                                    .FirstOrDefaultAsync(c => c.CreatedBy.Equals(userId), cancellationToken);
+            try
+            {
+                //get cart header and it correspond cart detail 
+                var cHeader = await _context.CartHeaders.Include(ch => ch.CartDetails)
+                                                        .FirstOrDefaultAsync(c => c.CreatedBy.Equals(userId), cancellationToken);
 
-            return cHeader;
+                return cHeader;
+            }
+            catch (Exception e)
+            {
+
+                throw new Exception(e.Message);
+            }
+
         }
 
         public async Task<CartDetail> GetCartDetailByCartHeaderId_ProductId(string cartHeaderId, string productId, CancellationToken cancellationToken = default)
         {
-            var cDetail = await _context.CartDetails.Include(cd => cd.CartHeader)
-                                                    .FirstOrDefaultAsync(c => c.CartHeaderId.Equals(cartHeaderId) &&
-                                                                              c.ProductId.Equals(productId), cancellationToken);
-            return cDetail;
+            try
+            {
+                var cDetail = await _context.CartDetails.Include(cd => cd.CartHeader)
+                                                                    .FirstOrDefaultAsync(c => c.CartHeaderId.Equals(cartHeaderId) &&
+                                                                                              c.ProductId.Equals(productId), cancellationToken);
+                return cDetail;
+            }
+            catch (Exception e)
+            {
+
+                throw new Exception(e.Message);
+            }
+
         }
 
         public async Task<CartDetail> GetCartDetailById(string cartDetailId, CancellationToken cancellationToken = default)
         {
-            return await _context.CartDetails.Include(cd=>cd.CartHeader).FirstOrDefaultAsync(cd => cd.CartDetailId.Equals(cartDetailId));
+            try
+            {
+                var cartDetail = await _context.CartDetails.Include(cd => cd.CartHeader).FirstOrDefaultAsync(cd => cd.CartDetailId.Equals(cartDetailId));
+
+                if (cartDetail == null)
+                {
+                    throw new NotFoundException($"CartDetail with Id {cartDetailId} was not found");
+                }
+
+                return cartDetail;
+            }
+            catch (NotFoundException e)
+            {
+                throw new NotFoundException($"CartDetail with Id {cartDetailId} was not found");
+            }
+            catch (Exception e)
+            {
+
+                throw new Exception(e.Message);
+            }
+
         }
 
-        public async Task<CartHeader> CreateCartHeader(CartHeader cartHeader, CancellationToken cancellationToken = default)
+        public async Task<CartHeader> CreateCartHeader(string userId, CancellationToken cancellationToken = default)
         {
-            CartHeader cHeader = new()
+
+            try
             {
-                CartHeaderId = Guid.NewGuid().ToString(),
-                CreatedDate = DateTime.Now,
-                CreatedBy = cartHeader.CreatedBy,
-            };
-            _context.CartHeaders.Add(cHeader);
-            await _context.SaveChangesAsync(cancellationToken);
-            return cHeader;
+                if (userId == null)
+                {
+                    throw new NotFoundException("UserId did not have any value in the incoming request.");
+                }
+                CartHeader cHeader = new()
+                {
+                    CartHeaderId = Guid.NewGuid().ToString(),
+                    CreatedDate = DateTime.Now,
+                    CreatedBy = userId,
+                };
+                _context.CartHeaders.Add(cHeader);
+                await _context.SaveChangesAsync(cancellationToken);
+                return cHeader;
+            }
+            catch (NotFoundException e)
+            {
+                throw new NotFoundException(e.Message);
+            }
+            catch (Exception e)
+            {
+
+                throw new Exception(e.Message);
+            }
+
         }
 
         public async Task<CartDetail> CreateCartDetails(CartDetail cartDetail, CancellationToken cancellationToken = default)
         {
-            _context.CartDetails.Add(cartDetail);
-            await _context.SaveChangesAsync(cancellationToken);
-            return cartDetail;
+
+            try
+            {
+                if (cartDetail.ProductId == null ||
+                cartDetail.ProductCategoryId == null)
+                {
+                    throw new NotFoundException("CartDetail contains invalid or missing data.");
+                }
+                _context.CartDetails.Add(cartDetail);
+                await _context.SaveChangesAsync(cancellationToken);
+                return cartDetail;
+            }
+            catch (NotFoundException e)
+            {
+                throw new NotFoundException("CartDetail contains invalid or missing data.");
+            }
+            catch (Exception e)
+            {
+
+                throw new Exception(e.Message);
+            }
+
         }
 
-        public async Task<CartHeader> UpdateCartHeader(CartHeader cartHeader, CancellationToken cancellationToken = default)
+        public async Task<CartHeader> UpdateCartHeader(CartHeader cartHeader, string userId, CancellationToken cancellationToken = default)
         {
-            _context.CartHeaders.Update(cartHeader);
-            await _context.SaveChangesAsync(cancellationToken);
-            return cartHeader;
+            try
+            {
+                _context.CartHeaders.Update(cartHeader);
+                await _context.SaveChangesAsync(cancellationToken);
+                return cartHeader;
+            }
+            catch (Exception e)
+            {
+
+                throw new Exception(e.Message);
+            }
+
         }
 
         public async Task<CartDetail> UpdateCartDetails(CartDetail cartDetail, CancellationToken cancellationToken = default)
         {
-            _context.CartDetails.Update(cartDetail);
-            await _context.SaveChangesAsync(cancellationToken);
-            return cartDetail;
+            if (cartDetail.ProductId == null ||
+                cartDetail.ProductCategoryId == null)
+            {
+                throw new NotFoundException("CartDetail contains invalid or missing data.");
+            }
+            try
+            {
+                _context.CartDetails.Update(cartDetail);
+                await _context.SaveChangesAsync(cancellationToken);
+                return cartDetail;
+            }
+            catch (Exception e)
+            {
+
+                throw new Exception(e.Message);
+            }
+
         }
 
         public async Task<bool> DeleteCartDetails(string cartDetailId, CancellationToken cancellationToken = default)
         {
-            var cartDetail = await GetCartDetailById(cartDetailId, cancellationToken);
-            _context.CartDetails.Remove(cartDetail);
-            await _context.SaveChangesAsync(cancellationToken);
-            return true;
+
+            try
+            {
+                var cartDetail = await GetCartDetailById(cartDetailId, cancellationToken);
+                if (cartDetail == null)
+                {
+                    throw new NotFoundException($"CartDetail with Id {cartDetailId} was not found");
+                }
+                _context.CartDetails.Remove(cartDetail);
+                await _context.SaveChangesAsync(cancellationToken);
+                return true;
+            }
+            catch (NotFoundException e)
+            {
+                throw new NotFoundException($"CartDetail with Id {cartDetailId} was not found");
+            }
+            catch (Exception e)
+            {
+
+                throw new Exception(e.Message);
+            }
+
+        }
+
+
+
+        public async Task<bool> DeleteCart(string userId, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var cartHeader = await GetCartHeaderByUserId(userId, cancellationToken);
+                if (cartHeader == null)
+                {
+                    throw new NotFoundException($"Cart of user with Id {userId} was not found");
+                }
+                _context.CartHeaders.Remove(cartHeader);
+                await _context.SaveChangesAsync(cancellationToken);
+                return true;
+            }
+            catch (NotFoundException e)
+            {
+                throw new NotFoundException($"Cart of user with Id {userId} was not found");
+            }
+            catch (Exception e)
+            {
+
+                throw new Exception(e.Message);
+            }
+
         }
     }
 }

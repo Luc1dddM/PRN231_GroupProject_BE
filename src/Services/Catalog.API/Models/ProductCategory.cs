@@ -7,11 +7,15 @@ namespace Catalog.API.Models
     {
         [Key]
         [Required]
+        public int Id { get; set; }
+        [Required]
         public string ProductCategoryId { get; set; } = default!;
         [Required]
         public string CategoryId { get; set; } = default!;
+        [ForeignKey("CategoryId")]
         [Required]
         public string ProductId { get; set; } = default!;
+        [ForeignKey("ProductId")]
         [Required]
         public int Quantity { get; set; }
         [Required]

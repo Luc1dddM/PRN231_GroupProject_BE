@@ -3,6 +3,8 @@ using Identity.Application.Email.Interfaces;
 using Identity.Application.Identity.Dtos;
 using Identity.Application.Identity.Interfaces;
 using Identity.Application.RolePermission.Interfaces;
+using Identity.Domain.Entities;
+using Identity.Domain.Enums;
 using Identity.Infrastructure.Data;
 using Identity.Infrastructure.Identity.Configuration;
 using Identity.Infrastructure.Identity.Utils;
@@ -340,6 +342,7 @@ namespace Identity.Infrastructure.Identity.Services
         /// <returns>List&lt;System.Security.Claims&gt;</returns>
         private async Task<List<Claim>> BuildUserClaims(Domain.Entities.User user)
         {
+            var roles = await _userManager.GetRolesAsync(user);
             var userClaims = new List<Claim>()
             {
                 new Claim(JwtClaimTypes.Id, user.Id.ToString()),
@@ -347,8 +350,12 @@ namespace Identity.Infrastructure.Identity.Services
                 new Claim(JwtClaimTypes.Name, user.FullName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
-
             List<string> permissions = await _permissionService.GetPermissionsAsync(user.Id);
+            foreach(var role in roles)
+            {
+                userClaims.Add(new(CustomClaims.Roles, role));
+            }
+
             foreach (var permission in permissions)
             {
                 userClaims.Add(new(CustomClaims.Permissions, permission));
