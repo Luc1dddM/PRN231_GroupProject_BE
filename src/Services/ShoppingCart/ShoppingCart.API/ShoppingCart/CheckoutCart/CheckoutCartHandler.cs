@@ -38,52 +38,44 @@ namespace ShoppingCart.API.ShoppingCart.CheckoutCart
             // Set totalprice on basketcheckout event message
             // send basket checkout event to rabbitmq using masstransit
             // delete the basket
-            try
+
+            var userId = _httpContextAccessor.HttpContext.Request.Headers["UserId"].ToString();
+            if (userId == null)
             {
-                var userId = _httpContextAccessor.HttpContext.Request.Headers["UserId"].ToString();
-
-                var cart = await _cartRepository.GetCart(userId);
-                cart.CartHeader.TotalPrice = cart.CartDetails.Sum(c => c.Price * c.Quantity);
-
-                if (cart == null)
-                {
-                    return new CheckoutCartResult(new BaseResponse<object>
-                    {
-                        IsSuccess = false,
-                        Message = "Cart Does Not Existed."
-                    });
-                }
-
-                // Create a new DTO that combines the request data with database cart details
-                var completeCartCheckoutDto = MapCartFromDbToCartCheckoutDto(command.CartCheckoutDto, cart);
-
-
-                var eventMessage = MapToCartCheckoutEvent(completeCartCheckoutDto);
-                eventMessage.TotalPrice = (decimal)cart.CartHeader.TotalPrice;
-
-                await _publishEndpoint.Publish(eventMessage, cancellationToken);
-                await _cartRepository.DeleteCart(userId, cancellationToken);
-
-                return new CheckoutCartResult(new BaseResponse<object>
-                {
-                    IsSuccess = true,
-                    Message = "Cart Checkout Successful."
-                });
+                throw new NotFoundException("UserId did not have any value in the incoming request.");
             }
-            catch (Exception e)
+
+
+            var cart = await _cartRepository.GetCart(userId);
+            cart.CartHeader.TotalPrice = cart.CartDetails.Sum(c => c.Price * c.Quantity);
+
+            // Create a new DTO that combines the request data with database cart details
+            var completeCartCheckoutDto = MapCartFromDbToCartCheckoutDto(command.CartCheckoutDto, cart);
+
+
+            var eventMessage = MapToCartCheckoutEvent(completeCartCheckoutDto);
+            eventMessage.TotalPrice = (decimal)cart.CartHeader.TotalPrice;
+
+            await _publishEndpoint.Publish(eventMessage, cancellationToken);
+            await _cartRepository.DeleteCart(userId, cancellationToken);
+
+            return new CheckoutCartResult(new BaseResponse<object>
             {
-                return new CheckoutCartResult(new BaseResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = e.Message
-                });
-            }
+                IsSuccess = true,
+                Message = "Cart Checkout Successful."
+            });
+
 
         }
 
         private CartCheckoutDto MapCartFromDbToCartCheckoutDto(CartCheckoutDto requestDto, CartDto dbCart)
         {
             var userId = _httpContextAccessor.HttpContext.Request.Headers["UserId"].ToString();
+            if (userId == null)
+            {
+                throw new NotFoundException("UserId did not have any value in the incoming request.");
+            }
+
             var completeCartDto = new CartCheckoutDto
             {
                 CustomerId = Guid.Parse(userId),

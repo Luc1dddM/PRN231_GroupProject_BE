@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Identity.Infrastructure.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<Domain.Entities.User, Role, string>
+    public class ApplicationDbContext : IdentityDbContext<Domain.Entities.User, Role, int,ApplicationUserClaim, ApplicationUserRole, UserLogin, RoleClaim, UserToken>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {

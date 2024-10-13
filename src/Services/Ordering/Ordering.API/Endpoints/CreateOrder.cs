@@ -20,76 +20,55 @@ namespace Ordering.API.Endpoints
         {
             app.MapPost("/orders", async (CreateOrderRequest request, ISender sender, HttpClient httpClient) =>
             {
-                try
-                {
-                    var shippingAddress = request.Order.ShippingAddress;
-                    var customerId = request.Order.CustomerId;
-                    string customerEmail;
 
-                    if (!string.IsNullOrEmpty(shippingAddress.EmailAddress))
+                var shippingAddress = request.Order.ShippingAddress;
+                var customerId = request.Order.CustomerId;
+                string customerEmail;
+
+                if (!string.IsNullOrEmpty(shippingAddress.EmailAddress))
+                {
+                    customerEmail = shippingAddress.EmailAddress;
+                }
+                else
+                {
+                    var userResponse = await httpClient.GetAsync($"https://localhost:7183/api/User/{customerId}");
+                    if (userResponse.IsSuccessStatusCode)
                     {
-                        customerEmail = shippingAddress.EmailAddress;
-                    }
-                    else
-                    {
-                        var userResponse = await httpClient.GetAsync($"https://localhost:7183/api/User/{customerId}");
-                        if (userResponse.IsSuccessStatusCode)
+                        var user = await userResponse.Content.ReadFromJsonAsync<UserDto>();
+                        if (user != null && !string.IsNullOrEmpty(user.Email))
                         {
-                            var user = await userResponse.Content.ReadFromJsonAsync<UserDto>();
-                            if (user != null && !string.IsNullOrEmpty(user.Email))
-                            {
-                                customerEmail = user.Email;
-                            }
-                            else
-                            {
-                                throw new Exception("Unable to get email from user API.");
-                            }
+                            customerEmail = user.Email;
                         }
                         else
                         {
-                            throw new Exception("User API call failed.");
+                            throw new Exception("Unable to get email from user API.");
                         }
                     }
-
-
-                    var command = request.Adapt<CreateOrderCommand>();
-
-                    var result = await sender.Send(command);
-
-                    if (result.Result.IsSuccess)
+                    else
                     {
-                        // Return 201 Created with the order URL and response
-                        var orderId = result.Result.Result.EntityId;
-                        var locationUri = $"/orders/{orderId}";
-                        
-                        //var url = $"https://localhost:7090/send-email-order?orderId={response.Id}&userEmail={Uri.EscapeDataString(customerEmail)}&couponCode={Uri.EscapeDataString(request.Order.CouponCode)}";
-
-                        //await httpClient.PostAsync(url, null);
-                        
-                        return Results.Created(locationUri, new CreateOrderResponse(result.Result));
-
+                        throw new Exception("User API call failed.");
                     }
-                    
-                    return Results.BadRequest(new CreateOrderResponse(result.Result));
-                    
                 }
-                catch (Exception e)
-                {
 
-                    // Return 500 with the custom BaseResponse format
-                    var errorResponse = new BaseResponse<OrderDto>
-                    {
-                        IsSuccess = false,
-                        Message = e.Message
-                    };
 
-                    return Results.Json(new CreateOrderResponse(errorResponse), statusCode: StatusCodes.Status500InternalServerError);
-                }
+                var command = request.Adapt<CreateOrderCommand>();
+
+                var result = await sender.Send(command);
+
+
+                // Return 201 Created with the order URL and response
+                var orderId = result.Result.Result.EntityId;
+                var locationUri = $"/orders/{orderId}";
+
+                //var url = $"https://localhost:7090/send-email-order?orderId={response.Id}&userEmail={Uri.EscapeDataString(customerEmail)}&couponCode={Uri.EscapeDataString(request.Order.CouponCode)}";
+
+                //await httpClient.PostAsync(url, null);
+
+                return Results.Created(locationUri, new CreateOrderResponse(result.Result));
 
             })
             .WithName("CreateOrder")
             .Produces<CreateOrderResponse>(StatusCodes.Status201Created)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
             .WithSummary("Create Order")
             .WithDescription("Create Order");
         }

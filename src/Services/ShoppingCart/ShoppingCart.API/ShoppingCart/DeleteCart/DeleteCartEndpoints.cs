@@ -9,30 +9,13 @@ namespace ShoppingCart.API.ShoppingCart.DeleteCart
     {
         public void AddRoutes(IEndpointRouteBuilder app)
         {
-            app.MapDelete("/cart/{cartDetailId}", async (string cartDetailId, ISender sender) =>
+            app.MapDelete("/cart/{userId}", async (string userId, ISender sender) =>
             {
-                try
-                {
-                    var result = await sender.Send(new DeleteCartCommand(cartDetailId));
 
-                    if (result.Result.IsSuccess)
-                    {
-                        return Results.Ok(new DeleteCartResponse(result.Result));
-                    }
-                    return Results.BadRequest(new DeleteCartResponse(result.Result));
+                var result = await sender.Send(new DeleteCartCommand(userId));
 
-                }
-                catch (Exception e)
-                {
-                    // Return 500 with the custom BaseResponse format
-                    var errorResponse = new BaseResponse<object>
-                    {
-                        IsSuccess = false,
-                        Message = e.Message
-                    };
 
-                    return Results.Json(new DeleteCartResponse(errorResponse), statusCode: StatusCodes.Status500InternalServerError);
-                }
+                return Results.Ok(new DeleteCartResponse(result.Result));
 
             })
             .WithName("DeleteCartDetails")

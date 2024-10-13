@@ -1,6 +1,4 @@
-﻿using ShoppingCart.API.ShoppingCart.StoreCart;
-
-namespace ShoppingCart.API.ShoppingCart.GetCart
+﻿namespace ShoppingCart.API.ShoppingCart.GetCart
 {
 
     public record GetCartResponse(BaseResponse<CartDto> Response);
@@ -11,28 +9,11 @@ namespace ShoppingCart.API.ShoppingCart.GetCart
         {
             app.MapGet("/cart/{userId}", async (string userId, ISender sender) =>
             {
-                try
-                {
-                    var result = await sender.Send(new GetCartQuery(userId));
 
-                    if (result.Result.IsSuccess)
-                    {
-                        return Results.Ok(new GetCartResponse(result.Result));
-                    }
+                var result = await sender.Send(new GetCartQuery(userId));
 
-                    return Results.BadRequest(new GetCartResponse(result.Result));
-                }
-                catch (Exception ex)
-                {
-                    // Return 500 with the custom BaseResponse format
-                    var errorResponse = new BaseResponse<CartDto>
-                    {
-                        IsSuccess = false,
-                        Message = ex.Message
-                    };
 
-                    return Results.Json(new GetCartResponse(errorResponse), statusCode: StatusCodes.Status500InternalServerError);
-                }
+                return Results.Ok(new GetCartResponse(result.Result));
 
             })
             .WithName("GetCartByUserId")

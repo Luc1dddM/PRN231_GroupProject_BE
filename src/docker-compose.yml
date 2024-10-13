@@ -1,4 +1,15 @@
 services:
+  identity.api:
+    image: ${DOCKER_REGISTRY-}identityapi
+    build:
+      context: .
+      dockerfile: Services/Identity/Identity.API/Dockerfile
+
+  toolzone.gateway:
+    image: ${DOCKER_REGISTRY-}toolzonegateway
+    build:
+      context: .
+      dockerfile: Gateway/ToolZone.Gateway/Dockerfile
 
   coupon.grpc:
     image: ${DOCKER_REGISTRY-}coupongrpc
@@ -6,9 +17,20 @@ services:
       context: .
       dockerfile: Services/Coupon/Coupon.Grpc/Dockerfile
 
+  email.service:
+    image: ${DOCKER_REGISTRY-}emailservice
+    build:
+      context: .
+      dockerfile: Services/Email/Email.API/Dockerfile
+      
+  coupon.api:
+    image: ${DOCKER_REGISTRY-}couponapi
+    build:
+      context: .
+      dockerfile: Services/Coupon/Coupon.API/Dockerfile
+      
   messagebroker:
     image: rabbitmq:management 
-
 
   catalog.api:
     image: ${DOCKER_REGISTRY-}catalogapi
@@ -16,3 +38,17 @@ services:
       context: .
       dockerfile: Services/Catalog.API/Dockerfile
 
+  rediscache:
+    image: redis
+
+  ordering.api:
+    image: ${DOCKER_REGISTRY-}orderingapi
+    build:
+      context: .
+      dockerfile: Services/Ordering/Ordering.API/Dockerfile
+      
+  shoppingcart.api:
+    image: ${DOCKER_REGISTRY-}shoppingcartapi
+    build:
+      context: .
+      dockerfile: Services/ShoppingCart/ShoppingCart.API/Dockerfile

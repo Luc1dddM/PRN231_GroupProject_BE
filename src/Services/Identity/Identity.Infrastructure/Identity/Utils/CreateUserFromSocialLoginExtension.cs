@@ -26,9 +26,11 @@ namespace Identity.Infrastructure.Identity.Utils
                 UserName = model.Email,
                 ProfilePicture = model.ProfilePicture
             };
-            user.Id = Guid.NewGuid().ToString();
+            user.UserId = Guid.NewGuid().ToString();
 
             await userManager.CreateAsync(user);
+
+            await userManager.AddToRoleAsync(user, "Admin");
 
             //EMAIL IS CONFIRMED; IT IS COMING FROM AN IDENTITY PROVIDER
             user.EmailConfirmed = true;

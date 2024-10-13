@@ -18,32 +18,15 @@ namespace Ordering.API.Endpoints
         {   //the "orderId" in the route must be identical as the one need to be send 
             app.MapDelete("/orders/{orderId}", async (Guid orderId, ISender sender) =>
             {
-                try
-                {
-                    var result = await sender.Send(new DeleteOrderCommand(orderId));
+                
+                var result = await sender.Send(new DeleteOrderCommand(orderId));
 
-                    if (result.Result.IsSuccess)
-                    {
-                        return Results.Ok(new DeleteOrderResponse(result.Result));
-                    }
-                    return Results.BadRequest(new DeleteOrderResponse(result.Result));
-                }
-                catch (Exception e)
-                {
-                    // Return 500 with the custom BaseResponse format
-                    var errorResponse = new BaseResponse<object>
-                    {
-                        IsSuccess = false,
-                        Message = e.Message
-                    };
-
-                    return Results.Json(new DeleteOrderResponse(errorResponse), statusCode: StatusCodes.Status500InternalServerError);
-                }
+                
+                return Results.Ok(new DeleteOrderResponse(result.Result));
+            
             })
             .WithName("DeleteOrder")
             .Produces<DeleteOrderResponse>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status404NotFound)
             .WithSummary("Delete Order")
             .WithDescription("Delete Order");
         }

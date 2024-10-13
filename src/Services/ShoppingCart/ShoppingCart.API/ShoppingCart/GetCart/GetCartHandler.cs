@@ -14,26 +14,20 @@
         }
         public async Task<GetCartResult> Handle(GetCartQuery query, CancellationToken cancellationToken)
         {
-            try
-            {
-                var cart = await repository.GetCart(query.userId, cancellationToken);
 
-                return new GetCartResult(new BaseResponse<CartDto>
-                {
-                    IsSuccess = true,
-                    Message = "Retrieve Cart Information Successful.",
-                    Result = cart
-                });
-            }
-            catch (Exception e)
-            {
+            var cart = await repository.GetCart(query.userId, cancellationToken);
 
-                return new GetCartResult(new BaseResponse<CartDto>
-                {
-                    IsSuccess = false,
-                    Message = e.Message,
-                });
+            if (cart == null)
+            {
+                throw new NotFoundException($"Cart of user with ID {query.userId} did not exist.");
             }
+
+            return new GetCartResult(new BaseResponse<CartDto>
+            {
+                IsSuccess = true,
+                Message = "Retrieve Cart Information Successful.",
+                Result = cart
+            });
 
         }
     }

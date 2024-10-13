@@ -1,4 +1,6 @@
 ﻿using Carter;
+using Email.API.Repository;
+using Email.Models;
 using FluentValidation;
 using Mapster;
 using MediatR;
@@ -14,52 +16,37 @@ public class CreateEmailTemplateEndpoint : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/emails", async (HttpContext httpContext, CreateEmailTemplateRequest request, ISender sender) =>
+        app.MapPost("/emails", async (HttpContext httpContext, CreateEmailTemplateRequest request, IEmailRepository emailRepository) =>
         {
-            try
+            // Lấy UserId từ headers
+            var userId = httpContext.Request.Headers["UserId"].ToString();
+            if (string.IsNullOrEmpty(userId))
             {
-
-                // Lấy UserId từ headers
-                var userId = httpContext.Request.Headers["UserId"].ToString();
-
-
-                // Chuyển UserId vào command
-                var command = new CreateEmailTemplateCommand(
-                    request.Name,
-                    request.Description,
-                    request.Subject,
-                    request.Body,
-                    request.Active,
-                    request.Category,
-                    userId // Gán CreatedBy
-                );
-
-
-                // Chuyển UserId vào command
-                /*var command = request.Adapt<CreateEmailTemplateCommand>();
-                command.CreatedBy = userId; */
-
-
-              /*  var command = request.Adapt<CreateEmailTemplateCommand>();*/
-
-                var result = await sender.Send(command);
-
-                var response = new CreateEmailTemplateResponse(result.Id);
-
-                return Results.Created($"/emails/{response.Id}", response);
+                throw new UnauthorizedAccessException("UserId is required.");
             }
-            catch (ValidationException ex)
+
+            var emailTemplate = new EmailTemplate
             {
-                return Results.Problem("Validation failed: " + ex.Message, statusCode: StatusCodes.Status400BadRequest);
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem("An unexpected error occurred: " + ex.Message);
-            }
+                EmailTemplateId = Guid.NewGuid().ToString(),
+                Name = request.Name,
+                Description = request.Description,
+                Subject = request.Subject,
+                Body = request.Body,
+                Active = request.Active,
+                Category = request.Category,
+                CreatedDate = DateTime.UtcNow,
+                CreatedBy = userId
+            };
+
+            var newEmailTemplate = await emailRepository.AddEmailTemplate(emailTemplate);
+
+            return Results.Created($"/emails/{newEmailTemplate.EmailTemplateId}",
+                new CreateEmailTemplateResponse(int.Parse(newEmailTemplate.EmailTemplateId)));
         })
-        .WithName("CreateEmailTemplate")
+         .WithName("CreateEmailTemplate")
         .Produces<CreateEmailTemplateResponse>(StatusCodes.Status201Created)
         .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
         .WithSummary("Create Email Template")
         .WithDescription("Create Email Template");
     }

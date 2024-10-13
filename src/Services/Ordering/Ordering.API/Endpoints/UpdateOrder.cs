@@ -17,34 +17,16 @@ namespace Ordering.API.Endpoints
         {
             app.MapPut("/orders", async (UpdateOrderRequest request, ISender sender) =>
             {
-                try
-                {
-                    var command = request.Adapt<UpdateOrderCommand>();
 
-                    var result = await sender.Send(command);
+                var command = request.Adapt<UpdateOrderCommand>();
 
-                    if (result.Result.IsSuccess)
-                    {
-                        return Results.Ok(new UpdateOrderResponse(result.Result));
-                    }
-                    return Results.BadRequest(new UpdateOrderResponse(result.Result));
-                    
-                }
-                catch (Exception e)
-                {
-                    // Return 500 with the custom BaseResponse format
-                    var errorResponse = new BaseResponse<OrderDto>
-                    {
-                        IsSuccess = false,
-                        Message = e.Message
-                    };
+                var result = await sender.Send(command);
 
-                    return Results.Json(new UpdateOrderResponse(errorResponse), statusCode: StatusCodes.Status500InternalServerError);
-                }
+                return Results.Ok(new UpdateOrderResponse(result.Result));
+
             })
             .WithName("UpdateOrder")
             .Produces<UpdateOrderResponse>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
             .WithSummary("Update Order")
             .WithDescription("Update Order");
         }
