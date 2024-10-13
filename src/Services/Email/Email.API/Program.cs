@@ -21,7 +21,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddGrpcClient<CouponProtoService.CouponProtoServiceClient>(options =>
 {
-    options.Address = new Uri("https://localhost:3010");
+    options.Address = new Uri("https://localhost:7003");
 });
 
 builder.Services.AddCarter();

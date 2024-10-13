@@ -1,67 +1,78 @@
 ﻿namespace ShoppingCart.API.ShoppingCart.StoreCart
 {
     public record StoreCartCommand(CartHeader CartHeader) : ICommand<StoreCartResult>;
-    public record StoreCartResult(bool IsSuccess, string Message);
+    public record StoreCartResult(BaseResponse<CartDto> Result);
 
     public class StoreCartHandler : ICommandHandler<StoreCartCommand, StoreCartResult>
     {
-
-        private readonly ICartRepository repository;
-        public StoreCartHandler(ICartRepository _repository)
+        private readonly IHttpContextAccessor _contextAccessor;
+        private readonly ICartRepository _repository;
+        public StoreCartHandler(ICartRepository repository, IHttpContextAccessor contextAccessor)
         {
-            repository = _repository;
+            _repository = repository;
+            _contextAccessor = contextAccessor;
         }
         public async Task<StoreCartResult> Handle(StoreCartCommand command, CancellationToken cancellationToken)
         {
-            try
+
+            var userId = _contextAccessor.HttpContext.Request.Headers["UserId"].ToString();
+
+            if (string.IsNullOrEmpty(userId))
             {
-                string resMessage = "";
+                throw new NotFoundException("UserId did not have any value in the incoming request.");
+            }
 
-                //checkif the cart header already existing for a user
-                var existingHeader = await repository.GetCartHeaderByUserId(command.CartHeader.CreatedBy, cancellationToken);
+            string resMessage = "";
 
-                if (existingHeader != null) 
+            //checkif the cart header already existing for a user
+            var existingHeader = await _repository.GetCartHeaderByUserId(userId, cancellationToken);
+
+            if (existingHeader != null)
+            {
+                //update cart header
+                existingHeader.UpdatedDate = DateTime.Now;
+                existingHeader.UpdatedBy = userId;
+                await _repository.UpdateCartHeader(existingHeader, userId, cancellationToken);
+                resMessage = "Cart successfully updated.";
+            }
+            else
+            {
+                //create new cart header
+                var newHeader = await _repository.CreateCartHeader(userId, cancellationToken);
+                existingHeader = newHeader;
+                resMessage = "Cart successfully added.";
+            }
+
+            foreach (var detail in command.CartHeader.CartDetails)
+            {
+                var existingDetail = await _repository.GetCartDetailByCartHeaderId_ProductId(existingHeader.CartHeaderId, detail.ProductId, cancellationToken);
+
+                if (existingDetail != null)
                 {
-                    //update cart header
-                    existingHeader.UpdatedDate = DateTime.Now;
-                    existingHeader.UpdatedBy = command.CartHeader.CreatedBy;
-                    await repository.UpdateCartHeader(existingHeader, cancellationToken);
-                    resMessage = "Cart successfully updated.";
+                    //update quantity
+                    existingDetail.Quantity += detail.Quantity;
+                    existingDetail.Color = detail.Color;
+                    existingDetail.ProductCategoryId = detail.ProductCategoryId;
+                    await _repository.UpdateCartDetails(existingDetail);
                 }
                 else
                 {
-                    //create new cart header
-                    var newHeader = await repository.CreateCartHeader(command.CartHeader, cancellationToken);
-                    existingHeader = newHeader;
-                    resMessage = "Cart successfully added.";
+                    detail.CartDetailId = Guid.NewGuid().ToString();
+                    detail.CartHeaderId = existingHeader.CartHeaderId;
+                    await _repository.CreateCartDetails(detail, cancellationToken);
                 }
-
-                foreach (var detail in command.CartHeader.CartDetails)
-                {
-                    var existingDetail = await repository.GetCartDetailByCartHeaderId_ProductId(existingHeader.CartHeaderId, detail.ProductId, cancellationToken);
-
-                    if (existingDetail != null)
-                    {
-                        //update quantity
-                        existingDetail.Quantity += detail.Quantity;
-                        existingDetail.Color = detail.Color;
-                        await repository.UpdateCartDetails(existingDetail);
-                    }
-                    else
-                    {
-                        detail.CartDetailId = Guid.NewGuid().ToString();
-                        detail.CartHeaderId = existingHeader.CartHeaderId;
-                        await repository.CreateCartDetails(detail, cancellationToken);
-                    }
-                }
-
-                return new StoreCartResult(true, resMessage);
             }
-            catch (Exception ex)
+
+            var result = await _repository.GetCart(userId, cancellationToken);
+            result.CartHeader.TotalPrice = result.CartDetails.Sum(c => c.Price * c.Quantity);
+
+            return new StoreCartResult(new BaseResponse<CartDto>
             {
+                IsSuccess = true,
+                Message = resMessage,
+                Result = result
+            });
 
-                return new StoreCartResult(false, $"Error occurred: {ex.Message}");
-            }
         }
     }
 }

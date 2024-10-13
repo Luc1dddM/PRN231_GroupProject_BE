@@ -9,14 +9,15 @@ namespace Ordering.Domain.Models
 {
     public class OrderItem : Entity<OrderItemId>
     {
-        internal OrderItem(OrderId orderId, ProductId productId, int quantity, decimal price, string color)
+        internal OrderItem(OrderId orderId, ProductId productId, string productCategoryId,int quantity, decimal price, string color)
         {
-            Id = OrderItemId.Of(Guid.NewGuid());
+            EntityId = OrderItemId.Of(Guid.NewGuid());
             OrderId = orderId;
             ProductId = productId;
             Quantity = quantity;
             Price = price;
             Color = color;
+            ProductCategoryId = productCategoryId;
         }
 
         public OrderId OrderId { get; private set; } = default!;
@@ -24,6 +25,7 @@ namespace Ordering.Domain.Models
         public int Quantity { get; private set; } = default!;
         public decimal Price { get; private set; } = default!;
         public string Color { get; private set; } = default!;
+        public string ProductCategoryId { get; private set; } = default!;
 
         //OrderItem does not have static Create() method, since it depend on the Order to create
     }

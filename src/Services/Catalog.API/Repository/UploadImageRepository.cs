@@ -10,9 +10,13 @@ namespace Catalog.API.Repository
 
         public async void UploadFile(IFormFile file, string Id)
         {
+            ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
+            IConfiguration configuration = configurationBuilder.AddUserSecrets<UploadImageRepository>().Build();
+            string githubToken = configuration.GetSection("github")["accessToken"];
+
 
             HttpClient _httpClient = new HttpClient();
-            _httpClient.DefaultRequestHeaders.Add("Authorization", $"token {"ngu"}");
+            _httpClient.DefaultRequestHeaders.Add("Authorization", $"token {githubToken}");
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "ImageUploaderApp");  // Tên app của bạn
 
             // Đọc file từ IFormFile và chuyển sang Base64

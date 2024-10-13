@@ -1,4 +1,5 @@
-﻿using Ordering.Application.Orders.Commands.DeleteOrder;
+﻿using BuildingBlocks.Models;
+using Ordering.Application.Orders.Commands.DeleteOrder;
 
 namespace Ordering.API.Endpoints
 {
@@ -8,25 +9,24 @@ namespace Ordering.API.Endpoints
     //- Returns a success or not found response.
 
     //public record DeleteOrderRequest(Guid Id);
-    public record DeleteOrderResponse(bool IsSuccess);
+    public record DeleteOrderResponse(BaseResponse<object> Response);
 
 
     public class DeleteOrder : ICarterModule
     {
         public void AddRoutes(IEndpointRouteBuilder app)
-        {
-            app.MapDelete("/orders/{id}", async (Guid Id, ISender sender) =>
+        {   //the "orderId" in the route must be identical as the one need to be send 
+            app.MapDelete("/orders/{orderId}", async (Guid orderId, ISender sender) =>
             {
-                var result = await sender.Send(new DeleteOrderCommand(Id));
+                
+                var result = await sender.Send(new DeleteOrderCommand(orderId));
 
-                var response = result.Adapt<DeleteOrderResponse>();
-
-                return Results.Ok(response);
+                
+                return Results.Ok(new DeleteOrderResponse(result.Result));
+            
             })
             .WithName("DeleteOrder")
             .Produces<DeleteOrderResponse>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status404NotFound)
             .WithSummary("Delete Order")
             .WithDescription("Delete Order");
         }

@@ -17,6 +17,8 @@ namespace Catalog.API.Migrations
                 name: "Categories",
                 columns: table => new
                 {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     CategoryId = table.Column<string>(type: "nvarchar(450)", nullable: false, defaultValueSql: "(CONVERT([nvarchar](36),newid()))"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -28,13 +30,16 @@ namespace Catalog.API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Categories", x => x.CategoryId);
+                    table.PrimaryKey("PK_Categories", x => x.Id);
+                    table.UniqueConstraint("AK_Categories_CategoryId", x => x.CategoryId);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Products",
                 columns: table => new
                 {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     ProductId = table.Column<string>(type: "nvarchar(450)", nullable: false, defaultValueSql: "(CONVERT([nvarchar](36),newid()))"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Price = table.Column<float>(type: "real", nullable: false),
@@ -48,13 +53,16 @@ namespace Catalog.API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Products", x => x.ProductId);
+                    table.PrimaryKey("PK_Products", x => x.Id);
+                    table.UniqueConstraint("AK_Products_ProductId", x => x.ProductId);
                 });
 
             migrationBuilder.CreateTable(
                 name: "ProductCategories",
                 columns: table => new
                 {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     ProductCategoryId = table.Column<string>(type: "nvarchar(450)", nullable: false, defaultValueSql: "(CONVERT([nvarchar](36),newid()))"),
                     CategoryId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ProductId = table.Column<string>(type: "nvarchar(450)", nullable: false),
@@ -67,7 +75,7 @@ namespace Catalog.API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ProductCategories", x => x.ProductCategoryId);
+                    table.PrimaryKey("PK_ProductCategories", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Product_Category_Category",
                         column: x => x.CategoryId,
@@ -82,20 +90,20 @@ namespace Catalog.API.Migrations
 
             migrationBuilder.InsertData(
                 table: "Categories",
-                columns: new[] { "CategoryId", "CreatedAt", "CreatedBy", "Name", "Status", "Type", "UpdatedAt", "UpdatedBy" },
+                columns: new[] { "Id", "CategoryId", "CreatedAt", "CreatedBy", "Name", "Status", "Type", "UpdatedAt", "UpdatedBy" },
                 values: new object[,]
                 {
-                    { "3da5cd25-4aa6-41f7-b511-9a79e0a63c1f", new DateTime(2024, 9, 30, 8, 57, 25, 502, DateTimeKind.Local).AddTicks(4911), "Test", "Asus", true, "Brand", new DateTime(2024, 9, 30, 8, 57, 25, 502, DateTimeKind.Local).AddTicks(4914), "Test" },
-                    { "7dcaa0ae-4576-42e3-bc82-88bb78393e4a", new DateTime(2024, 9, 30, 8, 57, 25, 502, DateTimeKind.Local).AddTicks(4917), "Test", "Razer", true, "Brand", new DateTime(2024, 9, 30, 8, 57, 25, 502, DateTimeKind.Local).AddTicks(4918), "Test" }
+                    { 1, "2e167242-59e7-448b-9ebe-893f4c2bc7fb", new DateTime(2024, 10, 9, 7, 16, 23, 905, DateTimeKind.Local).AddTicks(3938), "Test", "Asus", true, "Brand", new DateTime(2024, 10, 9, 7, 16, 23, 905, DateTimeKind.Local).AddTicks(3942), "Test" },
+                    { 2, "691ff56c-98fd-45dc-b90d-936dfd9baf56", new DateTime(2024, 10, 9, 7, 16, 23, 905, DateTimeKind.Local).AddTicks(3962), "Test", "Razer", true, "Brand", new DateTime(2024, 10, 9, 7, 16, 23, 905, DateTimeKind.Local).AddTicks(3963), "Test" }
                 });
 
             migrationBuilder.InsertData(
                 table: "Products",
-                columns: new[] { "ProductId", "CreateBy", "CreateDate", "Description", "ImageUrl", "Name", "Price", "Status", "UpdateBy", "UpdateDate" },
+                columns: new[] { "Id", "CreateBy", "CreateDate", "Description", "ImageUrl", "Name", "Price", "ProductId", "Status", "UpdateBy", "UpdateDate" },
                 values: new object[,]
                 {
-                    { "b12da1fc-4bd5-40c3-b445-75b47e6db14b", "Test", new DateTime(2024, 9, 30, 8, 57, 25, 502, DateTimeKind.Local).AddTicks(3857), "Razer Pro Click Humanscale Mouse | Wireless", "Test", "Razer Pro Click Humanscale Mouse | Wireless", 2290000f, true, "Test", new DateTime(2024, 9, 30, 8, 57, 25, 502, DateTimeKind.Local).AddTicks(3868) },
-                    { "c63003ba-b30d-4f87-9680-b634cab1317c", "Test", new DateTime(2024, 9, 30, 8, 57, 25, 502, DateTimeKind.Local).AddTicks(3873), "Razer DeathAdder V2 Pro Mouse | Wireless", "Test", "Razer DeathAdder V2 Pro Mouse | Wireless", 1990000f, true, "Test", new DateTime(2024, 9, 30, 8, 57, 25, 502, DateTimeKind.Local).AddTicks(3873) }
+                    { 1, "Test", new DateTime(2024, 10, 9, 7, 16, 23, 905, DateTimeKind.Local).AddTicks(2541), "Razer Pro Click Humanscale Mouse | Wireless", "Test", "Razer Pro Click Humanscale Mouse | Wireless", 2290000f, "b1267079-b139-44b3-99bb-c6d831c8dda7", true, "Test", new DateTime(2024, 10, 9, 7, 16, 23, 905, DateTimeKind.Local).AddTicks(2557) },
+                    { 2, "Test", new DateTime(2024, 10, 9, 7, 16, 23, 905, DateTimeKind.Local).AddTicks(2563), "Razer DeathAdder V2 Pro Mouse | Wireless", "Test", "Razer DeathAdder V2 Pro Mouse | Wireless", 1990000f, "73a5e39d-e28e-4753-826a-b7439adf14a2", true, "Test", new DateTime(2024, 10, 9, 7, 16, 23, 905, DateTimeKind.Local).AddTicks(2564) }
                 });
 
             migrationBuilder.CreateIndex(

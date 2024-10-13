@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Ordering.Domain.Enums;
 using Ordering.Domain.Models;
 using Ordering.Domain.ValueObjects;
@@ -9,19 +10,29 @@ namespace Ordering.Infrastructure.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Order> builder)
         {
-            //config Id for order
+            // Primary Key (integer)
             builder.HasKey(o => o.Id);
-            builder.Property(o => o.Id).HasConversion(
+            builder.Property(o => o.Id).ValueGeneratedOnAdd();
+
+            // Domain Identifier with unique constraint
+            builder.Property(o => o.EntityId).HasConversion(
                             orderId => orderId.Value,
                             dbId => OrderId.Of(dbId));
+            builder.HasIndex(o => o.EntityId).IsUnique();
 
-            builder.Property(o => o.CustomerId).HasConversion(
-                            customerId => customerId.Value,
-                            dbcustomerId => CustomerId.Of(dbcustomerId)).IsRequired();
+            //make EntityId an alternate key to be used in the relationship
+            builder.HasAlternateKey(o => o.EntityId);
 
+            // Relationship with OrderItems using EntityId
             builder.HasMany(o => o.OrderItems)
                 .WithOne()
-                .HasForeignKey(oi => oi.OrderId);
+                .HasForeignKey(oi => oi.OrderId)
+                .HasPrincipalKey(o => o.EntityId);
+
+            //other normal properties
+            builder.Property(o => o.CustomerId).HasConversion(
+                                        customerId => customerId.Value,
+                                        dbcustomerId => CustomerId.Of(dbcustomerId)).IsRequired();
 
             builder.ComplexProperty(
                 o => o.ShippingAddress, addressBuilder =>
@@ -30,20 +41,20 @@ namespace Ordering.Infrastructure.Data.Configurations
                             .HasMaxLength(50)
                             .IsRequired();
 
-                       addressBuilder.Property(a => a.LastName)
-                            .HasMaxLength(50)
-                            .IsRequired();
+                        addressBuilder.Property(a => a.LastName)
+                             .HasMaxLength(50)
+                             .IsRequired();
 
                         addressBuilder.Property(a => a.Phone)
                             .HasMaxLength(10)
                             .IsRequired();
 
-                       addressBuilder.Property(a => a.EmailAddress)
-                           .HasMaxLength(50);
+                        addressBuilder.Property(a => a.EmailAddress)
+                            .HasMaxLength(50);
 
-                       addressBuilder.Property(a => a.AddressLine)
-                           .HasMaxLength(180)
-                           .IsRequired();
+                        addressBuilder.Property(a => a.AddressLine)
+                            .HasMaxLength(180)
+                            .IsRequired();
 
                         addressBuilder.Property(a => a.City)
                             .HasMaxLength(50)
@@ -53,9 +64,9 @@ namespace Ordering.Infrastructure.Data.Configurations
                             .HasMaxLength(50)
                             .IsRequired();
 
-                       addressBuilder.Property(a => a.Ward)
-                           .HasMaxLength(50)
-                           .IsRequired();
+                        addressBuilder.Property(a => a.Ward)
+                            .HasMaxLength(50)
+                            .IsRequired();
                     }
             );
 

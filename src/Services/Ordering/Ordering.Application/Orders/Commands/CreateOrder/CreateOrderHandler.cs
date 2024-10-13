@@ -1,38 +1,86 @@
-﻿using Coupon.Grpc;
+﻿
+using BuildingBlocks.Messaging.Events;
+using BuildingBlocks.Models;
+using Coupon.Grpc;
+using Mapster;
+using MassTransit;
+using Microsoft.AspNetCore.Http;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Ordering.Application.Orders.Commands.CreateOrder
 {
     public class CreateOrderHandler : ICommandHandler<CreateOrderCommand, CreateOrderResult>
     {
         private readonly IApplicationDbContext _context;
-
+        private readonly IHttpContextAccessor _contextAccessor;
         private readonly CouponProtoService.CouponProtoServiceClient _couponProto;
-        
-        public CreateOrderHandler(IApplicationDbContext context, CouponProtoService.CouponProtoServiceClient couponProto)
+        private readonly IPublishEndpoint _publishEndpoint;
+
+        public CreateOrderHandler(
+            IApplicationDbContext context,
+            CouponProtoService.CouponProtoServiceClient couponProto,
+            IPublishEndpoint publishEndpoint,
+            IHttpContextAccessor contextAccessor)
         {
             _context = context;
             _couponProto = couponProto;
+            _contextAccessor = contextAccessor;
+            _publishEndpoint = publishEndpoint;
         }
 
         public async Task<CreateOrderResult> Handle(CreateOrderCommand command, CancellationToken cancellationToken)
         {
-            // Add debug logging
-            Console.WriteLine($"CouponCode in command: {command.Order.CouponCode}");
-            //create Order entity from command object
-            var order = await CreateNewOrder(command.Order);
+            try
+            {
+                // Try to get userId from HTTP context first
+                var userId = _contextAccessor.HttpContext?.Request.Headers["UserId"].ToString();
 
-            //save to database
-            _context.Orders.Add(order);
-            await _context.SaveChangesAsync(cancellationToken);
+                // If userId is null (RabbitMQ scenario), use CustomerId from the command
+                if (string.IsNullOrEmpty(userId))
+                {
+                    userId = command.Order.CustomerId.ToString();
+                }
 
-            //return result 
-            return new CreateOrderResult(order.Id.Value);
+                // Add debug logging
+                Console.WriteLine($"CouponCode in command: {command.Order.CouponCode}");
+                //create Order entity from command object
+                var order = await CreateNewOrder(command.Order, userId);
+
+                //save to database
+                _context.Orders.Add(order);
+
+                await _context.SaveChangesAsync(cancellationToken);
+
+                
+                //return result 
+                return new CreateOrderResult(new BaseResponse<OrderDto>
+                {
+                    IsSuccess = true,
+                    Result = order.ToOrderDto(),
+                    Message = "Order Created Successful."
+                });
+            }
+            catch (NotFoundException e)
+            {
+                throw new NotFoundException(e.Message, e);
+            }
+            catch(BadRequestException e)
+            {
+                throw new BadRequestException(e.Message);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message, e);
+            }
+
         }
 
 
 
-        private async Task<Order> CreateNewOrder(OrderDtoRequest orderDto)
+        private async Task<Order> CreateNewOrder(OrderDtoRequest orderDto, string userId)
         {
+            ValidateOrderRequest(orderDto);
+
             var shippingAddress = Address.Of(orderDto.ShippingAddress.FirstName,
                                              orderDto.ShippingAddress.LastName,
                                              orderDto.ShippingAddress.Phone,
@@ -43,8 +91,8 @@ namespace Ordering.Application.Orders.Commands.CreateOrder
                                              orderDto.ShippingAddress.Ward);
 
             var newOrder = Order.Create(
-                id: OrderId.Of(Guid.NewGuid()),
-                customerId: CustomerId.Of(orderDto.CustomerId),
+                orderId: OrderId.Of(Guid.NewGuid()),
+                customerId: CustomerId.Of(Guid.Parse(userId)),
                 shippingAddress: shippingAddress,
                 payment: Payment.Of(orderDto.Payment.CardName,
                                     orderDto.Payment.CardNumber,
@@ -56,7 +104,7 @@ namespace Ordering.Application.Orders.Commands.CreateOrder
 
             foreach (var orderItemDto in orderDto.OrderItems)
             {
-                newOrder.Add(ProductId.Of(orderItemDto.ProductId), orderItemDto.Quantity, orderItemDto.Price, orderItemDto.Color);
+                newOrder.Add(ProductId.Of(orderItemDto.ProductId), orderItemDto.ProductCategoryId, orderItemDto.Quantity, orderItemDto.Price, orderItemDto.Color);
             }
 
             var totalPrice = newOrder.TotalPrice;
@@ -75,9 +123,59 @@ namespace Ordering.Application.Orders.Commands.CreateOrder
                         newOrder.ApplyCoupon((decimal)coupon.DiscountAmount); //apply the discount to the order
                     }
                 }
+                else
+                {
+                    throw new NotFoundException($"Coupon {orderDto.CouponCode} can not be found.");
+                }
             }
 
             return newOrder;
+        }
+
+
+
+        private void ValidateOrderRequest(OrderDtoRequest orderDto)
+        {
+            if (orderDto == null)
+                throw new BadRequestException("Order request cannot be null.");
+
+            if (orderDto.ShippingAddress == null ||
+                string.IsNullOrWhiteSpace(orderDto.ShippingAddress.FirstName) ||
+                string.IsNullOrWhiteSpace(orderDto.ShippingAddress.LastName) ||
+                string.IsNullOrWhiteSpace(orderDto.ShippingAddress.Phone) ||
+                string.IsNullOrWhiteSpace(orderDto.ShippingAddress.EmailAddress) ||
+                string.IsNullOrWhiteSpace(orderDto.ShippingAddress.AddressLine) ||
+                string.IsNullOrWhiteSpace(orderDto.ShippingAddress.City) ||
+                string.IsNullOrWhiteSpace(orderDto.ShippingAddress.District) ||
+                string.IsNullOrWhiteSpace(orderDto.ShippingAddress.Ward))
+            {
+                throw new BadRequestException("All shipping address fields are required.");
+            }
+
+            if (orderDto.Payment == null ||
+                string.IsNullOrWhiteSpace(orderDto.Payment.CardName) ||
+                string.IsNullOrWhiteSpace(orderDto.Payment.CardNumber) ||
+                string.IsNullOrWhiteSpace(orderDto.Payment.Expiration) ||
+                string.IsNullOrWhiteSpace(orderDto.Payment.Cvv) ||
+                string.IsNullOrWhiteSpace(orderDto.Payment.PaymentMethod))
+            {
+                throw new BadRequestException("All payment fields are required.");
+            }
+
+            if (orderDto.OrderItems == null || !orderDto.OrderItems.Any())
+            {
+                throw new BadRequestException("Order must contain at least one item.");
+            }
+
+            if (orderDto.OrderItems.Any(item =>
+                item.ProductId == Guid.Empty ||
+                string.IsNullOrWhiteSpace(item.ProductCategoryId) ||
+                item.Quantity <= 0 ||
+                item.Price <= 0 ||
+                string.IsNullOrWhiteSpace(item.Color)))
+            {
+                throw new BadRequestException("All order item fields are required and must be valid.");
+            }
         }
     }
 }

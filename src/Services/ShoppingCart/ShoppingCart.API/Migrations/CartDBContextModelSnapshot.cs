@@ -45,6 +45,10 @@ namespace ShoppingCart.API.Migrations
                     b.Property<double>("Price")
                         .HasColumnType("float");
 
+                    b.Property<string>("ProductCategoryId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ProductId")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
