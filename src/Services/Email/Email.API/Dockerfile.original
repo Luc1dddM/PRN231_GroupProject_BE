@@ -1,5 +1,8 @@
 #See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
+#Depending on the operating system of the host machines(s) that will build or run the containers, the image specified in the FROM statement may need to be changed.
+#For more information, please see https://aka.ms/containercompat
+
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 USER app
 WORKDIR /app
@@ -12,7 +15,7 @@ WORKDIR /src
 COPY ["Services/Email/Email.API/Email.API.csproj", "Services/Email/Email.API/"]
 COPY ["BuildingBlocks/BuildingBlocks.Messaging/BuildingBlocks.Messaging.csproj", "BuildingBlocks/BuildingBlocks.Messaging/"]
 COPY ["BuildingBlocks/BuildingBlocks/BuildingBlocks.csproj", "BuildingBlocks/BuildingBlocks/"]
-RUN dotnet restore "./Services/Email/Email.API/Email.API.csproj"
+RUN dotnet restore "./Services/Email/Email.API/./Email.API.csproj"
 COPY . .
 WORKDIR "/src/Services/Email/Email.API"
 RUN dotnet build "./Email.API.csproj" -c $BUILD_CONFIGURATION -o /app/build

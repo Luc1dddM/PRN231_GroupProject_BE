@@ -4,7 +4,7 @@ using Email.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
-namespace Email.API.SendMail;
+namespace Email.API.Emails.SendMail;
 
 public class GetEmailSendDetailEndpoint : ICarterModule
 {

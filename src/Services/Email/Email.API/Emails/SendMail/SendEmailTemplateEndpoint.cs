@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Http;
 
-namespace Email.API.SendMail;
+namespace Email.API.Emails.SendMail;
 
 public class SendEmailTemplateEndpoint : ICarterModule
 {

@@ -1,6 +1,33 @@
 services:
+  rabbit:
+    image: rabbitmq:3.9.20-management
+    container_name: rabbit-mq
+    hostname: rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - CLUSTERED=true
+      - RAM_NODE=true
+      - CLUSTER_WITH=rabbit
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
   coupon.grpc:
     image: ${DOCKER_REGISTRY-}coupongrpc
     build:
       context: .
       dockerfile: Services/Coupon/Coupon.Grpc/Dockerfile
+  email.service:
+    depends_on:
+      - rabbit
+    image: ${DOCKER_REGISTRY-}emailservice
+    build:
+      context: .
+      dockerfile: Services/Email/Email.API/Dockerfile
+
+volumes:
+  rabbitmq_data:
+    driver: local
