@@ -274,12 +274,12 @@
     //Coupon Routes
     //1. CreateCoupon route
     {
-      "DownstreamPathTemplate": "/CouponProtoService/CreateCoupon",
+      "DownstreamPathTemplate": "/api/Coupons/",
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 7003
+          "Port": 7079
         }
       ],
       "AddHeadersToRequest": {
@@ -294,12 +294,12 @@
     },
     //2. EditCoupon route
     {
-      "DownstreamPathTemplate": "/CouponProtoService/EditCoupon",
+      "DownstreamPathTemplate": "/api/Coupons/",
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 7003
+          "Port": 7079
         }
       ],
       "AddHeadersToRequest": {
@@ -314,12 +314,12 @@
     },
     //3. GetCoupons route
     {
-      "DownstreamPathTemplate": "/CouponProtoService/GetCoupons",
+      "DownstreamPathTemplate": "/api/Coupons/",
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 7003
+          "Port": 7079
         }
       ],
       "AddHeadersToRequest": {
@@ -332,26 +332,6 @@
         "AllowedScopes": []
       }
     },
-    //4. GetCoupon route
-    {
-      "DownstreamPathTemplate": "/CouponProtoService/GetCoupon",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7003
-        }
-      ],
-      "AddHeadersToRequest": {
-        "UserId": "Claims[id] > value"
-      },
-      "UpstreamPathTemplate": "/gateway/coupons/getcoupon/{id}",
-      "UpstreamHttpMethod": [ "Put" ],
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": []
-      }
-    }
   ],
 
   "GlobalConfiguration": {
