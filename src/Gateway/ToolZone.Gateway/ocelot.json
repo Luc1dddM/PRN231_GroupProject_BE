@@ -16,7 +16,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/WeatherForecast",
-      "UpstreamHttpMethod": ["GET"],
+      "UpstreamHttpMethod": [ "GET" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
@@ -40,7 +40,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/Identity/AddRole",
-      "UpstreamHttpMethod": ["POST"],
+      "UpstreamHttpMethod": [ "POST" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
@@ -65,7 +65,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/products",
-      "UpstreamHttpMethod": ["Post"],
+      "UpstreamHttpMethod": [ "Post" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
@@ -85,7 +85,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/products",
-      "UpstreamHttpMethod": ["Get"],
+      "UpstreamHttpMethod": [ "Get" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
@@ -105,7 +105,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/productsForCustomer",
-      "UpstreamHttpMethod": ["Get"],
+      "UpstreamHttpMethod": [ "Get" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
@@ -125,7 +125,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/products/{id}",
-      "UpstreamHttpMethod": ["Get"],
+      "UpstreamHttpMethod": [ "Get" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
@@ -145,7 +145,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/products",
-      "UpstreamHttpMethod": ["Put"],
+      "UpstreamHttpMethod": [ "Put" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
@@ -165,7 +165,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/products/AddColor",
-      "UpstreamHttpMethod": ["Post"],
+      "UpstreamHttpMethod": [ "Post" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
@@ -185,7 +185,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/categories",
-      "UpstreamHttpMethod": ["Get"],
+      "UpstreamHttpMethod": [ "Get" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
@@ -205,7 +205,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/categories/{id}",
-      "UpstreamHttpMethod": ["Get"],
+      "UpstreamHttpMethod": [ "Get" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
@@ -225,7 +225,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/categories",
-      "UpstreamHttpMethod": ["Post"],
+      "UpstreamHttpMethod": [ "Post" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
@@ -245,7 +245,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/categories",
-      "UpstreamHttpMethod": ["Put"],
+      "UpstreamHttpMethod": [ "Put" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
@@ -265,13 +265,95 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/categories/color/{id}",
-      "UpstreamHttpMethod": ["Get"],
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+    //Coupon Routes
+    //1. CreateCoupon route
+    {
+      "DownstreamPathTemplate": "/CouponProtoService/CreateCoupon",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7003
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/coupons/create",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+    //2. EditCoupon route
+    {
+      "DownstreamPathTemplate": "/CouponProtoService/EditCoupon",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7003
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/coupons/edit",
+      "UpstreamHttpMethod": [ "Put" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+    //3. GetCoupons route
+    {
+      "DownstreamPathTemplate": "/CouponProtoService/GetCoupons",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7003
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/coupons/getcoupons",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+    //4. GetCoupon route
+    {
+      "DownstreamPathTemplate": "/CouponProtoService/GetCoupon",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7003
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/coupons/getcoupon/{id}",
+      "UpstreamHttpMethod": [ "Put" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
       }
     }
   ],
+
   "GlobalConfiguration": {
     "BaseUrl": "https://localhost:7777"
   }

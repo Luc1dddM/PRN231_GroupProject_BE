@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Coupon.Grpc.Models
+namespace Coupon.API.Models
 {
     public class Coupon
     {
@@ -10,13 +10,16 @@ namespace Coupon.Grpc.Models
         public int Id { get; set; }
 
         public string CouponId { get; set; } = Guid.NewGuid().ToString();
-        
+        [Required]
         public string CouponCode { get; set; } = null!;
-       
+
+        [Required]
         public double DiscountAmount { get; set; }
 
+        [Required]
         public int Quantity { get; set; }
 
+        [Required]
         public bool Status { get; set; }
 
         public double? MinAmount { get; set; }

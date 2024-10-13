@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace Coupon.Grpc.Models
+namespace Coupon.API.Models
 {
     public class Prn231GroupProjectContext : DbContext
     {
@@ -18,9 +18,9 @@ namespace Coupon.Grpc.Models
                 {
                     Id = 1,
                     CouponId = Guid.NewGuid().ToString(),
-                    CouponCode = "WELCOME10",
-                    DiscountAmount = 10.0,
-                    Quantity = 100,
+                    CouponCode = "WELCOME20",
+                    DiscountAmount = 20.0,
+                    Quantity = 10,
                     Status = true,
                     MinAmount = 50,
                     MaxAmount = 200,
@@ -31,9 +31,9 @@ namespace Coupon.Grpc.Models
                 {
                     Id = 2,
                     CouponId = Guid.NewGuid().ToString(),
-                    CouponCode = "SUMMER20",
-                    DiscountAmount = 20.0,
-                    Quantity = 50,
+                    CouponCode = "SUMMER2024",
+                    DiscountAmount = 50.0,
+                    Quantity = 5,
                     Status = true,
                     MinAmount = 100,
                     MaxAmount = 500,

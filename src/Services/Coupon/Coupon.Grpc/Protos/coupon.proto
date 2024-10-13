@@ -5,9 +5,7 @@ package Coupon;
 
 service CouponProtoService {
 	rpc GetCoupon (GetCouponRequest) returns (CouponModel);
-   rpc GetCoupons (Empty) returns (GetCouponsResponse);
-	rpc CreateCoupon (CreateCouponRequest) returns (CouponModel);
-	rpc EditCoupon (EditCouponRequest) returns (CouponModel);
+    rpc GetCoupons (Empty) returns (GetCouponsResponse);
 
 }
 message GetCouponRequest {
@@ -21,26 +19,30 @@ message CouponModel {
     string couponId = 2;           
     string couponCode = 3;          
     double discountAmount = 4;     
-    bool status = 5;               
-    double minAmount = 6;           
-    double maxAmount = 7;               
+    int32 quantity = 5;
+    bool status = 6;               
+    double minAmount = 7;           
+    double maxAmount = 8;               
 }
 
 message CreateCouponRequest {
+
     string couponCode = 1;
-    double discountAmount = 2;      
-    bool status = 3;              
-    double minAmount = 4;      
-    double maxAmount = 5;            
+    double discountAmount = 2;     
+    int32 quantity = 3;
+    bool status = 4;              
+    double minAmount = 5;      
+    double maxAmount = 6;            
 }
 
 message EditCouponRequest {
 	int32 id = 1;                   
     string couponCode = 2;        
-    double discountAmount = 3;     
-    bool status = 4;                
-    double minAmount = 5;           
-    double maxAmount = 6; 
+    double discountAmount = 3;   
+    int32 quantity = 4;
+    bool status = 5;                
+    double minAmount = 6;           
+    double maxAmount = 7; 
 }
 message Empty {}
 

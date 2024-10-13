@@ -2,6 +2,7 @@
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Mapster;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace Coupon.Grpc.Services
@@ -28,14 +29,12 @@ namespace Coupon.Grpc.Services
                     CouponId = Guid.NewGuid().ToString(),
                     CouponCode = "No Coupon",
                     DiscountAmount = 0,
-                    Status = false,
-                    CreatedBy = "System",
-                    CreatedDate = DateTime.UtcNow
+                    Quantity = 0,
+                    Status = false
                 };
             }
 
             logger.LogInformation("Coupon is retrieved for CouponCode: {CouponCode}, DiscountAmount: {DiscountAmount}", coupon.CouponCode, coupon.DiscountAmount);
-
             var couponModel = coupon.Adapt<CouponModel>();
 
             return couponModel;
@@ -55,50 +54,6 @@ namespace Coupon.Grpc.Services
 
             return response;
         }
-
-        public override async Task<CouponModel> CreateCoupon(CreateCouponRequest request, ServerCallContext context)
-        {
-
-            var coupon = new Models.Coupon
-            {
-                CouponCode = request.CouponCode,
-                DiscountAmount = request.DiscountAmount,
-                Status = request.Status,
-                MinAmount = request.MinAmount,
-                MaxAmount = request.MaxAmount,
-                CreatedBy = "System",
-                CreatedDate = DateTime.UtcNow
-            };
-
-            dbContext.Coupons.Add(coupon);
-            await dbContext.SaveChangesAsync();
-
-            return coupon.Adapt<CouponModel>();
-        }
-
-        public override async Task<CouponModel> EditCoupon(EditCouponRequest request, ServerCallContext context)
-        {
-
-            var coupon = await dbContext.Coupons.FindAsync(request.Id);
-            if (coupon == null)
-            {
-                throw new RpcException(new Status(StatusCode.NotFound, "Coupon not found."));
-            }
-
-            coupon.CouponCode = request.CouponCode;
-            coupon.DiscountAmount = request.DiscountAmount;
-            coupon.Status = request.Status;
-            coupon.MinAmount = request.MinAmount;
-            coupon.MaxAmount = request.MaxAmount;
-            coupon.UpdatedBy = "System";
-            coupon.UpdatedDate = DateTime.UtcNow;
-
-            await dbContext.SaveChangesAsync();
-
-            return coupon.Adapt<CouponModel>();
-        }
-
-
 
     }
 }
