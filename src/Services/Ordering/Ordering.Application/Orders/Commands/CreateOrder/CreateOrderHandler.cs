@@ -1,5 +1,5 @@
-﻿
 using BuildingBlocks.Messaging.Events;
+using BuildingBlocks.Messaging.Events.DTO;
 using BuildingBlocks.Models;
 using Coupon.Grpc;
 using Mapster;
@@ -45,7 +45,8 @@ namespace Ordering.Application.Orders.Commands.CreateOrder
                 Console.WriteLine($"CouponCode in command: {command.Order.CouponCode}");
                 //create Order entity from command object
                 var order = await CreateNewOrder(command.Order, userId);
-
+                var orderItem = MapOrderItemToReduceQuantity(order.OrderItems, userId);
+                _publishEndpoint.Publish(orderItem);
                 //save to database
                 _context.Orders.Add(order);
 
@@ -73,6 +74,30 @@ namespace Ordering.Application.Orders.Commands.CreateOrder
                 throw new Exception(e.Message, e);
             }
 
+        }
+
+
+        private ReduceQuantityEvent MapOrderItemToReduceQuantity(IReadOnlyList<OrderItem> orderItems, string userId)
+        {
+
+            var tmp = new List<ReduceQuantityDTO>();
+            foreach (var item in orderItems)
+            {
+                var reduceQuantityDTO = new ReduceQuantityDTO
+                {
+                    productCategoryId = item.ProductCategoryId,
+                    quantity = item.Quantity,
+                    user = userId,
+                    IsCancel = false
+                };
+                tmp.Add(reduceQuantityDTO);
+            }
+            var nEvent = new ReduceQuantityEvent()
+            {
+                listProductCategory = tmp
+            };
+
+            return nEvent;
         }
 
 

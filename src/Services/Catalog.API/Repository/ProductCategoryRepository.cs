@@ -1,4 +1,5 @@
 ﻿using Catalog.API.Models;
+using MassTransit.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 
 namespace Catalog.API.Repository
@@ -305,12 +306,32 @@ namespace Catalog.API.Repository
             {
                 ProductCategory newProductCategory = _dbContext.ProductCategories.Include(p => p.Category)
                                                         .FirstOrDefault(c => c.Category.Type.Equals("Device") && c.ProductId.Equals(productId));
-                newProductCategory.CategoryId = device;
-                newProductCategory.Updatedby = user;
-                newProductCategory.UpdatedAt = DateTime.Now;
-                newProductCategory.Quantity = 0;
-                newProductCategory.Status = status;
-                _dbContext.SaveChanges();
+                if (newProductCategory != null)
+                {
+                    newProductCategory.CategoryId = device;
+                    newProductCategory.Updatedby = user;
+                    newProductCategory.UpdatedAt = DateTime.Now;
+                    newProductCategory.Quantity = 0;
+                    newProductCategory.Status = status;
+                    _dbContext.SaveChanges();
+                }
+                else
+                {
+                    var productCategory = new ProductCategory()
+                    {
+                        CategoryId = device,
+                        ProductId = productId,
+                        Quantity = 0,
+                        CreatedBy = user,
+                        CreatedAt = DateTime.Now,
+                        UpdatedAt = DateTime.Now,
+                        Updatedby = user,
+                        Status = status
+                    };
+                    _dbContext.ProductCategories.Add(productCategory);
+                    _dbContext.SaveChanges();
+                }
+
             }
             catch (Exception ex)
             {
@@ -324,12 +345,31 @@ namespace Catalog.API.Repository
             {
                 ProductCategory newProductCategory = _dbContext.ProductCategories.Include(p => p.Category)
                                                         .FirstOrDefault(c => c.Category.Type.Equals("Brand") && c.ProductId.Equals(productId));
-                newProductCategory.CategoryId = brand;
-                newProductCategory.Updatedby = user;
-                newProductCategory.UpdatedAt = DateTime.Now;
-                newProductCategory.Quantity = 0;
-                newProductCategory.Status = status;
-                _dbContext.SaveChanges();
+                if (newProductCategory != null)
+                {
+                    newProductCategory.CategoryId = brand;
+                    newProductCategory.Updatedby = user;
+                    newProductCategory.UpdatedAt = DateTime.Now;
+                    newProductCategory.Quantity = 0;
+                    newProductCategory.Status = status;
+                    _dbContext.SaveChanges();
+                }
+                else
+                {
+                    var productCategory = new ProductCategory()
+                    {
+                        CategoryId = brand,
+                        ProductId = productId,
+                        Quantity = 0,
+                        CreatedBy = user,
+                        CreatedAt = DateTime.Now,
+                        UpdatedAt = DateTime.Now,
+                        Updatedby = user,
+                        Status = status
+                    };
+                    _dbContext.ProductCategories.Add(productCategory);
+                    _dbContext.SaveChanges();
+                }
             }
             catch (Exception ex)
             {
@@ -342,18 +382,38 @@ namespace Catalog.API.Repository
             try
             {
                 ProductCategory newProductCategory = _dbContext.ProductCategories.FirstOrDefault(c => c.CategoryId.Equals(color) && c.ProductId.Equals(productId));
-                newProductCategory.Updatedby = user;
-                newProductCategory.UpdatedAt = DateTime.Now;
-                newProductCategory.Quantity = quantity;
-                if (quantity != 0)
+                if (newProductCategory != null)
                 {
-                    newProductCategory.Status = status;
+                    newProductCategory.Updatedby = user;
+                    newProductCategory.UpdatedAt = DateTime.Now;
+                    newProductCategory.Quantity = quantity;
+                    if (quantity != 0)
+                    {
+                        newProductCategory.Status = status;
+                    }
+                    else
+                    {
+                        newProductCategory.Status = false;
+                    }
+                    _dbContext.SaveChanges();
                 }
                 else
                 {
-                    newProductCategory.Status = false;
+                    var productCategory = new ProductCategory()
+                    {
+                        CategoryId = color,
+                        ProductId = productId,
+                        Quantity = quantity,
+                        CreatedBy = user,
+                        CreatedAt = DateTime.Now,
+                        UpdatedAt = DateTime.Now,
+                        Updatedby = user,
+                        Status = quantity==0 ? false:status
+                    };
+                    _dbContext.ProductCategories.Add(productCategory);
+                    _dbContext.SaveChanges();
                 }
-                _dbContext.SaveChanges();
+
             }
             catch (Exception ex)
             {
@@ -361,18 +421,18 @@ namespace Catalog.API.Repository
             }
         }
 
-        public Task UpdateQuantityForOrder(string color, string productId, int quantity, string user, bool isCancel)
+        public Task UpdateQuantityForOrder(string productCategoryId, int quantity, string user, bool isCancel)
         {
 
             try
             {
-                ProductCategory newProductCategory = _dbContext.ProductCategories.FirstOrDefault(c => c.CategoryId.Equals(color) && c.ProductId.Equals(productId));
+                ProductCategory newProductCategory = _dbContext.ProductCategories.FirstOrDefault(p => p.ProductCategoryId.Equals(productCategoryId));
                 newProductCategory.Updatedby = user;
                 newProductCategory.UpdatedAt = DateTime.Now;
-                
-                newProductCategory.Quantity = 
-                    isCancel? 
-                    newProductCategory.Quantity + quantity : 
+
+                newProductCategory.Quantity =
+                    isCancel ?
+                    newProductCategory.Quantity + quantity :
                     newProductCategory.Quantity - quantity;
 
 

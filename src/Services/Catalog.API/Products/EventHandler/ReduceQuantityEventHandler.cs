@@ -1,7 +1,6 @@
 ﻿using BuildingBlocks.Messaging.Events;
 using Catalog.API.Models.DTO;
 using Catalog.API.Repository;
-using MapsterMapper;
 using MassTransit;
 
 namespace Catalog.API.Products.EventHandler
@@ -10,27 +9,32 @@ namespace Catalog.API.Products.EventHandler
     {
         private readonly IPublishEndpoint _publishEndpoint;
         private readonly IProductCategoryRepository _productCategoruRepository;
-        private readonly IMapper _mapper;
+
 
 
         public ReduceQuantityEventHandler(
-            IMapper mapper,
             IPublishEndpoint publishEndpoint,
             IProductCategoryRepository productCategoryRepository)
         {
             _publishEndpoint = publishEndpoint;
             _productCategoruRepository = productCategoryRepository;
-            _mapper = mapper;
+           
         }
 
         public Task Consume(ConsumeContext<ReduceQuantityEvent> context)
         {
-
-
-            var data = _mapper.Map<UpdateQuantityForOrder>(context.Message);
-
-            _productCategoruRepository.UpdateQuantityForOrder(data.color, data.productId, data.quantity, data.user, data.IsCancel);
-
+            try
+            {
+                var list = context.Message.Adapt<UpdateQuantityForOrder>();
+                foreach (var item in list.listProductCatgory)
+                {
+                    _productCategoruRepository.UpdateQuantityForOrder(item.productCategoryId,item.quantity,item.user,item.IsCancel);
+                }
+            }
+            catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
             return Task.CompletedTask;
         }
     }

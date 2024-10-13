@@ -104,7 +104,7 @@ namespace Catalog.API.Repository
             try
             {
 
-                var ProductRaw = await _dbContext.Products.FindAsync(productId, cancellationToken);
+                var ProductRaw = await _dbContext.Products.FirstOrDefaultAsync(p => p.ProductId.Equals(productId), cancellationToken);
                 var Brand =  _dbContext.ProductCategories.Include(c => c.Category).FirstOrDefault(p => p.Category.Type.Equals("Brand") && p.ProductId.Equals(productId));
                 var Device =  _dbContext.ProductCategories.Include(c => c.Category).FirstOrDefault(p => p.Category.Type.Equals("Device") && p.ProductId.Equals(productId));
                 var Color =  _dbContext.ProductCategories.Where(p => p.Category.Type.Equals("Color") && p.ProductId.Equals(productId)).ToList();

@@ -1,4 +1,7 @@
-﻿using BuildingBlocks.Models;
+﻿using BuildingBlocks.Messaging.Events.DTO;
+using BuildingBlocks.Messaging.Events;
+using BuildingBlocks.Models;
+using MassTransit;
 using Microsoft.AspNetCore.Http;
 using Ordering.Domain.Enums;
 
@@ -9,12 +12,17 @@ namespace Ordering.Application.Orders.Commands.UpdateOrder
         private readonly IApplicationDbContext _context;
         private readonly ILogger<UpdateOrderHandler> _logger;
         private readonly IHttpContextAccessor _contextAccessor;
+        private readonly IPublishEndpoint _publishEndpoint;
 
-        public UpdateOrderHandler(IApplicationDbContext context, ILogger<UpdateOrderHandler> logger, IHttpContextAccessor contextAccessor)
+        public UpdateOrderHandler(IApplicationDbContext context, 
+            ILogger<UpdateOrderHandler> logger, 
+            IHttpContextAccessor contextAccessor,
+            IPublishEndpoint publishEndpoint)
         {
             _context = context;
             _logger = logger;
             _contextAccessor = contextAccessor;
+            _publishEndpoint = publishEndpoint;
         }
 
         public async Task<UpdateOrderResult> Handle(UpdateOrderCommand command, CancellationToken cancellationToken)
@@ -47,6 +55,8 @@ namespace Ordering.Application.Orders.Commands.UpdateOrder
                 if (oldStatus != OrderStatus.Cancelled && order.Status == OrderStatus.Cancelled)
                 {
                     _logger.LogInformation("Publish event to re add the quantity of product (foreach here or return a list of OrderItem)");
+                    var list = MapOrderItemToReduceQuantity(order.OrderItems, userId);
+                    _publishEndpoint.Publish(list);
                 }
 
                 _context.Orders.Update(order);
@@ -72,6 +82,31 @@ namespace Ordering.Application.Orders.Commands.UpdateOrder
                 throw new Exception(e.Message, e);
             }
         }
+
+
+        private ReduceQuantityEvent MapOrderItemToReduceQuantity(IReadOnlyList<OrderItem> orderItems, string userId)
+        {
+
+            var tmp = new List<ReduceQuantityDTO>();
+            foreach (var item in orderItems)
+            {
+                var reduceQuantityDTO = new ReduceQuantityDTO
+                {
+                    productCategoryId = item.ProductCategoryId,
+                    quantity = item.Quantity,
+                    user = userId,
+                    IsCancel = true
+                };
+                tmp.Add(reduceQuantityDTO);
+            }
+            var nEvent = new ReduceQuantityEvent()
+            {
+                listProductCategory = tmp
+            };
+
+            return nEvent;
+        }
+
 
         private Order UpdateOrderWithNewValues(Order order, OrderDtoUpdateRequest orderDto)
         {
