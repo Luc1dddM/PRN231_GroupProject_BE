@@ -11,9 +11,23 @@ using ToolZone.Gateway.Configuration;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOcelot();
 
+if (builder.Environment.IsEnvironment("Production"))
+{
+    builder.Configuration.AddUserSecrets<Program>();
+}
+
 builder.Configuration.SetBasePath(builder.Environment.ContentRootPath)
                      .AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Cors", builder =>
+    {
+        builder.WithOrigins("http://localhost:5173")
+               .AllowAnyHeader()
+               .AllowAnyMethod();
+    });
+});
 
 var jwtSection = builder.Configuration.GetSection("JWT");
 builder.Services.Configure<Jwt>(jwtSection);
@@ -51,6 +65,9 @@ builder.Services.AddAuthentication(options =>
             {
                 context.Response.StatusCode = 410;
                 context.Response.ContentType = "application/json";
+                context.Response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0";
+                context.Response.Headers["Pragma"] = "no-cache";
+                context.Response.Headers["Expires"] = "0";
 
                 var result = JsonSerializer.Serialize(new
                 {
@@ -70,9 +87,9 @@ var app = builder.Build();
 
 app.MapGet("/", () => "Hello World!");
 app.UseRouting();
+app.UseCors("Cors");
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.UseOcelot().Wait();
 
 app.Run();

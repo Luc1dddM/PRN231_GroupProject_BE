@@ -6,5 +6,5 @@ namespace Identity.Application.Identity.Commands.GoogleLogin
 {
     public record GoogleLoginQuery(string Token) : IQuery<GoogleLoginResponse>;
 
-    public record GoogleLoginResponse(BaseResponse<JwtModelVM> response);
+    public record GoogleLoginResponse(BaseResponse<LoginReponseDto> response);
 }

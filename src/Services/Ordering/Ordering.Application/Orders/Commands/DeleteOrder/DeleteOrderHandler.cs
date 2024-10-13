@@ -21,7 +21,7 @@
             //when we are passing the orderId, orderId is a primary key and the type is OrderId strongly type ID
             //That's why Entity Framework core expecting this strongly type ID
             //When seeking the table, it has conversion definition into configurations that is getting the great value and seek table with the great value.
-            var order = await _context.Orders.FindAsync([orderId], cancellationToken: cancellationToken);
+            var order = await _context.Orders.FindAsync(new object[] { orderId }, cancellationToken: cancellationToken);
 
             if (order is null)
             {

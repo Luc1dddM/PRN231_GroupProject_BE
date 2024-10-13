@@ -8,7 +8,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -21,7 +21,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -34,7 +34,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -47,7 +47,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -60,7 +60,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -73,7 +73,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -86,7 +86,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -99,7 +99,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -119,7 +119,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -139,7 +139,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -161,7 +161,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -181,7 +181,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -201,7 +201,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -221,7 +221,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],

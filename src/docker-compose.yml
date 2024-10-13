@@ -1,6 +1,20 @@
 services:
-  coupon.grpc:
-    image: ${DOCKER_REGISTRY-}coupongrpc
+ # coupon.grpc:
+ #   image: ${DOCKER_REGISTRY-}coupongrpc
+ #   build:
+ #     context: .
+ #     dockerfile: Services/Coupon/Coupon.Grpc/Dockerfile
+
+  identity.api:
+    image: ${DOCKER_REGISTRY-}identityapi
     build:
       context: .
-      dockerfile: Services/Coupon/Coupon.Grpc/Dockerfile
+      dockerfile: Services/Identity/Identity.API/Dockerfile
+
+
+  toolzone.gateway:
+    image: ${DOCKER_REGISTRY-}toolzonegateway
+    build:
+      context: .
+      dockerfile: Gateway/ToolZone.Gateway/Dockerfile
+
