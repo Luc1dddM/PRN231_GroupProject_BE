@@ -21,7 +21,7 @@ namespace Email.API.Repository
         public Task SendEmailOrder(string orderId, string userEmail, string couponCode);
 
         // crud email
-        public Task<EmailListDTO> GetList(string[] statusesParam, string[] categoriesParam, string searchterm, string sortBy, string sortOrder, int pageNumberParam, int pageSizeParam);
+        public Task<EmailListDTO> GetList(string[] statusesParam, string[] categoriesParam, string searchterm, string sortBy, string sortOrder, int? pageNumberParam, int? pageSizeParam);
         public Task<List<EmailTemplate>> GetList();
         public Task<EmailTemplate> AddEmailTemplate(EmailTemplate newEmailTemplate);
         public Task<EmailTemplate> UpdateEmailTemplate(EmailTemplate newEmailTemplate);

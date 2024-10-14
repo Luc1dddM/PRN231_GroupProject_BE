@@ -25,8 +25,10 @@ namespace Email.API
                         host.Username(configuration["MessageBroker:UserName"]);
                         host.Password(configuration["MessageBroker:Password"]);
                     });
+                    configurator.UseRawJsonSerializer(RawSerializerOptions.AddTransportHeaders | RawSerializerOptions.CopyHeaders);
                     configurator.ConfigureEndpoints(context);
                 });
+
             });
             return services;
         }

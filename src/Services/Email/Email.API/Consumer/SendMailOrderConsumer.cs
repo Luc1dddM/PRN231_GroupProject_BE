@@ -1,4 +1,4 @@
-﻿using Email.API.Events;
+﻿using BuildingBlocks.Messaging.Events;
 using Email.API.Repository;
 using MassTransit;
 
@@ -16,6 +16,8 @@ public class SendMailOrderConsumer : IConsumer<SendMailOrderEvent>
     public async Task Consume(ConsumeContext<SendMailOrderEvent> context)
     {
         var @event = context.Message;
+        Console.WriteLine($"Received SendMailOrderEvent: OrderId={@event.OrderId}, UserEmail={@event.UserEmail}, CouponCode={@event.CouponCode}");
+
         await _emailRepository.SendEmailOrder(@event.OrderId, @event.UserEmail, @event.CouponCode);
     }
 }
