@@ -1,4 +1,5 @@
 ﻿using BuildingBlocks.CQRS;
+using BuildingBlocks.Models;
 using Catalog.API.Exceptions;
 using Catalog.API.Models;
 using Catalog.API.Models.DTO;
@@ -7,7 +8,7 @@ using Catalog.API.Repository;
 namespace Catalog.API.Products.GetProductById
 {
     public record GetProductByIdQuery(string Id) : IQuery<GetProductByIdResult>;
-    public record GetProductByIdResult(ProductDetailDTO Product);
+    public record GetProductByIdResult(BaseResponse<ProductDetailForUpdateDTO> Product);
 
     internal class GetProductByIdQueryHandler
         : IQueryHandler<GetProductByIdQuery, GetProductByIdResult>
@@ -22,12 +23,14 @@ namespace Catalog.API.Products.GetProductById
         {
             var product = await _productRepository.GetProductDetailById(query.Id, cancellationToken);
 
-            if (product is null)
+            if (product.product is null)
             {
                 throw new ProductNotFoundException(query.Id);
             }
 
-            return new GetProductByIdResult(product);
+            var result = new BaseResponse<ProductDetailForUpdateDTO>(product);
+
+            return new GetProductByIdResult(result);
         }
     }
 }

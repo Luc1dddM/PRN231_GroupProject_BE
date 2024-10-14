@@ -1,4 +1,6 @@
 ﻿using BuildingBlocks.CQRS;
+using BuildingBlocks.Exceptions;
+using BuildingBlocks.Models;
 using Catalog.API.Exceptions;
 using Catalog.API.Models;
 using Catalog.API.Models.DTO;
@@ -9,7 +11,7 @@ namespace Catalog.API.Products.UpdateProduct
 {
     public record UpdateProductCommand(ProductUpdateDTO ProductUpdateDTO)
         : ICommand<UpdateProductResult>;
-    public record UpdateProductResult(bool IsSuccess);
+    public record UpdateProductResult(BaseResponse<bool> IsSuccess);
 
     public class UpdateProductCommandValidator : AbstractValidator<UpdateProductCommand>
     {
@@ -53,8 +55,8 @@ namespace Catalog.API.Products.UpdateProduct
                 throw new ProductNotFoundException(command.ProductUpdateDTO.Id);
             }
             var user = _httpContextAccessor.HttpContext.Request.Headers["UserId"].ToString();
+            if (string.IsNullOrEmpty(user)) throw new BadRequestException("User Id Is Null");
 
-          
             product.Name = command.ProductUpdateDTO.Name;
             product.Price = command.ProductUpdateDTO.Price;
             product.Description = command.ProductUpdateDTO.Description;
@@ -69,9 +71,9 @@ namespace Catalog.API.Products.UpdateProduct
             _productCategoryRepository.UpdateDevice(command.ProductUpdateDTO.Device,command.ProductUpdateDTO.Id,command.ProductUpdateDTO.Status,user);
             _productCategoryRepository.UpdateColor(command.ProductUpdateDTO.Color,command.ProductUpdateDTO.Id,command.ProductUpdateDTO.Status,command.ProductUpdateDTO.Quantity, user);
 
+            var result = new BaseResponse<bool>(true,"Update Successfully");
 
-
-            return new UpdateProductResult(true);
+            return new UpdateProductResult(result);
         }
     }
 }

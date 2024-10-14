@@ -1,4 +1,5 @@
 ﻿using BuildingBlocks.CQRS;
+using BuildingBlocks.Models;
 using Catalog.API.Exceptions;
 using Catalog.API.Models;
 using Catalog.API.Models.DTO;
@@ -9,7 +10,7 @@ namespace Catalog.API.Categories.UpdateCategory
 {
     public record UpdateCategoryCommand(string Id, string Name, string Type, bool Status)
         : ICommand<UpdateCategoryResult>;
-    public record UpdateCategoryResult(bool IsSuccess);
+    public record UpdateCategoryResult(BaseResponse<bool> IsSuccess);
 
     public class UpdateCategoryCommandValidator : AbstractValidator<UpdateCategoryCommand>
     {
@@ -58,7 +59,7 @@ namespace Catalog.API.Categories.UpdateCategory
             _categoryRepository.update(category, user);
 
 
-            return new UpdateCategoryResult(true);
+            return new UpdateCategoryResult(new BaseResponse<bool>(true,"Update category successfuly"));
         }
     }
 }

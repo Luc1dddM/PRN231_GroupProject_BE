@@ -1,11 +1,12 @@
-﻿using Catalog.API.Categories.GetCategories;
+﻿using BuildingBlocks.Models;
+using Catalog.API.Categories.GetCategories;
 using Catalog.API.Models;
 
 namespace Catalog.API.Catagories.GetColor
 {
     public record GetColorsRequest(string productId);
 
-    public record GetColorsResponse(IEnumerable<Category> Categories);
+    public record GetColorsResponse(BaseResponse<IEnumerable<Category>> Categories);
 
     public class GetColorsEndpoint : ICarterModule
     {

@@ -1,11 +1,12 @@
-﻿using Catalog.API.Models.DTO;
+﻿using BuildingBlocks.Models;
+using Catalog.API.Models.DTO;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Catalog.API.Products.CreateProduct
 {
     public record CreateProductRequest(ProductCreateDTO ProductCreateDTO);
 
-    public record CreateProductResponse(string Id);
+    public record CreateProductResponse(BaseResponse<string> Id);
 
     public class CreateProductEndpoint : ICarterModule
     {
