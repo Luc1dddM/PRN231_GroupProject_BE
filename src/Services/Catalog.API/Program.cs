@@ -20,6 +20,9 @@ builder.Services.AddScoped<IUploadImageRepository, UploadImageRepository>();
 builder.Services.AddScoped<IMapper, Mapper>();
 builder.Services.AddMessageBroker(builder.Configuration,Assembly.GetExecutingAssembly());
 
+
+
+
 var assembly = typeof(Program).Assembly;
 builder.Services.AddMediatR(config =>
 {

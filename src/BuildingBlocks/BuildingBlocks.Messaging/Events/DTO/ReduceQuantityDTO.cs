@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BuildingBlocks.Messaging.Events.DTO
 {
-    public record ReduceQuantityDTO : IntegrationEvent
+    public record ReduceQuantityDTO:IntegrationEvent
     {
         public string productCategoryId { get; set; }
         public int quantity { get; set; }

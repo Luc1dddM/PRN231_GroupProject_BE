@@ -1,11 +1,12 @@
 ﻿using BuildingBlocks.CQRS;
+using BuildingBlocks.Models;
 using Catalog.API.Models;
 using Catalog.API.Repository;
 
 namespace Catalog.API.Catagories.GetColor
 {
     public record GetColorsQuery(string productId) : IQuery<GetColorsResult>;
-    public record GetColorsResult(IEnumerable<Category> Categories);
+    public record GetColorsResult(BaseResponse<IEnumerable<Category>> Categories);
 
     internal class GetColorsQueryHandler : IQueryHandler<GetColorsQuery, GetColorsResult>
     {
@@ -20,7 +21,9 @@ namespace Catalog.API.Catagories.GetColor
         {
             var categories = await _categoryRepository.GetColors(query.productId,cancellationToken);
 
-            return new GetColorsResult(categories);
+
+
+            return new GetColorsResult(new BaseResponse<IEnumerable<Category>>(categories));
         }
     }
 }

@@ -13,7 +13,7 @@ namespace Catalog.API.Repository
             ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
             IConfiguration configuration = configurationBuilder.AddUserSecrets<UploadImageRepository>().Build();
             string githubToken = configuration.GetSection("github")["accessToken"];
-
+            Id = Id.Contains(".jpg") ? Id : Id + ".jpg";
 
             HttpClient _httpClient = new HttpClient();
             _httpClient.DefaultRequestHeaders.Add("Authorization", $"token {githubToken}");
@@ -76,7 +76,7 @@ namespace Catalog.API.Repository
                 string jsonBody = Newtonsoft.Json.JsonConvert.SerializeObject(requestBody);
 
                 // Đường dẫn API Endpoint, file sẽ được upload vào repo theo tên file
-                string apiUrl = $"{ApiBaseUrl}/repos/{owner}/{repo}/contents/{Id + ".jpg"}";
+                string apiUrl = $"{ApiBaseUrl}/repos/{owner}/{repo}/contents/{Id}";
 
                 // Gửi request lên GitHub API
                 var response = await _httpClient.PutAsync(apiUrl, new StringContent(jsonBody, Encoding.UTF8, "application/json"));
