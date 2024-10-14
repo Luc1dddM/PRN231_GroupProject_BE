@@ -1,4 +1,5 @@
 ﻿using BuildingBlocks.Exceptions;
+using BuildingBlocks.Models;
 using Identity.Application.Email.Interfaces;
 using Identity.Application.Identity.Dtos;
 using Identity.Application.Identity.Interfaces;
@@ -11,13 +12,14 @@ using Identity.Infrastructure.Identity.Utils;
 using IdentityModel;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using BuildingBlocks.Models;
 
 namespace Identity.Infrastructure.Identity.Services
 {
@@ -61,20 +63,28 @@ namespace Identity.Infrastructure.Identity.Services
         /// </summary>
         /// <param name="model">the view model</param>
         /// <returns>Task&lt;BaseResponse&lt;JwtResponseVM&gt;&gt;</returns>
-        public async Task<BaseResponse<JwtModelVM>> SignInWithGoogle(string idToken)
+        public async Task<BaseResponse<LoginReponseDto>> SignInWithGoogle(string idToken)
         {
 
-            var response = await _googleAuthService.GoogleSignIn(idToken);
+            var userMessage = await _googleAuthService.GoogleSignIn(idToken);
 
-            if (!response.IsSuccess)
-                return new BaseResponse<JwtModelVM>(response.Message);
+            if (!userMessage.IsSuccess)
+                return new BaseResponse<LoginReponseDto>(userMessage.Message);
 
-            var jwtResponse = await CreateJwtToken(response.Result);
+            var user = userMessage.Result;
+            var jwtResponse = await CreateJwtToken(user);
+            var response = new LoginReponseDto()
+            {
+                Token = jwtResponse.Token,
+                RefreshToken = jwtResponse.RefreshToken,
+                Email = user.Email ?? "",
+                UserId = user.UserId
+            };
 
-            return new BaseResponse<JwtModelVM>(jwtResponse);
+            return new BaseResponse<LoginReponseDto>(response);
         }
 
-        public async Task<BaseResponse<JwtModelVM>> Login(string username, string password)
+        public async Task<BaseResponse<LoginReponseDto>> Login(string username, string password)
         {
             var user = _context.Users.FirstOrDefault(u => u.UserName.ToLower() == username.ToLower());
             bool isValid = await _userManager.CheckPasswordAsync(user, password);
@@ -90,8 +100,15 @@ namespace Identity.Infrastructure.Identity.Services
             }
 
             var jwtResponse = await CreateJwtToken(user);
+            var response = new LoginReponseDto()
+            {
+                Token = jwtResponse.Token,
+                RefreshToken = jwtResponse.RefreshToken,
+                Email = user.Email ?? "",
+                UserId = user.UserId
+            };
 
-            return new BaseResponse<JwtModelVM>(jwtResponse);
+            return new BaseResponse<LoginReponseDto>(response);
 
         }
 
@@ -104,80 +121,91 @@ namespace Identity.Infrastructure.Identity.Services
                 Email = email,
                 PhoneNumber = phonenumber,
                 NormalizedEmail = email.ToUpper(),
+                CreatedAt = DateTime.UtcNow,
             };
 
-            user.Id = Guid.NewGuid().ToString();
+            user.UserId = Guid.NewGuid().ToString();
             var result = await _userManager.CreateAsync(user, password);
             if (result.Succeeded)
             {
-                var result1 = await _userManager.AddToRoleAsync(user, "Admin");
+                var result1 = await _userManager.AddToRoleAsync(user, "Customer");
                 SendConfirmationEmail(user.Email, user);
                 var userToResponse = _context.Users.First(u => u.UserName == email);
                 CreateCustomerDto userDto = new()
                 {
                     email = userToResponse.Email,
-                    ID = userToResponse.Id,
+                    ID = userToResponse.UserId,
                     name = userToResponse.FullName,
                     phonenumber = userToResponse.PhoneNumber
                 };
                 return new BaseResponse<CreateCustomerDto>(userDto);
             }
-            return new BaseResponse<CreateCustomerDto>("Cannot Create User!");
-
+            throw new NotFoundException(result.Errors.First().ToString());
         }
 
         public async Task<BaseResponse<string>> ReConfirmEmail(string emailAddress)
         {
-            try
+            var user = await _userManager.FindByEmailAsync(emailAddress);
+            if (user == null)
             {
-                var user = await _userManager.FindByEmailAsync(emailAddress);
-                if (user == null)
-                {
-                    return new BaseResponse<string>("User not found");
-                }
-                await SendConfirmationEmail(emailAddress, user);
-                return new BaseResponse<string>("Thank you for confirming your email");
+                throw new NotFoundException("User not found");
             }
-            catch (Exception ex)
-            {
-                return new BaseResponse<string>(ex.Message);
-
-            }
+            await SendConfirmationEmail(emailAddress, user);
+            return new BaseResponse<string>("Thank you for confirming your email");
         }
 
         public async Task<BaseResponse<string>> ConfirmEmail(string userId, string token)
         {
-            var user = await _userManager.FindByIdAsync(userId);
             if (userId == null || token == null)
-            {
-                return new BaseResponse<string>("User not found");
+                throw new BadRequestException("UserId or Token not found! please try later!");
 
-            }
-            else if (user == null)
-            {
-                return new BaseResponse<string>("User not found");
+            var user = await _userManager.FindByIdAsync(userId);
 
-            }
-            else
+            if (user == null)
+                throw new NotFoundException("User not found");
+
+            token = token.Replace(" ", "+");
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+            if (result.Succeeded)
             {
-                token = token.Replace(" ", "+");
-                var result = await _userManager.ConfirmEmailAsync(user, token);
-                if (result.Succeeded)
-                {
-                    return new BaseResponse<string>("Thank you for confirming your email");
-                }
-                else
-                {
-                    return new BaseResponse<string>("User not found");
-                }
+                return new BaseResponse<string>("Thank you for confirming your email");
             }
+            throw new BadRequestException(result.Errors.First().ToString());
+        }
+
+        public async Task<BaseResponse<string>> ForgotPassword(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user is null) throw new NotFoundException("Account is not exist!");
+
+            if (!await _userManager.IsEmailConfirmedAsync(user)) throw new BadRequestException("Please confirm your account!");
+
+            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
+            var resetLink = $"http://localhost:5173/ResetPassword?Email={email}&Code={code}";
+            _emailSender.SendEmailAsync(email, "Click Here To Reset Password", $"Please confirm your account by <a href='{resetLink}'>clicking here</a>;.", true);
+            return new BaseResponse<string>("Send Email Reset Password Successfully! Please Check Your Email");
+        }
+
+        public async Task<BaseResponse<string>> ForgotPasswordConfirm(string email, string code, string password)
+        {
+            var decode = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null) throw new NotFoundException("User Not Found!");
+
+            var result = await _userManager.ResetPasswordAsync(user, decode, password);
+            if (result.Succeeded) return new BaseResponse<string>("Reset Password Successfully");
+
+            throw new Exception(result.Errors.First().ToString());
+
         }
 
         private async Task SendConfirmationEmail(string? email, Domain.Entities.User? user)
         {
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var confirmationLink = $"https://localhost:7183/api/Identity/ConfirmEmail?UserId={user.Id}&Token={token}";
-            await _emailSender.SendEmailAsync(email, "Confirm Your Email", $"Please confirm your account by <a href='{confirmationLink}'>clicking here</a>;.", true);
+            var confirmationLink = $"https://localhost:8080/api/Identity/ConfirmEmail?UserId={user.Id}&Token={token}";
+            _emailSender.SendEmailAsync(email, "Confirm Your Email", $"Please confirm your account by <a href='{confirmationLink}'>clicking here</a>;.", true);
         }
 
         /// <summary>
@@ -201,74 +229,55 @@ namespace Identity.Infrastructure.Identity.Services
                 RequireExpirationTime = true,
                 IssuerSigningKey = new SymmetricSecurityKey(secretKeyBytes),
             };
-            try
+
+            //check 1: AccessToken valid format
+            var tokenInVerification = jwtTokenHandler.ValidateToken(request.Token, tokenValidateParam, out var validatedToken);
+
+            //check 2: Check alg
+            if (validatedToken is JwtSecurityToken jwtSecurityToken)
             {
-                //check 1: AccessToken valid format
-                var tokenInVerification = jwtTokenHandler.ValidateToken(request.Token, tokenValidateParam, out var validatedToken);
-
-                //check 2: Check alg
-                if (validatedToken is JwtSecurityToken jwtSecurityToken)
-                {
-                    var result = jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256Signature, StringComparison.InvariantCultureIgnoreCase);
-                    if (!result)//false
-                    {
-                        return new BaseResponse<JwtModelVM>("Invalid token");
-                    }
-                }
-
-                //check 3: Check accessToken expire?
-                var utcExpireDate = long.Parse(tokenInVerification.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Exp).Value);
-
-                var expireDate = ConvertUnixTimeToDateTime(utcExpireDate);
-                if (expireDate > DateTime.UtcNow)
-                {
-                    return new BaseResponse<JwtModelVM>("Access token has not yet expired");
-                }
-
-                //check 4: Check refreshtoken exist in DB
-                var storedToken = _context.RefreshTokens.FirstOrDefault(x => x.Token == request.RefreshToken);
-                if (storedToken == null)
-                {
-                    return new BaseResponse<JwtModelVM>("Refresh token does not exist");
-                }
-
-                var maxSessionDuration = TimeSpan.FromDays(Int32.Parse(_refresh.MaxDurationInDay));
-                if (DateTime.UtcNow - storedToken.IssueAt > maxSessionDuration)
-                {
-                    return new BaseResponse<JwtModelVM>("Session Expired");
-                }
-
-                if (storedToken.IsRevoked)
-                {
-                    return new BaseResponse<JwtModelVM>("Refresh token is Revoked");
-                }
-
-                //check 5: check refreshToken is expired?
-                if (storedToken.ExpiredAt < DateTime.UtcNow)
-                {
-                    return new BaseResponse<JwtModelVM>("Refresh token has expired");
-                }
-
-                //check 6: AccessToken id == JwtId in RefreshToken
-                var jti = tokenInVerification.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Jti).Value;
-                if (storedToken.JwtId != jti)
-                {
-                    return new BaseResponse<JwtModelVM>("Token doesn't match");
-                }
-                //create new token
-                var user = await _userManager.FindByIdAsync(storedToken.UserId);
-                var token = await CreateJwtToken(user);
-
-                _context.Remove(storedToken);
-                await _context.SaveChangesAsync();
-
-
-                return new BaseResponse<JwtModelVM>(token);
+                var result = jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256Signature, StringComparison.InvariantCultureIgnoreCase);
+                if (!result)//false
+                    throw new BadRequestException("Invalid token");
             }
-            catch (Exception ex)
-            {
-                return new BaseResponse<JwtModelVM>("Something went wrong!");
-            }
+
+            //check 3: Check accessToken expire?
+            var utcExpireDate = long.Parse(tokenInVerification.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Exp).Value);
+
+            var expireDate = ConvertUnixTimeToDateTime(utcExpireDate);
+            if (expireDate > DateTime.UtcNow)
+                throw new BadRequestException("Access token has not yet expired");
+
+
+            //check 4: Check refreshtoken exist in DB
+            var storedToken = _context.RefreshTokens.FirstOrDefault(x => x.Token == request.RefreshToken);
+            if (storedToken == null)
+                throw new BadRequestException("Refresh token does not exist");
+
+
+            var maxSessionDuration = TimeSpan.FromDays(Int32.Parse(_refresh.MaxDurationInDay));
+            if (DateTime.UtcNow - storedToken.IssueAt > maxSessionDuration)
+                throw new BadRequestException("Session Expired");
+
+
+            if (storedToken.IsRevoked)
+                throw new BadRequestException("Refresh token is Revoked");
+
+            //check 5: check refreshToken is expired?
+            if (storedToken.ExpiredAt < DateTime.UtcNow)
+                throw new BadRequestException("Refresh token has expired");
+
+            //check 6: AccessToken id == JwtId in RefreshToken
+            var jti = tokenInVerification.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Jti).Value;
+            if (storedToken.JwtId != jti)
+                throw new BadRequestException("Token doesn't match");
+
+            //create new token
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == storedToken.UserId);
+            var token = await CreateJwtToken(user);
+
+            return new BaseResponse<JwtModelVM>(token);
+
         }
 
         /// <summary>
@@ -288,7 +297,7 @@ namespace Identity.Infrastructure.Identity.Services
                 issuer: _jwt.ValidIssuer,
                 notBefore: DateTime.UtcNow,
                 audience: _jwt.ValidAudience,
-                expires: DateTime.UtcNow.AddMinutes(Convert.ToInt32(_jwt.DurationInMinutes)),
+                expires: DateTime.UtcNow.AddMinutes(int.Parse(_jwt.DurationInMinutes)),
                 claims: userClaims,
                 signingCredentials: new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature));
 
@@ -301,7 +310,7 @@ namespace Identity.Infrastructure.Identity.Services
             var refreshTokenEntity = new Domain.Entities.RefreshToken
             {
                 Id = Guid.NewGuid(),
-                UserId = user.Id,
+                UserId = user.UserId,
                 JwtId = jwtSecurityToken.Id,
                 Token = refreshToken,
                 IsUsed = false,
@@ -310,6 +319,9 @@ namespace Identity.Infrastructure.Identity.Services
                 ExpiredAt = DateTime.UtcNow.AddHours(Convert.ToInt32(_jwt.DurationInMinutes)),
             };
 
+            var cToken = await _context.RefreshTokens.FirstOrDefaultAsync(r => r.UserId == user.UserId);
+            if (cToken != null) _context.Remove(cToken);
+
             await _context.RefreshTokens.AddAsync(refreshTokenEntity);
             await _context.SaveChangesAsync();
 
@@ -317,7 +329,7 @@ namespace Identity.Infrastructure.Identity.Services
             return new JwtModelVM
             {
                 Token = accessToken,
-                RefreshToken = refreshToken,
+                RefreshToken = refreshToken
             };
         }
 
@@ -345,12 +357,13 @@ namespace Identity.Infrastructure.Identity.Services
             var roles = await _userManager.GetRolesAsync(user);
             var userClaims = new List<Claim>()
             {
-                new Claim(JwtClaimTypes.Id, user.Id.ToString()),
+                 new Claim(JwtClaimTypes.Id, user.UserId),
                 new Claim(JwtClaimTypes.Email, user.Email),
                 new Claim(JwtClaimTypes.Name, user.FullName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
-            List<string> permissions = await _permissionService.GetPermissionsAsync(user.Id);
+            List<string> permissions = await _permissionService.GetPermissionsAsync(user.UserId);
+
             foreach(var role in roles)
             {
                 userClaims.Add(new(CustomClaims.Roles, role));
@@ -360,7 +373,6 @@ namespace Identity.Infrastructure.Identity.Services
             {
                 userClaims.Add(new(CustomClaims.Permissions, permission));
             }
-
             return userClaims;
         }
 
@@ -371,6 +383,11 @@ namespace Identity.Infrastructure.Identity.Services
             dateTimeInterval.AddSeconds(utcExpireDate).ToUniversalTime();
 
             return dateTimeInterval;
+        }
+
+        public Task<BaseResponse<string>> ForgotPasswordConfirm(string email, string code)
+        {
+            throw new NotImplementedException();
         }
     }
 }

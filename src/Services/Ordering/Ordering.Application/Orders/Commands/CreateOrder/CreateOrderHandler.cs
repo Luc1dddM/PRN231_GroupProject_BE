@@ -1,4 +1,4 @@
-﻿using BuildingBlocks.Messaging.Events;
+using BuildingBlocks.Messaging.Events;
 using BuildingBlocks.Messaging.Events.DTO;
 using BuildingBlocks.Models;
 using Coupon.Grpc;
@@ -61,14 +61,17 @@ namespace Ordering.Application.Orders.Commands.CreateOrder
                     Message = "Order Created Successful."
                 });
             }
+            catch (NotFoundException e)
+            {
+                throw new NotFoundException(e.Message, e);
+            }
+            catch(BadRequestException e)
+            {
+                throw new BadRequestException(e.Message);
+            }
             catch (Exception e)
             {
-
-                return new CreateOrderResult(new BaseResponse<OrderDto>
-                {
-                    IsSuccess = false,
-                    Message = e.Message
-                });
+                throw new Exception(e.Message, e);
             }
 
         }
@@ -76,7 +79,7 @@ namespace Ordering.Application.Orders.Commands.CreateOrder
 
         private ReduceQuantityEvent MapOrderItemToReduceQuantity(IReadOnlyList<OrderItem> orderItems, string userId)
         {
-            
+
             var tmp = new List<ReduceQuantityDTO>();
             foreach (var item in orderItems)
             {
@@ -101,6 +104,7 @@ namespace Ordering.Application.Orders.Commands.CreateOrder
 
         private async Task<Order> CreateNewOrder(OrderDtoRequest orderDto, string userId)
         {
+            ValidateOrderRequest(orderDto);
 
             var shippingAddress = Address.Of(orderDto.ShippingAddress.FirstName,
                                              orderDto.ShippingAddress.LastName,
@@ -144,9 +148,59 @@ namespace Ordering.Application.Orders.Commands.CreateOrder
                         newOrder.ApplyCoupon((decimal)coupon.DiscountAmount); //apply the discount to the order
                     }
                 }
+                else
+                {
+                    throw new NotFoundException($"Coupon {orderDto.CouponCode} can not be found.");
+                }
             }
 
             return newOrder;
+        }
+
+
+
+        private void ValidateOrderRequest(OrderDtoRequest orderDto)
+        {
+            if (orderDto == null)
+                throw new BadRequestException("Order request cannot be null.");
+
+            if (orderDto.ShippingAddress == null ||
+                string.IsNullOrWhiteSpace(orderDto.ShippingAddress.FirstName) ||
+                string.IsNullOrWhiteSpace(orderDto.ShippingAddress.LastName) ||
+                string.IsNullOrWhiteSpace(orderDto.ShippingAddress.Phone) ||
+                string.IsNullOrWhiteSpace(orderDto.ShippingAddress.EmailAddress) ||
+                string.IsNullOrWhiteSpace(orderDto.ShippingAddress.AddressLine) ||
+                string.IsNullOrWhiteSpace(orderDto.ShippingAddress.City) ||
+                string.IsNullOrWhiteSpace(orderDto.ShippingAddress.District) ||
+                string.IsNullOrWhiteSpace(orderDto.ShippingAddress.Ward))
+            {
+                throw new BadRequestException("All shipping address fields are required.");
+            }
+
+            if (orderDto.Payment == null ||
+                string.IsNullOrWhiteSpace(orderDto.Payment.CardName) ||
+                string.IsNullOrWhiteSpace(orderDto.Payment.CardNumber) ||
+                string.IsNullOrWhiteSpace(orderDto.Payment.Expiration) ||
+                string.IsNullOrWhiteSpace(orderDto.Payment.Cvv) ||
+                string.IsNullOrWhiteSpace(orderDto.Payment.PaymentMethod))
+            {
+                throw new BadRequestException("All payment fields are required.");
+            }
+
+            if (orderDto.OrderItems == null || !orderDto.OrderItems.Any())
+            {
+                throw new BadRequestException("Order must contain at least one item.");
+            }
+
+            if (orderDto.OrderItems.Any(item =>
+                item.ProductId == Guid.Empty ||
+                string.IsNullOrWhiteSpace(item.ProductCategoryId) ||
+                item.Quantity <= 0 ||
+                item.Price <= 0 ||
+                string.IsNullOrWhiteSpace(item.Color)))
+            {
+                throw new BadRequestException("All order item fields are required and must be valid.");
+            }
         }
     }
 }

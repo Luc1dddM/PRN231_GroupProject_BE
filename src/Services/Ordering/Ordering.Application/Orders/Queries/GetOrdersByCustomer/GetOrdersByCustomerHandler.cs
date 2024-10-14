@@ -24,12 +24,9 @@ namespace Ordering.Application.Orders.Queries.GetOrdersByCustomer
                                         .ToListAsync(cancellationToken);
                 if (orders.Count == 0)
                 {
-                    return new GetOrdersByCustomerResult(new BaseResponse<IEnumerable<OrderDto>>
-                    {
-                        IsSuccess = false, //list can have no item so this could be "true"
-                        Message = $"User with Id {query.CustomerId} does not have any order yet."
-                    });
+                    throw new NotFoundException($"User with Id {query.CustomerId} does not have any order yet.");
                 }
+
                 return new GetOrdersByCustomerResult(new BaseResponse<IEnumerable<OrderDto>>
                 {
                     IsSuccess = true,
@@ -37,13 +34,13 @@ namespace Ordering.Application.Orders.Queries.GetOrdersByCustomer
                     Message = $"All Order Of User {query.CustomerId} Retrieve Successful."
                 });
             }
+            catch (NotFoundException e)
+            {
+                throw new NotFoundException(e.Message, e);
+            }
             catch (Exception e)
             {
-                return new GetOrdersByCustomerResult(new BaseResponse<IEnumerable<OrderDto>>
-                {
-                    IsSuccess = false,
-                    Message = e.Message
-                });
+                throw new Exception(e.Message, e);
             }
 
 

@@ -1,6 +1,5 @@
 ﻿//the following using statement only for this class
 using Microsoft.Extensions.Caching.Distributed;
-using ShoppingCart.API.Models;
 using System.Text.Json;
 
 namespace ShoppingCart.API.Repository
@@ -25,36 +24,26 @@ namespace ShoppingCart.API.Repository
 
         public async Task<CartDto> GetCart(string userId, CancellationToken cancellationToken = default)
         {
-            try
+
+            //cache GetString to get the data value from Redis distributed cache
+            //with userId as key
+            var cacheKey = $"cartOfUser:{userId}";
+            var cachedCartJson = await _cache.GetStringAsync(cacheKey, cancellationToken);
+
+            if (!string.IsNullOrEmpty(cachedCartJson))
             {
-                //cache GetString to get the data value from Redis distributed cache
-                //with userId as key
-                var cacheKey = $"cart:{userId}";
-                var cachedCartJson = await _cache.GetStringAsync(cacheKey, cancellationToken);
-
-                if (!string.IsNullOrEmpty(cachedCartJson))
-                {
-                    //if cart existed, deserialize to CartDto and return to GetCart method
-                    return JsonSerializer.Deserialize<CartDto>(cachedCartJson, _options)!;
-                }
-
-                //if no cart exist, query in db
-                var cart = await _repository.GetCart(userId, cancellationToken);
-                if (cart is null)
-                {
-                    throw new CartNotFoundException(userId);
-                }
-
-                //and set key in redis distributed cache
-                await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(cart), cancellationToken);
-
-                return cart;
+                //if cart existed, deserialize to CartDto and return to GetCart method
+                return JsonSerializer.Deserialize<CartDto>(cachedCartJson, _options)!;
             }
-            catch (Exception e)
-            {
 
-                throw new Exception(e.Message);
-            }
+            //if no cart exist, query in db
+            var cart = await _repository.GetCart(userId, cancellationToken);
+
+            //and set key in redis distributed cache
+            await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(cart), cancellationToken);
+
+            return cart;
+
         }
 
         public async Task<CartHeader> GetCartById(string cartId, CancellationToken cancellationToken = default)
@@ -117,10 +106,7 @@ namespace ShoppingCart.API.Repository
             try
             {
                 var cartDetail = await _repository.GetCartDetailById(cartDetailId, cancellationToken);
-                if (cartDetail is null)
-                {
-                    return null;
-                }
+
                 return cartDetail;
             }
             catch (Exception e)
@@ -148,9 +134,13 @@ namespace ShoppingCart.API.Repository
                     CartDetails = new List<CartDetailDto>()
                 };
 
-                await _cache.SetStringAsync($"cart:{userId}", JsonSerializer.Serialize(cartDto), cancellationToken);
+                await _cache.SetStringAsync($"cartOfUser:{userId}", JsonSerializer.Serialize(cartDto), cancellationToken);
 
                 return createdCartHeader;
+            }
+            catch (NotFoundException e)
+            {
+                throw new NotFoundException(e.Message);
             }
             catch (Exception e)
             {
@@ -166,7 +156,7 @@ namespace ShoppingCart.API.Repository
             {
                 var createdDetail = await _repository.CreateCartDetails(cartDetail, cancellationToken);
 
-                var cacheKey = $"cart:{cartDetail.CartHeader.CreatedBy}";
+                var cacheKey = $"cartOfUser:{cartDetail.CartHeader.CreatedBy}";
 
                 var cachedCartJson = await _cache.GetStringAsync(cacheKey, cancellationToken);
 
@@ -193,6 +183,10 @@ namespace ShoppingCart.API.Repository
                 }
 
                 return createdDetail;
+            }
+            catch (NotFoundException e)
+            {
+                throw new NotFoundException(e.Message);
             }
             catch (Exception e)
             {
@@ -224,7 +218,7 @@ namespace ShoppingCart.API.Repository
             {
                 var updatedDetail = await _repository.UpdateCartDetails(cartDetail, cancellationToken);
 
-                var cacheKey = $"cart:{cartDetail.CartHeader.CreatedBy}";
+                var cacheKey = $"cartOfUser:{cartDetail.CartHeader.CreatedBy}";
 
                 var cachedCartJson = await _cache.GetStringAsync(cacheKey, cancellationToken);
 
@@ -256,10 +250,6 @@ namespace ShoppingCart.API.Repository
             try
             {
                 var cartDetailToDelete = await _repository.GetCartDetailById(cartDetailId, cancellationToken);
-                if (cartDetailToDelete == null)
-                {
-                    return false; //cart detail not found
-                }
 
                 string userId = cartDetailToDelete.CartHeader.CreatedBy;
 
@@ -269,7 +259,7 @@ namespace ShoppingCart.API.Repository
                     return false;
                 }
 
-                var cacheKey = $"cart:{userId}";
+                var cacheKey = $"cartOfUser:{userId}";
                 var cachedCartJson = await _cache.GetStringAsync(cacheKey, cancellationToken);
 
                 if (!string.IsNullOrEmpty(cachedCartJson))
@@ -299,18 +289,23 @@ namespace ShoppingCart.API.Repository
             try
             {
                 var cartToDelete = await GetCartHeaderByUserId(userId);
-                var cacheKey = $"cart:{cartToDelete.CreatedBy}";
 
                 if (cartToDelete == null)
                 {
-                    return false;
+                    throw new NotFoundException($"Cart of user with Id {userId} is not found.");
                 }
+
+                var cacheKey = $"cartOfUser:{cartToDelete.CreatedBy}";
 
                 await _repository.DeleteCart(userId, cancellationToken);
 
                 await _cache.RemoveAsync(cacheKey, cancellationToken);
 
                 return true;
+            }
+            catch (NotFoundException e)
+            {
+                throw new NotFoundException(e.Message);
             }
             catch (Exception e)
             {

@@ -1,6 +1,9 @@
 ﻿using BuildingBlocks.CQRS;
+using BuildingBlocks.Models;
 using Carter;
 using Email.API.Models;
+using Email.API.Repository;
+using Email.Models;
 using FluentValidation;
 using Mapster;
 using MediatR;
@@ -16,37 +19,27 @@ public class EditEmailTemplateEndpoint : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         // Lấy id từ query string
-        app.MapPut("/emails", async (HttpContext httpContext, string id, EditEmailTemplateRequest request, ISender sender) =>
+        app.MapPut("/emails", async (HttpContext httpContext, string id, EditEmailTemplateRequest request, IEmailRepository emailRepository) =>
         {
-            try
+            var userId = httpContext.Request.Headers["UserId"].ToString();
+
+            var emailTemplate = new EmailTemplate
             {
-                var userId = httpContext.Request.Headers["UserId"].ToString();
-                var command = request.Adapt<EditEmailTemplateCommand>() with { EmailTemplateId = id, UpdatedBy = userId };
+                EmailTemplateId = id,
+                Name = request.Name,
+                Description = request.Description,
+                Subject = request.Subject,
+                Body = request.Body,
+                Active = request.Active,
+                Category = request.Category,
+                UpdatedBy = userId,
+                UpdatedDate = DateTime.UtcNow
+            };
 
-
-                // Gắn id từ query string vào command
-               /* var command = request.Adapt<EditEmailTemplateCommand>() with { EmailTemplateId = id };*/
-
-                var result = await sender.Send(command);
-
-                var response = new EditEmailTemplateResponse(result.IsSuccess);
-
-                return Results.Ok(response);
-            }
-            catch (ValidationException ex)
-            {
-                return Results.Problem("Validation failed: " + ex.Message, statusCode: StatusCodes.Status400BadRequest);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return Results.Problem("Not found: " + ex.Message, statusCode: StatusCodes.Status404NotFound);
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem("An unexpected error occurred: " + ex.Message);
-            }
+            var result = await emailRepository.UpdateEmailTemplate(emailTemplate);
+            return Results.Ok(new EditEmailTemplateResponse(true));
         })
-        .WithName("EditEmailTemplate")
+           .WithName("EditEmailTemplate")
         .Produces<EditEmailTemplateResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)

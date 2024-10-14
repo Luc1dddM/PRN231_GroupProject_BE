@@ -1,4 +1,5 @@
-﻿using BuildingBlocks.Models;
+﻿using BuildingBlocks.Exceptions;
+using BuildingBlocks.Models;
 using Identity.Application.File.Services;
 using Identity.Application.User.Dtos;
 using Identity.Application.User.Interfaces;
@@ -28,9 +29,7 @@ namespace Identity.Infrastructure.User.Services
 
             //Check if User is also Customer and Employee?
             if (dto.Role.Contains("Customer") && dto.Role.Count > 1)
-            {
-                return new BaseResponse<UserDto>("User cannot be also Customer and Employee");
-            };
+               throw new BadRequestException("User cannot be also Customer and Employee");
 
             if (dto.ImageFile is not null)
             {
@@ -40,7 +39,7 @@ namespace Identity.Infrastructure.User.Services
                     user.ProfilePicture = fileResult.Item2;
                 }
             }
-            user.Id = Guid.NewGuid().ToString();
+            user.UserId = Guid.NewGuid().ToString();
             user.EmailConfirmed = true;
             user.CreatedAt = DateTime.Now;
             user.CreatedBy = dto.CreatedBy;
@@ -54,7 +53,7 @@ namespace Identity.Infrastructure.User.Services
                 return new BaseResponse<UserDto>(userDto);
             }
             var errorMessages = string.Join(", ", result.Errors.Select(e => e.Description));
-            return new BaseResponse<UserDto>(null, errorMessages);
+            throw new Exception(errorMessages);
         }
 
         public async Task<BaseResponse<PaginatedList<UserDto>>> GetAllUser(GetListUserParamsDto parameters)
@@ -97,7 +96,7 @@ namespace Identity.Infrastructure.User.Services
 
         public async Task<BaseResponse<UserDto>> GetUserById(string id)
         {
-            var user = await _userManager.FindByIdAsync(id);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
             var userDto = user.Adapt<UserDto>();
             if (user is not null)
             {
@@ -110,21 +109,15 @@ namespace Identity.Infrastructure.User.Services
         {
 
             if (id != request.Id)
-            {
-                return new BaseResponse<bool>("Id in Url and request not match");
-            }
+                throw new BadRequestException("Id in Url and request not match");
 
             var User = await _userManager.FindByIdAsync(id);
             if (User is null)
-            {
-                return new BaseResponse<bool>($"User With Id: {id} does not exist! ");
-            }
+                throw new UserNotFoundException(id);
 
             //Check if User is also Customer and Employee?
             if (request.Roles.Contains("Customer") && request.Roles.Count > 1)
-            {
-                return new BaseResponse<bool>("User cannot be also Customer and Employee");
-            };
+                throw new BadRequestException("User cannot be also Customer and Employee");
 
             if (request.ImageFile != null)
             {

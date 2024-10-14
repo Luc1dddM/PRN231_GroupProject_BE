@@ -24,12 +24,14 @@ namespace Ordering.Application.Orders.Queries.GetOrders
                                         .ToListAsync(cancellationToken);
                 if (orders.Count == 0)
                 {
-                    return new GetOrdersResult(new BaseResponse<IEnumerable<OrderDto>>
-                    {
-                        IsSuccess = false, //list can have no item so this could be "true"
-                        Message = "No Order Data."
-                    });
+                    //return new GetOrdersResult(new BaseResponse<IEnumerable<OrderDto>>
+                    //{
+                    //    IsSuccess = false, //list can have no item so this could be "true"
+                    //    Message = "No Order Data."
+                    //});
+                    throw new NotFoundException("Order list has no data");
                 }
+
                 return new GetOrdersResult(new BaseResponse<IEnumerable<OrderDto>>
                 {
                     IsSuccess = true,
@@ -37,13 +39,13 @@ namespace Ordering.Application.Orders.Queries.GetOrders
                     Message = "All Order Retrieve Successful."
                 });
             }
+            catch (NotFoundException e)
+            {
+                throw new NotFoundException(e.Message);
+            }
             catch (Exception e)
             {
-                return new GetOrdersResult(new BaseResponse<IEnumerable<OrderDto>>
-                {
-                    IsSuccess = false,
-                    Message = e.Message
-                });
+                throw new Exception(e.Message);
             }
 
         }

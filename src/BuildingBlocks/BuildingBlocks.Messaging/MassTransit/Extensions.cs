@@ -8,6 +8,8 @@ namespace BuildingBlocks.Messaging.MassTransit
     //This class will contain extension methods for setting up the Masstransit with RabbitMQ.
     public static class Extensions
     {
+
+       
         public static IServiceCollection AddMessageBroker
             (this IServiceCollection services,IConfiguration configuration, Assembly? assembly = null)
         {
@@ -21,15 +23,26 @@ namespace BuildingBlocks.Messaging.MassTransit
                     config.AddConsumers(assembly);
                 }
 
-                config.UsingRabbitMq((context, configurator) =>
+                config.UsingRabbitMq((context, cfg) =>
                 {
-                    configurator.Host(new Uri(configuration["MessageBroker:Host"]!), host =>
-                    {
-                        host.Username(configuration["MessageBroker:UserName"]);
-                        host.Password(configuration["MessageBroker:Password"]);
+                    // Configure RabbitMQ host
+                    cfg.Host(configuration["MessageBroker:Host"], "/", host => {
+                        // Default rabbitMq authentication
+                        host.Username(configuration["MessageBroker:Username"] ?? "guest");
+                        host.Password(configuration["MessageBroker:Password"] ?? "guest");
                     });
-                    configurator.ConfigureEndpoints(context);
+                    cfg.ConfigureEndpoints(context);
                 });
+
+                /* config.UsingRabbitMq((context, configurator) =>
+                 {
+                     configurator.Host(new Uri(configuration["MessageBroker:Host"]!), host =>
+                     {
+                         host.Username(configuration["MessageBroker:UserName"]);
+                         host.Password(configuration["MessageBroker:Password"]);
+                     });
+                     configurator.ConfigureEndpoints(context);
+                 });*/
             });
             return services;
         }

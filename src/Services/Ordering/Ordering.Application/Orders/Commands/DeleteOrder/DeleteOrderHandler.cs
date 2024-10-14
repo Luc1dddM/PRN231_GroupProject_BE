@@ -28,7 +28,7 @@ namespace Ordering.Application.Orders.Commands.DeleteOrder
 
                 if (order is null)
                 {
-                    throw new OrderNotFoundException(command.EntityId);
+                    throw new NotFoundException($"Order with Id {orderId.Value} does not exist.");
                 }
 
                 _context.Orders.Remove(order);
@@ -40,23 +40,13 @@ namespace Ordering.Application.Orders.Commands.DeleteOrder
                     Message = "Order Delete Successful."
                 });
             }
-            catch (OrderNotFoundException e)
+            catch (NotFoundException e)
             {
-                // Catch and return specific error message for 404
-                return new DeleteOrderResult(new BaseResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"Order with ID {OrderId.Of(command.EntityId)} not found."
-                });
+                throw new NotFoundException(e.Message, e);
             }
             catch (Exception e)
             {
-
-                return new DeleteOrderResult(new BaseResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = e.Message
-                });
+                throw new Exception(e.Message, e);
             }
         }
     }

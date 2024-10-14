@@ -4,7 +4,12 @@
       "commandName": "DockerCompose",
       "commandVersion": "1.0",
       "serviceActions": {
-        "coupon.grpc": "StartDebugging"
+        "coupon.grpc": "StartDebugging",
+        "catalog.api": "StartDebugging",
+        "identity.api": "StartDebugging",
+        "toolzone.gateway": "StartDebugging",
+        "coupon.api": "StartDebugging",
+        "shoppingcart.api": "StartDebugging"
       }
     }
   }
