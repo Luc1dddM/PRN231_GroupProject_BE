@@ -27,7 +27,7 @@ namespace Identity.Infrastructure.Identity.Utils
                 ProfilePicture = model.ProfilePicture
             };
             user.UserId = Guid.NewGuid().ToString();
-
+            user.CreatedAt = DateTime.UtcNow;
             await userManager.CreateAsync(user);
 
             await userManager.AddToRoleAsync(user, "Admin");
