@@ -1,11 +1,12 @@
-﻿using Catalog.API.Models.DTO;
+﻿using BuildingBlocks.Models;
+using Catalog.API.Models.DTO;
 using Catalog.API.Products.CreateProduct;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Catalog.API.Products.UpdateProduct
 {
     public record UpdateProductRequest(ProductUpdateDTO ProductUpdateDTO);
-    public record UpdateProductResponse(bool IsSuccess);
+    public record UpdateProductResponse( BaseResponse<bool> IsSuccess);
 
     public class UpdateProductEndpoint : ICarterModule
     {

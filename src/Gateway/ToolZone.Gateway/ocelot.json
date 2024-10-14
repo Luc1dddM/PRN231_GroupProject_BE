@@ -269,7 +269,7 @@
     },
     //2. GetProducts route
     {
-      "DownstreamPathTemplate": "/products",
+      "DownstreamPathTemplate": "/products/{everything}",
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
@@ -278,9 +278,10 @@
         }
       ],
       "AddHeadersToRequest": {
-        "UserId": "Claims[id] > value"
+        "UserId": "Claims[id] > value",
+        "Roles": "Claims[roles]"
       },
-      "UpstreamPathTemplate": "/gateway/products",
+      "UpstreamPathTemplate": "/gateway/products/{everything}",
       "UpstreamHttpMethod": [ "Get" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
@@ -327,7 +328,27 @@
         "AllowedScopes": []
       }
     },
-    //5. UpdateProduct route
+    //5. GetProductByIdForOrder route
+    {
+      "DownstreamPathTemplate": "/products/Order/{id}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5050
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/products/Order/{id}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+    //6. UpdateProduct route
     {
       "DownstreamPathTemplate": "/products",
       "DownstreamScheme": "https",
@@ -347,7 +368,7 @@
         "AllowedScopes": []
       }
     },
-    //6. AddColor route
+    //7. AddColor route
     {
       "DownstreamPathTemplate": "/products/AddColor",
       "DownstreamScheme": "https",
@@ -367,7 +388,7 @@
         "AllowedScopes": []
       }
     },
-    //7. GetCategory route
+    //8. GetCategory route
     {
       "DownstreamPathTemplate": "/categories",
       "DownstreamScheme": "https",
@@ -387,7 +408,7 @@
         "AllowedScopes": []
       }
     },
-    //8. GetCategoryById route
+    //9. GetCategoryById route
     {
       "DownstreamPathTemplate": "/categories/{id}",
       "DownstreamScheme": "https",
@@ -407,7 +428,7 @@
         "AllowedScopes": []
       }
     },
-    //9. CreateCategory route
+    //10. CreateCategory route
     {
       "DownstreamPathTemplate": "/categories",
       "DownstreamScheme": "https",
@@ -427,7 +448,7 @@
         "AllowedScopes": []
       }
     },
-    //10. UpdateCategory route
+    //11. UpdateCategory route
     {
       "DownstreamPathTemplate": "/categories",
       "DownstreamScheme": "https",
@@ -447,7 +468,7 @@
         "AllowedScopes": []
       }
     },
-    //11. GetColor route
+    //12. GetColor route
     {
       "DownstreamPathTemplate": "/categories/color/{id}",
       "DownstreamScheme": "https",

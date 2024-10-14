@@ -18,7 +18,7 @@ namespace Catalog.API.Repository
         public Category GetDevicesByProduct(Product Product);
         public Category GetBrandsByProduct(Product Product);
         public List<Category> GetChoosedCategoriesByProduct(Product Product);
-        /*public CategoryListDTO GetList(string[] statusesParam, string[] TypeParam, string searchterm, string sortBy, string sortOrder, int pageNumberParam, int pageSizeParam);*/
+        public Task<List<Category>> GetList(GetListCategoryParamsDto getListCategoryParamsDto);
 
         public void Create(Category category, string user);
         /*public Task ImportCategories(IFormFile excelFile, string user);

@@ -1,4 +1,5 @@
 ﻿using BuildingBlocks.Messaging.Events;
+using BuildingBlocks.Messaging.Events.DTO;
 using Catalog.API.Models.DTO;
 using Catalog.API.Repository;
 using MassTransit;
@@ -28,14 +29,16 @@ namespace Catalog.API.Products.EventHandler
                 var list = context.Message.Adapt<UpdateQuantityForOrder>();
                 foreach (var item in list.listProductCatgory)
                 {
-                    _productCategoruRepository.UpdateQuantityForOrder(item.productCategoryId,item.quantity,item.user,item.IsCancel);
+                    _productCategoruRepository.UpdateQuantityForOrder(item.productCategoryId, item.quantity, item.user, item.IsCancel);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
             return Task.CompletedTask;
         }
+
+
     }
 }

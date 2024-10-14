@@ -1,4 +1,6 @@
 ﻿using BuildingBlocks.CQRS;
+using BuildingBlocks.Exceptions;
+using BuildingBlocks.Models;
 using Catalog.API.Models;
 using Catalog.API.Models.DTO;
 using Catalog.API.Repository;
@@ -9,7 +11,7 @@ namespace Catalog.API.Products.CreateProduct
 
     public record CreateProductCommand(ProductCreateDTO ProductCreateDTO) 
         : ICommand<CreateProductResult>;
-    public record CreateProductResult(string Id);
+    public record CreateProductResult(BaseResponse<string> Id);
 
     public class CreateProductCommandValidator : AbstractValidator<CreateProductCommand>
     {
@@ -18,6 +20,7 @@ namespace Catalog.API.Products.CreateProduct
             RuleFor(x => x.ProductCreateDTO.Name).NotEmpty().WithMessage("Name is required");
             RuleFor(x => x.ProductCreateDTO.Price).GreaterThan(0).WithMessage("Price must be greater than 0");
             RuleFor(x => x.ProductCreateDTO.Description).NotEmpty().WithMessage("Description is required");
+            RuleFor(x => x.ProductCreateDTO.Image).NotEmpty().WithMessage("Image is required");
             RuleFor(x => x.ProductCreateDTO.Color).NotEmpty().WithMessage("Color is required");
             RuleFor(x => x.ProductCreateDTO.Quantity).NotEmpty().WithMessage("Quantity is required");
             RuleFor(x => x.ProductCreateDTO.Brand).NotEmpty().WithMessage("Brand is required");
@@ -63,7 +66,7 @@ namespace Catalog.API.Products.CreateProduct
                 Status = command.ProductCreateDTO.Status
             };
             var user = _httpContextAccessor.HttpContext.Request.Headers["UserId"].ToString();
-            /*var user = "test";*/
+            if (string.IsNullOrEmpty(user)) throw new BadRequestException("User Id Is Null");
 
             await _productRepository.Create(product, user, cancellationToken);
             _productCategoryRepository.CreateProductCategories(
@@ -72,11 +75,12 @@ namespace Catalog.API.Products.CreateProduct
                 , product.ProductId, command.ProductCreateDTO.Quantity
                 , command.ProductCreateDTO.Status, user);
             _uploadImageRepository.UploadFile(command.ProductCreateDTO.Image
-                , uuid.ToString());
+                , product.ImageUrl);
 
+            var response = new BaseResponse<string>(product.ProductId);
 
             //return result
-            return new CreateProductResult(product.ProductId);
+            return new CreateProductResult(response);
 
         }
     }

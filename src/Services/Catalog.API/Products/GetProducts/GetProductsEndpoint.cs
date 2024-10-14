@@ -1,20 +1,27 @@
-﻿using Catalog.API.Models;
+﻿using BuildingBlocks.Models;
+using Catalog.API.Models;
+using Catalog.API.Models.DTO;
+using Catalog.API.Products.CreateProduct;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Catalog.API.Products.GetProducts
 {
-
-    public record GetProductsResponse(IEnumerable<Product> Products);
+    public record GetProductsRequest(GetListProductParamsDto getListProductParamsDto);
+    public record GetProductsResponse(BaseResponse<PaginatedList<ProductDTO>> Products);
 
     public class GetProductsEndpoint : ICarterModule
     {
         public void AddRoutes(IEndpointRouteBuilder app)
         {
-            app.MapGet("/products", async (ISender sender) =>
+
+            app.MapGet("/products",
+            async (GetListProductParamsDto request, ISender sender) =>
             {
+                
 
-                var result = await sender.Send(new GetProductsQuery());
+                var result = await sender.Send(new GetProductsQuery(request));
 
-                var response = result.Adapt<GetProductsResponse>();
+                var response = new GetProductsResponse(result.Products);
 
                 return Results.Ok(response);
             })

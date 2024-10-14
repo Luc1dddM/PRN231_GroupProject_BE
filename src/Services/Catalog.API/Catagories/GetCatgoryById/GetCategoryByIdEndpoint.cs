@@ -1,10 +1,11 @@
-﻿using Catalog.API.Categories.GetCategoryById;
+﻿using BuildingBlocks.Models;
+using Catalog.API.Categories.GetCategoryById;
 using Catalog.API.Models;
 using Catalog.API.Models.DTO;
 
 namespace Catalog.API.Categories.GetCategoryById
 {
-    public record GetCategoryByIdResponse(Category Category);
+    public record GetCategoryByIdResponse(BaseResponse<Category> Category);
 
     public class GetCategoryByIdEndpoint : ICarterModule
     {

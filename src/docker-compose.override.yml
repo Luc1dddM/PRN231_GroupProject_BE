@@ -23,3 +23,8 @@ services:
       - "5672:5672"
       - "15672:15672"
 
+  rediscache:
+    container_name: rediscache
+    restart: always
+    ports:
+      - "6379:6379"

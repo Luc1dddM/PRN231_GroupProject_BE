@@ -1,4 +1,5 @@
-﻿using Catalog.API.Models.DTO;
+﻿using BuildingBlocks.Models;
+using Catalog.API.Models.DTO;
 using Catalog.API.Products.CreateProduct;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,7 +7,7 @@ namespace Catalog.API.Products.AddColor
 {
     public record AddColorRequest(string ColorId, string ProductId, int Quantity, bool Status);
 
-    public record AddColorResponse(string Id);
+    public record AddColorResponse(BaseResponse<string> Id);
 
     public class AddColorEndpoint : ICarterModule
     {

@@ -1,9 +1,10 @@
-﻿using Catalog.API.Models;
+﻿using BuildingBlocks.Models;
+using Catalog.API.Models;
 using Catalog.API.Models.DTO;
 
 namespace Catalog.API.Products.GetProductById
 {
-    public record GetProductByIdResponse(ProductDetailDTO Product);
+    public record GetProductByIdResponse(BaseResponse<ProductDetailForUpdateDTO> Product);
 
     public class GetProductByIdEndpoint : ICarterModule
     {
@@ -13,7 +14,7 @@ namespace Catalog.API.Products.GetProductById
             {
                 var result = await sender.Send(new GetProductByIdQuery(id));
 
-                var response = result.Adapt<GetProductByIdResponse>();
+                var response = new GetProductByIdResponse(result.Product);
 
                 return Results.Ok(response);
             })
