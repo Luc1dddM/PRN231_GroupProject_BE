@@ -18,16 +18,24 @@ namespace Email.API
                     config.AddConsumers(assembly);
                 }
 
-                config.UsingRabbitMq((context, configurator) =>
+                config.UsingRabbitMq((context, cfg) =>
                 {
-                    configurator.Host(new Uri(configuration["MessageBroker:Host"]!), host =>
-                    {
-                        host.Username(configuration["MessageBroker:UserName"]);
-                        host.Password(configuration["MessageBroker:Password"]);
+                    // Configure RabbitMQ host
+                    cfg.Host(configuration["MessageBroker:Host"], "/", host => {
+                        // Default rabbitMq authentication
+                        host.Username(configuration["MessageBroker:Username"] ?? "guest");
+                        host.Password(configuration["MessageBroker:Password"] ?? "guest");
                     });
-                    configurator.UseRawJsonSerializer(RawSerializerOptions.AddTransportHeaders | RawSerializerOptions.CopyHeaders);
-                    configurator.ConfigureEndpoints(context);
+                    cfg.ConfigureEndpoints(context);
                 });
+                /*configurator.Host(new Uri(configuration["MessageBroker:Host"], "/", host =>
+                {
+                    host.Username(configuration["MessageBroker:UserName"]);
+                    host.Password(configuration["MessageBroker:Password"]);
+                });
+                configurator.UseRawJsonSerializer(RawSerializerOptions.AddTransportHeaders | RawSerializerOptions.CopyHeaders);
+                configurator.ConfigureEndpoints(context);
+            });*/
 
             });
             return services;
