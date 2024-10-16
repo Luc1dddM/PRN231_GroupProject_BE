@@ -10,16 +10,16 @@ namespace Ordering.API.Endpoints
     //- Returns the list of orders for that customer.
 
     //public record GetOrdersByCustomerRequest(Guid CustomerId);
-    public record GetOrdersByCustomerResponse(BaseResponse<IEnumerable<OrderDto>> Response);
+    public record GetOrdersByCustomerResponse(BaseResponse<PaginatedList<OrderDto>> Response);
 
     public class GetOrdersByCustomer : ICarterModule
     {
         public void AddRoutes(IEndpointRouteBuilder app)
         {
-            app.MapGet("/orders/customer/{customerId}", async (Guid customerId, ISender sender) =>
+            app.MapGet("/orders/customer/{customerId}", async (Guid customerId, [AsParameters] GetListOrderParamsDto request, ISender sender) =>
             {
 
-                var result = await sender.Send(new GetOrdersByCustomerQuery(customerId));
+                var result = await sender.Send(new GetOrdersByCustomerQuery(customerId, request));
 
                 return Results.Ok(new GetOrdersByCustomerResponse(result.Result));
 
