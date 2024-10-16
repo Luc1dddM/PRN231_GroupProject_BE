@@ -21,7 +21,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -201,10 +201,13 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[http://schemas.microsoft.com/ws/2008/06/identity/claims/role] > value"
+      },
       "UpstreamPathTemplate": "/gateway/User/{everything}",
       "UpstreamHttpMethod": [ "GET" ],
       "AuthenticationOptions": {

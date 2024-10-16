@@ -357,22 +357,15 @@ namespace Identity.Infrastructure.Identity.Services
             var roles = await _userManager.GetRolesAsync(user);
             var userClaims = new List<Claim>()
             {
-                 new Claim(JwtClaimTypes.Id, user.UserId),
+                new Claim(JwtClaimTypes.Id, user.UserId),
                 new Claim(JwtClaimTypes.Email, user.Email),
                 new Claim(JwtClaimTypes.Name, user.FullName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
             List<string> permissions = await _permissionService.GetPermissionsAsync(user.UserId);
 
-            foreach(var role in roles)
-            {
-                userClaims.Add(new(CustomClaims.Roles, role));
-            }
-
-            foreach (var permission in permissions)
-            {
-                userClaims.Add(new(CustomClaims.Permissions, permission));
-            }
+            userClaims.AddRange(roles.Select(role => new Claim(ClaimsIdentity.DefaultRoleClaimType, role)));
+            userClaims.AddRange(permissions.Select(permission => new Claim(CustomClaims.Permissions, permission)));
             return userClaims;
         }
 
