@@ -21,12 +21,14 @@ public class CouponQuantityUsedConsumer : IConsumer<CouponQuantityUsedEvent>
         if (coupon != null && coupon.Quantity >= message.QuantityUsed)
         {
             coupon.Quantity -= message.QuantityUsed;
+            coupon.UpdatedDate = DateTime.Now;
             await _dbContext.SaveChangesAsync();
 
             await _dbContext.UpdateCouponStatusIfNeeded(coupon.CouponCode);
         }
         else
         {
+  
             Console.WriteLine($"Not enough quantity for Coupon Code: {message.CouponCode}");
         }
     }
