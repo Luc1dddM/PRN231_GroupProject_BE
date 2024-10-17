@@ -58,6 +58,7 @@ namespace Coupon.API.Repository
                 existingCoupon.UpdatedDate = DateTime.Now;
 
                 await _dbContext.SaveChangesAsync();
+                await _dbContext.UpdateCouponStatusIfNeeded(existingCoupon.CouponCode);
                 return existingCoupon;
             }
             catch (Exception ex)

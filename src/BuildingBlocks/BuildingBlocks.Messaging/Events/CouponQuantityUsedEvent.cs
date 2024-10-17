@@ -10,5 +10,7 @@ namespace BuildingBlocks.Messaging.Events
     {
         public string CouponCode { get; set; }
         public int QuantityUsed { get; set; }
+
+        public string? UserId { get; set; }
     }
 }
