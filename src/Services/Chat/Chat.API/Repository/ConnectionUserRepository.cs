@@ -31,6 +31,19 @@ namespace Chat.API.Repository
             }
         }
 
+        public List<ConnectionUser> GetCustomer()
+        {
+            try
+            {
+                return _context.ConnectionUsers.Where(c => c.IsCustomer).ToList();
+            }
+            catch (Exception ex)
+            {
+
+                throw new Exception(ex.Message);
+            }
+        }
+
         public ConnectionUser GetUserById(string UserId)
         {
             try

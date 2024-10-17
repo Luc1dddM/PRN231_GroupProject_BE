@@ -6,5 +6,6 @@ namespace Chat.API.Repository
     {
         public void Create(string UserId, string Name);
         public ConnectionUser GetUserById(string UserId);
+        public List<ConnectionUser> GetCustomer();
     }
 }

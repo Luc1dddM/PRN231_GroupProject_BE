@@ -1,12 +1,13 @@
 ﻿
 using Chat.API.Model;
+using Microsoft.EntityFrameworkCore;
 
 namespace Chat.API.Repository
 {
-    public class GroupMessageRepository : IGroupMessageRepository
+    public class GroupMemberRepository : IGroupMemberRepository
     {
         private readonly MyDbContext _context;
-        public GroupMessageRepository(MyDbContext context)
+        public GroupMemberRepository(MyDbContext context)
         {
             _context = context;
         }
@@ -27,6 +28,19 @@ namespace Chat.API.Repository
                     _context.SaveChanges();
                 }
 
+            }
+            catch (Exception ex)
+            {
+
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<List<GroupMember>> GetGroupMemberByGroupId(string groupId)
+        {
+            try
+            {
+                return await _context.GroupMembers.Where(g => g.GroupId.Equals(groupId)).ToListAsync();
             }
             catch (Exception ex)
             {

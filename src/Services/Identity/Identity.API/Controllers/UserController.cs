@@ -33,6 +33,7 @@ namespace Identity.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetUserById(string id, CancellationToken cancellation = default)
         {
+            var userId = HttpContext.Request.Headers["UserId"].ToString();
             var query = new GetUserByIdQuery(id);
             var reponse = await _mediator.Send(query);
             return Ok(reponse.response);

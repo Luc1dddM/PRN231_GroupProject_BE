@@ -54,7 +54,8 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero,
         RequireExpirationTime = true,
-        IssuerSigningKey = new SymmetricSecurityKey(secret)
+        IssuerSigningKey = new SymmetricSecurityKey(secret),
+        RoleClaimType = "roles"
     };
 
     o.Events = new JwtBearerEvents
