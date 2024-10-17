@@ -650,7 +650,47 @@
         "AllowedScopes": []
       }
     },
-
+    //Chat Route
+    //1. GetMessage
+    {
+      "DownstreamPathTemplate": "/chat/message/{groupId}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 6019
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/chat/message/{groupId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+    //1. GetGroup
+    {
+      "DownstreamPathTemplate": "/chat/group/{userId}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 6019
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/chat/group/{userId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
 
     //ShoppingCart Route
     //1. Store Cart, CartDetail - Update Cart, CartDetails

@@ -1,4 +1,5 @@
 ﻿using Chat.API.Model;
+using Microsoft.EntityFrameworkCore;
 
 namespace Chat.API.Repository
 {
@@ -31,11 +32,11 @@ namespace Chat.API.Repository
             }
         }
 
-        public List<Message> GetAllMessageByGroupId(string groupId)
+        public Task<List<Message>> GetAllMessageByGroupId(string groupId)
         {
             try
             {
-                return _context.Messages.Where(m => m.GroupId.Equals(groupId)).ToList();
+                return _context.Messages.Where(m => m.GroupId.Equals(groupId)).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -43,5 +44,7 @@ namespace Chat.API.Repository
                 throw new Exception(ex.Message);
             }
         }
+
+
     }
 }

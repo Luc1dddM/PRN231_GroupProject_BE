@@ -27,12 +27,12 @@ namespace Chat.API.Repository
             }
         }
 
-        public List<Group> GetGroupByUserId(string userId)
+        public Task<List<Group>> GetGroupByUserId(string userId)
         {
             try
             {
                 return _context.Groups.Include(g => g.GroupMembers)
-                    .Where(g => g.GroupMembers.Any(m => m.UserId.Equals(userId))).ToList();
+                    .Where(g => g.GroupMembers.Any(m => m.UserId.Equals(userId))).ToListAsync();
             }
             catch(Exception ex)
             {

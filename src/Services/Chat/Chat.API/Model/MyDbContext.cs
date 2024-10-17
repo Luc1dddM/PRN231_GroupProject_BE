@@ -2,17 +2,18 @@
 
 namespace Chat.API.Model
 {
-    public class MyDbContext: DbContext
+    public class MyDbContext : DbContext
     {
-        public MyDbContext(DbContextOptions<MyDbContext> options):base(options)
+        public MyDbContext(DbContextOptions<MyDbContext> options) : base(options)
         {
-            
+
         }
 
         public virtual DbSet<ConnectionUser> ConnectionUsers { get; set; }
-        public virtual DbSet<Group> Groups { get; set; }    
+        public virtual DbSet<Group> Groups { get; set; }
         public virtual DbSet<GroupMember> GroupMembers { get; set; }
         public virtual DbSet<Message> Messages { get; set; }
+        public virtual DbSet<UserMessage> UserMessages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -61,8 +62,24 @@ namespace Chat.API.Model
                     .HasForeignKey(d => d.SenderId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Message_ConnectionUser");
-            }
- );
+            });
+
+            modelBuilder.Entity<UserMessage>(entity =>
+            {
+                entity.Property(e => e.UserMessageId)
+                     .HasDefaultValueSql("(CONVERT([nvarchar](36),newid()))");
+                entity.HasIndex(e => e.UserMessageId).IsUnique();
+                entity.HasOne(d => d.Message).WithMany(p => p.UserMessages)
+                     .HasPrincipalKey(p => p.MessageId)
+                    .HasForeignKey(d => d.MessageId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_User_Message_Message");
+                entity.HasOne(d => d.ConnectionUser).WithMany(p => p.UserMessages)
+                    .HasPrincipalKey(p => p.UserId)
+                    .HasForeignKey(d => d.ReceiverId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_User_Message_ConnectionUser");
+            });
         }
     }
 }

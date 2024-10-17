@@ -30,7 +30,7 @@ namespace Catalog.API.Products.GetProducts
 
 
             List<ProductDTO> products = new List<ProductDTO>();
-            if(roles == "Cutomer")
+            if(roles.Contains("Cutomer"))
             {
                 products = _productRepository.GetListCustomer(query.getListProductParamsDto);
 
