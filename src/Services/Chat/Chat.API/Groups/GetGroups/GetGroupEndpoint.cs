@@ -13,10 +13,10 @@ namespace Chat.API.Groups.GetGroups
     {
         public void AddRoutes(IEndpointRouteBuilder app)
         {
-            app.MapGet("/chat/group/{userId}",
+            app.MapGet("/chat/group",
                 async (string userId, ISender sender) =>
                 {
-                    var result = await sender.Send(new GetGroupQuery(userId));
+                    var result = await sender.Send(new GetGroupQuery());
 
                     var response = new GetGroupsResponse(result.result);
 
