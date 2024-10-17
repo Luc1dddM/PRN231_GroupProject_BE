@@ -1,11 +1,13 @@
 ﻿using BuildingBlocks.CQRS;
+using BuildingBlocks.Models;
 using Catalog.API.Models;
+using Catalog.API.Models.DTO;
 using Catalog.API.Repository;
 
 namespace Catalog.API.Categories.GetCategories
 {
-    public record GetCategoriesQuery() : IQuery<GetCategoriesResult>;
-    public record GetCategoriesResult(IEnumerable<Category> Categories);
+    public record GetCategoriesQuery(GetListCategoryParamsDto getListCategoryParamsDto) : IQuery<GetCategoriesResult>;
+    public record GetCategoriesResult(BaseResponse<PaginatedList<CategoryDTO>> Categories);
 
     internal class GetCategoriesQueryHandler : IQueryHandler<GetCategoriesQuery, GetCategoriesResult>
     {
@@ -18,9 +20,16 @@ namespace Catalog.API.Categories.GetCategories
         }
         public async  Task<GetCategoriesResult> Handle(GetCategoriesQuery query, CancellationToken cancellationToken)
         {
-            var categories = await _categoryRepository.GetAll(cancellationToken);
+            var categories = await _categoryRepository.GetList(query.getListCategoryParamsDto);
 
-            return new GetCategoriesResult(categories);
+            var listCategories = categories.Adapt<List<CategoryDTO>>();
+
+            // Step 6: Apply pagination on the filtered employee list
+            var list = await PaginatedList<CategoryDTO>.CreateAsync(listCategories.AsQueryable(), query.getListCategoryParamsDto.PageNumber, query.getListCategoryParamsDto.PageSize);
+
+
+            var result = new BaseResponse<PaginatedList<CategoryDTO>>(list);
+            return new GetCategoriesResult(result);
         }
     }
 

@@ -3,12 +3,14 @@ using Catalog.API.Models.DTO;
 using Catalog.API.Models;
 using Catalog.API.Repository;
 using FluentValidation;
+using BuildingBlocks.Models;
+using BuildingBlocks.Exceptions;
 
 namespace Catalog.API.Products.AddColor
 {
     public record AddColorCommand(string ColorId, string ProductId, int Quantity, bool Status)
         : ICommand<AddColorResult>;
-    public record AddColorResult(string Id);
+    public record AddColorResult(BaseResponse<string> Id);
 
     public class AddColorCommandValidator : AbstractValidator<AddColorCommand>
     {
@@ -50,13 +52,13 @@ namespace Catalog.API.Products.AddColor
                 
             };
             var user = _httpContextAccessor.HttpContext.Request.Headers["UserId"].ToString();
-            /*var user = "test";*/
-
+            if (string.IsNullOrEmpty(user)) throw new BadRequestException("User Id Is Null");
             _productCategoryRepository.AddColor(productCategory, user);
 
+            var result = new BaseResponse<string>(productCategory.ProductCategoryId, "Add color successfully");
 
             //return result
-            return new AddColorResult(productCategory.ProductCategoryId);
+            return new AddColorResult(result);
 
         }
     }

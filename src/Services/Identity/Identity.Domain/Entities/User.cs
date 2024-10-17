@@ -10,6 +10,7 @@ namespace Identity.Domain.Entities
         public required string FullName { get; set; }
         public string? ProfilePicture { get; set; }
         public bool IsActive{ get; set; } = true;
+        public string? Gender { get; set; }
         public DateOnly BirthDay { get; set; } = DateOnly.FromDateTime(DateTime.Now);  
         public DateTime? CreatedAt { get;  set; }
         public string? CreatedBy { get;  set; }

@@ -202,79 +202,66 @@ namespace Catalog.API.Repository
             }
         }
 
-        /*        public CategoryListDTO GetList(string[] statusesParam, string[] TypeParam, string searchterm, string sortBy, string sortOrder, int pageNumberParam, int pageSizeParam)
-                {
-                    //Get List from db
-                    var result = _dbContext.Categories.ToList();
+        public Task<List<Category>> GetList(GetListCategoryParamsDto getListCategoryParamsDto)
+        {
+            //Get List from db
+            var result = _dbContext.Categories.AsQueryable();
 
-                    //Call filter function 
-                    result = Filter(statusesParam, TypeParam, result);
-                    result = Search(result, searchterm);
-                    result = Sort(sortBy, sortOrder, result);
+            //Call filter function 
+            result = Filter(getListCategoryParamsDto.Statuses, getListCategoryParamsDto.Type, result);
+            result = Search(result, getListCategoryParamsDto.Keyword);
+            result = Sort(getListCategoryParamsDto.SortBy, getListCategoryParamsDto.SortOrder, result);
 
+           
 
-                    //Calculate pagination
-                    var totalItems = result.Count();
-                    var TotalPages = (int)Math.Ceiling((double)totalItems / pageSizeParam);
+            return result.ToListAsync();
+        }
 
-                    //Get final result base on page size and page number 
-                    result = result.Skip((pageNumberParam - 1) * pageSizeParam)
-                            .Take(pageSizeParam)
-                            .ToList();
-
-                    return new CategoryListDTO()
-                    {
-                        listCategory = result,
-                        totalPages = TotalPages
-                    };
-                }*/
-
-        public List<Category> Filter(string[] statuses, string[] types, List<Category> list)
+        public IQueryable<Category> Filter(string[] statuses, string[] types, IQueryable<Category> list)
         {
             if (types != null && types.Length > 0)
             {
-                list = list.Where(e => types.Contains(e.Type)).ToList();
+                list = list.Where(e => types.Contains(e.Type));
             }
 
             if (statuses != null && statuses.Length > 0)
             {
-                list = list.Where(e => statuses.Contains(e.Status.ToString())).ToList();
+                list = list.Where(e => statuses.Contains(e.Status.ToString()));
             }
 
             return list;
         }
 
-        public List<Category> Search(List<Category> list, string searchtearm)
+        public IQueryable<Category> Search(IQueryable<Category> list, string searchtearm)
         {
             if (!string.IsNullOrEmpty(searchtearm))
             {
                 list = list.Where(p =>
-                            p.Name.Contains(searchtearm, StringComparison.OrdinalIgnoreCase))
-                            .ToList();
+                            p.Name.Contains(searchtearm.ToLower()));
             }
             return list;
         }
-        public List<Category> Sort(string sortBy, string sortOrder, List<Category> list)
+        public IQueryable<Category> Sort(string sortBy, string sortOrder, IQueryable<Category> list)
         {
             switch (sortBy)
             {
                 case "name":
-                    list = sortOrder == "asc" ? list.OrderBy(e => e.Name).ToList() : list.OrderByDescending(e => e.Name).ToList();
+                    list = sortOrder == "asc" ? list.OrderBy(e => e.Name) : list.OrderByDescending(e => e.Name);
                     break;
                 case "status":
-                    list = sortOrder == "asc" ? list.OrderBy(e => e.Status).ToList() : list.OrderByDescending(e => e.Status).ToList();
+                    list = sortOrder == "asc" ? list.OrderBy(e => e.Status) : list.OrderByDescending(e => e.Status);
                     break;
                 case "type":
-                    list = sortOrder == "asc" ? list.OrderBy(e => e.Type).ToList() : list.OrderByDescending(e => e.Type).ToList();
+                    list = sortOrder == "asc" ? list.OrderBy(e => e.Type): list.OrderByDescending(e => e.Type);
                     break;
                 case "createdBy":
-                    list = sortOrder == "asc" ? list.OrderBy(e => e.CreatedBy).ToList() : list.OrderByDescending(e => e.CreatedBy).ToList();
+                    list = sortOrder == "asc" ? list.OrderBy(e => e.CreatedBy): list.OrderByDescending(e => e.CreatedBy);
                     break;
                 case "createdAt":
-                    list = sortOrder == "asc" ? list.OrderBy(e => e.CreatedAt).ToList() : list.OrderByDescending(e => e.CreatedAt).ToList();
+                    list = sortOrder == "asc" ? list.OrderBy(e => e.CreatedAt) : list.OrderByDescending(e => e.CreatedAt);
                     break;
                 default:
-                    list = list.OrderByDescending(e => e.UpdatedAt).ToList();
+                    list = list.OrderByDescending(e => e.CategoryId);
                     break;
             }
             return list;

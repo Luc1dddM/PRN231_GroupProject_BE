@@ -61,9 +61,9 @@ namespace Identity.Infrastructure.User.Services
             IQueryable<Domain.Entities.User> query = _context.Users.AsQueryable();
 
             // Step 1: Apply filters (e.g., Status and Dob)
-            if (parameters.Statuses is not null && parameters.Dob is not null)
+            if (parameters.Statuses is not null || parameters.Genders is not null || parameters.Dob is not null)
             {
-                query = Filter(parameters.Statuses, parameters.Dob, query);
+                query = Filter(parameters.Statuses, parameters.Genders, parameters.Dob, query);
             }
 
             // Step 2: Apply keyword search
@@ -76,17 +76,19 @@ namespace Identity.Infrastructure.User.Services
             var allUsers = await query.AsNoTracking().ToListAsync();
 
             // Step 5: Filter users who are not "Customer" or "Admin" (client-side filtering)
-            var employeeList = new List<Domain.Entities.User>();
+            var listEmployeesDto = new List<UserDto>();
             foreach (var user in allUsers)
             {
                 var roles = await _userManager.GetRolesAsync(user);
                 if (!roles.Contains("Admin"))
                 {
-                    employeeList.Add(user);
+                    var userDto = user.Adapt<UserDto>();
+                    userDto.Email = user.Email;
+                    userDto.roles = roles;
+                    listEmployeesDto.Add(userDto);
                 }
             }
 
-            var listEmployeesDto = employeeList.Adapt<List<UserDto>>();
 
             // Step 6: Apply pagination on the filtered employee list
             var employees = await PaginatedList<UserDto>.CreateAsync(listEmployeesDto.AsQueryable(), parameters.PageNumber, parameters.PageSize);
@@ -173,7 +175,7 @@ namespace Identity.Infrastructure.User.Services
         }
 
 
-        private IQueryable<Domain.Entities.User> Filter(string[] statuses, DateOnly? dob, IQueryable<Domain.Entities.User> list)
+        private IQueryable<Domain.Entities.User> Filter(string[] statuses, string[] genders, DateOnly? dob, IQueryable<Domain.Entities.User> list)
         {
             if (dob is not null)
             {
@@ -182,6 +184,10 @@ namespace Identity.Infrastructure.User.Services
             if (statuses != null && statuses.Length > 0)
             {
                 list = list.Where(e => statuses.Contains(e.IsActive.ToString()));
+            }
+            if (genders != null && genders.Length > 0)
+            {
+                list = list.Where(e => genders.Contains(e.Gender.ToString()));
             }
 
             return list;

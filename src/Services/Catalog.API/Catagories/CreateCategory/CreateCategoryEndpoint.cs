@@ -1,11 +1,12 @@
-﻿using Catalog.API.Models.DTO;
+﻿using BuildingBlocks.Models;
+using Catalog.API.Models.DTO;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Catalog.API.Categories.CreateCategory
 {
     public record CreateCategoryRequest(string Name, string Type, bool Status);
 
-    public record CreateCategoryResponse(string Id);
+    public record CreateCategoryResponse(BaseResponse<string> Id);
 
     public class CreateCategoryEndpoint : ICarterModule
     {
