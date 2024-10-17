@@ -48,9 +48,9 @@ namespace Feedback.API.Controllers
                 var ordersResponse = JsonSerializer.Deserialize<GetOrdersByCustomerResponse>(strResult, options);
 
                 // Kiểm tra xem người dùng đã hoàn thành đơn hàng cho sản phẩm này hay không
-                return ordersResponse.Response.Result.Any(order =>
-                    order.CustomerId == userId &&
-                    order.OrderItems.Any(item => item.ProductId == Guid.Parse(productId) && order.Status.Equals(OrderStatus.Completed))); 
+                //return ordersResponse.Response.Result.Any(order =>
+                //    order.CustomerId == userId &&
+                //    order.OrderItems.Any(item => item.ProductId == Guid.Parse(productId) && order.Status.Equals(OrderStatus.Completed))); 
             }
 
             throw new Exception("Failed to fetch orders from the external service.");
