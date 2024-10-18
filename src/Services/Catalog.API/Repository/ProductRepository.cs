@@ -1,6 +1,9 @@
-﻿using Catalog.API.Models;
+﻿using Catalog.API.Exceptions;
+using Catalog.API.Models;
 using Catalog.API.Models.DTO;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Catalog.API.Repository
 {
@@ -99,7 +102,7 @@ namespace Catalog.API.Repository
             }
         }
 
-        public async Task<ProductDetailDTO> GetProductDetailById(string productId, CancellationToken cancellationToken = default)
+        public async Task<ProductDetailForUpdateDTO> GetProductDetailById(string productId, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -109,24 +112,13 @@ namespace Catalog.API.Repository
                 var Device =  _dbContext.ProductCategories.Include(c => c.Category).FirstOrDefault(p => p.Category.Type.Equals("Device") && p.ProductId.Equals(productId));
                 var Color =  _dbContext.ProductCategories.Where(p => p.Category.Type.Equals("Color") && p.ProductId.Equals(productId)).ToList();
 
-                var productDetailDTO = new ProductDetailDTO
+                if (ProductRaw == null) { throw new ProductNotFoundException(productId); }
+                var productDetailDTO = new ProductDetailForUpdateDTO
                 {
-                    product = new Product
-                    {
-                        ProductId = ProductRaw.ProductId,
-                        Name = ProductRaw.Name,
-                        Price = ProductRaw.Price,
-                        Description = ProductRaw.Description,
-                        ImageUrl = ProductRaw.ImageUrl,
-                        CreateBy = ProductRaw.CreateBy,
-                        CreateDate = ProductRaw.CreateDate,
-                        UpdateBy = ProductRaw.UpdateBy,
-                        UpdateDate = ProductRaw.UpdateDate,
-                        Status = ProductRaw.Status
-                    },
-                    brand = Brand.Adapt<ProductCategoryDTO>(),
-                    device = Device.Adapt<ProductCategoryDTO>(),
-                    color = Color.Adapt<List<ProductCategoryDTO>>(),
+                    product = ProductRaw.Adapt<ProductDTO>(),
+                    brand = Brand!=null ? Brand.Adapt<ProductCategoryDTO>():null,
+                    device = Device != null ?  Device.Adapt<ProductCategoryDTO>() : null,
+                    color = Color != null ? Color.Adapt<List<ProductCategoryDTO>>() : null,
                 };
                 return productDetailDTO;
 
@@ -137,104 +129,122 @@ namespace Catalog.API.Repository
             }
         }
 
-/*        public ProductListDTO GetListCustomer(string[] colorParam, string[] brandParam, string[] deviceParam, string Price1, string Price2, string searchterm, int pageNumberParam, int pageSizeParam)
+        public async Task<ProductDetailForOrderDTO> GetProductDetailForOrder(string productId, CancellationToken cancellationToken = default)
         {
-            //Get List from db
-            var result = _dbContext.Products.Include(p => p.ProductCategories).ThenInclude(p => p.Category).Where(p => p.Status && p.ProductCategories.Any(pc => pc.Category.Type.Equals("Color") && pc.Status)).ToList();
-
-            //Call filter function 
-            result = Filter(colorParam, brandParam, deviceParam, Price1, Price2, result);
-            result = Search(result, searchterm);
-
-
-            //Calculate pagination
-            var totalItems = result.Count();
-            var TotalPages = (int)Math.Ceiling((double)totalItems / pageSizeParam);
-
-            //Get final result base on page size and page number 
-            result = result.OrderByDescending(e => e.UpdateDate)
-                    .Skip((pageNumberParam - 1) * pageSizeParam)
-                    .Take(pageSizeParam)
-                    .ToList();
-
-            return new ProductListDTO()
+            try
             {
-                listProduct = result,
-                totalPages = TotalPages
-            };
+
+                var ProductRaw = await _dbContext.Products.FirstOrDefaultAsync(p => p.ProductId.Equals(productId), cancellationToken);
+                var Color = _dbContext.ProductCategories.Where(p => p.Category.Type.Equals("Color") && p.ProductId.Equals(productId)).ToList();
+
+                if (ProductRaw == null) { throw new ProductNotFoundException(productId); }
+                var productDetailDTO = new ProductDetailForOrderDTO
+                {
+                    product = ProductRaw.Adapt<ProductDTO>(),
+                    color = Color.Adapt<List<ProductCategoryDTO>>()
+
+                };
+
+                
+                return productDetailDTO;
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
-        public ProductListDTO GetList(string[] colorParam, string[] brandParam, string[] deviceParam, string Price1, string Price2, string searchterm, int pageNumberParam, int pageSizeParam)
+        public List<ProductDTO> GetListCustomer(GetListProductParamsDto getListProductParamsDto)
         {
             //Get List from db
-            var result = _dbContext.Products.Include(p => p.ProductCategories).ToList();
+            var result = _dbContext.Products.Include(p => p.ProductCategories).ThenInclude(p => p.Category).Where(p => p.Status&& p.ProductCategories.Any() && p.ProductCategories.Any(pc => pc.Category.Type.Equals("Color") && pc.Status));
 
             //Call filter function 
-            result = Filter(colorParam, brandParam, deviceParam, Price1, Price2, result);
-            result = Search(result, searchterm);
+            result = Filter(getListProductParamsDto.colorParam, getListProductParamsDto.brand, getListProductParamsDto.device, getListProductParamsDto.Price1, getListProductParamsDto.Price2, result);
+            result = Search(result, getListProductParamsDto.Keyword);
+            result = Sort(getListProductParamsDto.SortBy,getListProductParamsDto.SortOrder,result);
+            var tmp = result.ToList();
+            var fResult = tmp.Adapt<List<ProductDTO>>();
 
-            //Calculate pagination
-            var totalItems = result.Count();
-            var TotalPages = (int)Math.Ceiling((double)totalItems / pageSizeParam);
+            return fResult;
+        }
 
-            //Get final result base on page size and page number 
-            result = result.OrderByDescending(e => e.UpdateDate)
-                    .Skip((pageNumberParam - 1) * pageSizeParam)
-                    .Take(pageSizeParam)
-                    .ToList();
+        public List<ProductDTO> GetList(GetListProductParamsDto getListProductParamsDto)
+        {
+            //Get List from db
+            var result = _dbContext.Products.Include(p => p.ProductCategories).AsQueryable();
+            //Call filter function 
+            result = Filter(getListProductParamsDto.colorParam, getListProductParamsDto.brand, getListProductParamsDto.device, getListProductParamsDto.Price1, getListProductParamsDto.Price2, result);
+            result = Search(result, getListProductParamsDto.Keyword);
+            result = Sort(getListProductParamsDto.SortBy, getListProductParamsDto.SortOrder, result);
+            var tmp = result.ToList();
+            var fResult = tmp.Adapt<List<ProductDTO>>();
 
-            return new ProductListDTO()
-            {
-                listProduct = result,
-                totalPages = TotalPages
-            };
-        }*/
+            return fResult;
+        }
 
-        private List<Product> Filter(string[] colorParam, string[] brand, string[] device, string Price1, string Price2, List<Product> list)
+        private IQueryable<Product> Filter(string[] colorParam, string[] brand, string[] device, string Price1, string Price2, IQueryable<Product> list)
         {
             if (brand != null && brand.Length > 0)
             {
-                list = list.Where(e => e.ProductCategories.Any(p => brand.Any(b => b.Equals(p.CategoryId)))).ToList();
+                list = list.Where(e => e.ProductCategories.Any(p => brand.Any(b => b.Equals(p.CategoryId))));
             }
 
             if (device != null && device.Length > 0)
             {
-                list = list.Where(e => e.ProductCategories.Any(p => device.Any(b => b.Equals(p.CategoryId)))).ToList();
+                list = list.Where(e => e.ProductCategories.Any(p => device.Any(b => b.Equals(p.CategoryId))));
 
             }
 
             if (colorParam != null && colorParam.Length > 0)
             {
-                list = list.Where(e => e.ProductCategories.Any(p => colorParam.Any(b => b.Equals(p.CategoryId)))).ToList();
+                list = list.Where(e => e.ProductCategories.Any(p => colorParam.Any(b => b.Equals(p.CategoryId))));
 
             }
             if (!string.IsNullOrEmpty(Price1) && string.IsNullOrEmpty(Price2) && double.Parse(Price1) > 0)
             {
-                list = list.Where(e => e.Price >= double.Parse(Price1)).ToList();
+                list = list.Where(e => e.Price >= double.Parse(Price1));
             }
             if (!string.IsNullOrEmpty(Price2) && !string.IsNullOrEmpty(Price1) && double.Parse(Price2) > 0 && double.Parse(Price2) > double.Parse(Price1) && double.Parse(Price1) > 0)
             {
-                list = list.Where(e => e.Price >= double.Parse(Price1) && e.Price <= double.Parse(Price2)).ToList();
+                list = list.Where(e => e.Price >= double.Parse(Price1) && e.Price <= double.Parse(Price2));
             }
             if (!string.IsNullOrEmpty(Price2) && string.IsNullOrEmpty(Price1) && double.Parse(Price2) > 0)
             {
-                list = list.Where(e => e.Price <= double.Parse(Price2)).ToList();
+                list = list.Where(e => e.Price <= double.Parse(Price2));
             }
 
             return list;
         }
 
-        private List<Product> Search(List<Product> list, string searchtearm)
+        private IQueryable<Product> Search(IQueryable<Product> list, string searchtearm)
         {
             if (!string.IsNullOrEmpty(searchtearm))
             {
                 list = list.Where(p =>
-                            p.Name.Contains(searchtearm, StringComparison.OrdinalIgnoreCase))
-                            .ToList();
+                            p.Name.Contains(searchtearm.ToLower()));
             }
             return list;
         }
 
+        private IQueryable<Product> Sort(string sortBy, string sortOrder, IQueryable<Product> list)
+        {
+            switch (sortBy)
+            {
+                case "name":
+                    list = sortOrder == "asc" ? list.OrderBy(u => u.Name): list.OrderByDescending(u => u.Name);
+                    break;
+                case "price":
+                    list = sortOrder == "asc" ? list.OrderBy(u => u.Price) : list.OrderByDescending(u => u.Price);
+                    break;
+                default:
+                    list = list.OrderByDescending(u => u.Id);
+                    break;
+            }
+            return list;
+        }
+         
 
 
         public async Task Update(Product product, string user, CancellationToken cancellationToken = default)
@@ -246,7 +256,7 @@ namespace Catalog.API.Repository
                 newProduct.Name = product.Name;
                 newProduct.Description = product.Description;
                 newProduct.Price = product.Price;
-                newProduct.ImageUrl = product.ImageUrl;
+                newProduct.ImageUrl = product.ImageUrl.Contains(".jpg") ? product.ImageUrl: product.ImageUrl+".jpg";
                 newProduct.Status = product.Status;
                 newProduct.UpdateBy = user;
                 newProduct.UpdateDate = DateTime.Now;

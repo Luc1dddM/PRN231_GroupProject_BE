@@ -1,11 +1,12 @@
-﻿using Catalog.API.Models.DTO;
+﻿using BuildingBlocks.Models;
+using Catalog.API.Models.DTO;
 using Catalog.API.Products.CreateProduct;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Catalog.API.Categories.UpdateCategory
 {
     public record UpdateCategoryRequest(string Id, string Name, string Type, bool Status);
-    public record UpdateCategoryResponse(bool IsSuccess);
+    public record UpdateCategoryResponse(BaseResponse<bool> IsSuccess);
 
     public class UpdateCategoryEndpoint : ICarterModule
     {

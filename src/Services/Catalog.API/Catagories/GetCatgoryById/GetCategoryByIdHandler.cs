@@ -1,4 +1,5 @@
 ﻿using BuildingBlocks.CQRS;
+using BuildingBlocks.Models;
 using Catalog.API.Exceptions;
 using Catalog.API.Models;
 using Catalog.API.Models.DTO;
@@ -7,7 +8,7 @@ using Catalog.API.Repository;
 namespace Catalog.API.Categories.GetCategoryById
 {
     public record GetCategoryByIdQuery(string Id) : IQuery<GetCategoryByIdResult>;
-    public record GetCategoryByIdResult(Category Category);
+    public record GetCategoryByIdResult(BaseResponse<Category> Category);
 
     internal class GetCategoryByIdQueryHandler
         : IQueryHandler<GetCategoryByIdQuery, GetCategoryByIdResult>
@@ -24,10 +25,12 @@ namespace Catalog.API.Categories.GetCategoryById
 
             if (category is null)
             {
-                throw new ProductNotFoundException(query.Id);
+                throw new CategoryNotFoundException(query.Id);
             }
 
-            return new GetCategoryByIdResult(category);
+            var result = new BaseResponse<Category>(category);
+
+            return new GetCategoryByIdResult(result);
         }
     }
 }

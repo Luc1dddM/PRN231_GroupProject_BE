@@ -1,4 +1,6 @@
 ﻿using BuildingBlocks.CQRS;
+using BuildingBlocks.Exceptions;
+using BuildingBlocks.Models;
 using Catalog.API.Models;
 using Catalog.API.Models.DTO;
 using Catalog.API.Repository;
@@ -9,7 +11,7 @@ namespace Catalog.API.Categories.CreateCategory
 
     public record CreateCategoryCommand(string Name, string Type, bool Status) 
         : ICommand<CreateCategoryResult>;
-    public record CreateCategoryResult(string Id);
+    public record CreateCategoryResult(BaseResponse<string> Id);
 
     public class CreateCategoryCommandValidator : AbstractValidator<CreateCategoryCommand>
     {
@@ -47,13 +49,15 @@ namespace Catalog.API.Categories.CreateCategory
                 
             };
             var user = _httpContextAccessor.HttpContext.Request.Headers["UserId"].ToString();
-            /*var user = "test";*/
+            if (string.IsNullOrEmpty(user)) throw new BadRequestException("User Id Is Null");
+
 
             _categoryRepository.Create(category,user);
 
+            var result = new BaseResponse<string>(category.CategoryId, "Create category successfully");
 
             //return result
-            return new CreateCategoryResult(category.CategoryId);
+            return new CreateCategoryResult(result);
 
         }
     }

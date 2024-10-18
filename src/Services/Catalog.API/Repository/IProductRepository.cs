@@ -15,8 +15,9 @@ namespace Catalog.API.Repository
         public Task<List<Product>> GetAllActive(CancellationToken cancellationToken = default);
 
         public Task<Product> GetProductByID(string productId, CancellationToken cancellationToken = default);
-        public Task<ProductDetailDTO> GetProductDetailById(string productId, CancellationToken cancellationToken = default);
-/*        public ProductListDTO GetList(string[] colorParam, string[] brandParam, string[] deviceParam, string Price1, string Price2, string searchterm, int pageNumberParam, int pageSizeParam);
-        public ProductListDTO GetListCustomer(string[] colorParam, string[] brandParam, string[] deviceParam, string Price1, string Price2, string searchterm, int pageNumberParam, int pageSizeParam);*/
+        public Task<ProductDetailForUpdateDTO> GetProductDetailById(string productId, CancellationToken cancellationToken = default);
+        public Task<ProductDetailForOrderDTO> GetProductDetailForOrder(string productId, CancellationToken cancellationToken = default);
+        public List<ProductDTO> GetList(GetListProductParamsDto getListProductParamsDto);
+        public List<ProductDTO> GetListCustomer(GetListProductParamsDto getListProductParamsDto);
     }
 }

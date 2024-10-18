@@ -55,7 +55,7 @@ namespace Ordering.Application.Orders.Commands.UpdateOrder
                 if (oldStatus != OrderStatus.Cancelled && order.Status == OrderStatus.Cancelled)
                 {
                     _logger.LogInformation("Publish event to re add the quantity of product (foreach here or return a list of OrderItem)");
-                    var list = MapOrderItemToReduceQuantity(order.OrderItems, userId);
+                    var list = MapOrderItemToReduceQuantity(order.OrderItems,userId);
                     _publishEndpoint.Publish(list);
                 }
 
