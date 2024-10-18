@@ -10,6 +10,16 @@ namespace Coupon.API.Models
         }
 
         public DbSet<Coupon> Coupons { get; set; }
+        public async Task UpdateCouponStatusIfNeeded(string couponCode)
+        {
+            var coupon = await Coupons.FirstOrDefaultAsync(c => c.CouponCode == couponCode);
+
+            if (coupon != null && coupon.Quantity <= 0)
+            {
+                coupon.Status = false;
+                await SaveChangesAsync();
+            }
+        }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
            
