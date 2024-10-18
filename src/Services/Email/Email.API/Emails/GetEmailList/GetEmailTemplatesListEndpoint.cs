@@ -28,6 +28,7 @@ public class GetEmailTemplatesListEndpoint : ICarterModule
             {
                 listEmail = result.listEmail,
                 totalPages = result.totalPages,
+                totalElements = result.totalElements,
             });
         })
         .WithName("GetEmailsList")

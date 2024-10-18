@@ -318,6 +318,7 @@ public class EmailRepository : IEmailRepository
         return new EmailListDTO()
         {
             listEmail = result,
+            totalElements = totalItems,
             totalPages = TotalPages
         };
     }
