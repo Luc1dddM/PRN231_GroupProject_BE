@@ -33,6 +33,7 @@ namespace Identity.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetUserById(string id, CancellationToken cancellation = default)
         {
+            var userId = HttpContext.Request.Headers["UserId"].ToString();
             var query = new GetUserByIdQuery(id);
             var reponse = await _mediator.Send(query);
             return Ok(reponse.response);
@@ -42,7 +43,7 @@ namespace Identity.API.Controllers
         [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
         public async Task<IActionResult> CreateNewUser([FromForm] CreateNewUserDto Request, CancellationToken cancellation = default)
         {
-            var userId = HttpContext.Request.Headers["UserId"].ToString();
+            var userId = HttpContext.Request.Headers["UserId"];
             if (string.IsNullOrEmpty(userId)) return BadRequest(new Exception("User Id Is Null"));
             Request.CreatedBy = userId;
             var query = new CreateUserCommand(Request);

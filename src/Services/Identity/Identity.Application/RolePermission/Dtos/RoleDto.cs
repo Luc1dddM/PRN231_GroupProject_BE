@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace Identity.Application.RolePermission.Dtos
 {
-    public class AddRoleDto
+    public class RoleDto
     {
-        public required string name { get; set; }
-        public string[]? permissions { get; set; }
+        public string RoleId { get; set; }
+        public string Name { get; set; }
+        public string[] Permissions { get; set; }
     }
 }

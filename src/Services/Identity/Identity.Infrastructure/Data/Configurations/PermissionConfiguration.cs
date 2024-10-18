@@ -21,6 +21,7 @@ namespace Identity.Infrastructure.Data.Configurations
                 {
                     Id = (int)p,
                     Name = p.ToString(),
+                    TypePermission = "User"
                 });
 
             builder.HasData(permissions);

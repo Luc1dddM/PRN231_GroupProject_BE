@@ -8,7 +8,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -21,7 +21,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -34,7 +34,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -47,7 +47,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -60,7 +60,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -73,7 +73,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -86,20 +86,46 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
       "UpstreamPathTemplate": "/gateway/Identity/ForgorPassword",
       "UpstreamHttpMethod": [ "POST" ]
     },
-    //8. UpdatePermission route
+    //8. GetRoles route
+    {
+      "DownstreamPathTemplate": "/api/Identity/GetRolesManager",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/Identity/GetRolesManager",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+    //8. GetPermissions route
+    {
+      "DownstreamPathTemplate": "/api/Identity/GetPermissions",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/Identity/GetPermissions",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+    //9. UpdatePermission route
     {
       "DownstreamPathTemplate": "/api/Identity/UpdatePermission",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -113,13 +139,13 @@
         "permissions": "UpdatePermission"
       }
     },
-    //9. AddRole route
+    //10. AddRole route
     {
       "DownstreamPathTemplate": "/api/Identity/AddRole",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -133,13 +159,34 @@
         "permissions": "ReadUser"
       }
     },
-    //10. UpdateRoles route
+
+    //10. AddRole route
+    {
+      "DownstreamPathTemplate": "/api/Identity/UpdateRole",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/Identity/UpdateRole",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "RouteClaimsRequirement": {
+        "permissions": "ReadUser"
+      }
+    },
+    //11. UpdateRoles route
     {
       "DownstreamPathTemplate": "/api/Identity/UpdateRoles",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -161,7 +208,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -181,10 +228,13 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
       "UpstreamPathTemplate": "/gateway/User",
       "UpstreamHttpMethod": [ "POST" ],
       "AuthenticationOptions": {
@@ -201,10 +251,13 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[http://schemas.microsoft.com/ws/2008/06/identity/claims/role] > value"
+      },
       "UpstreamPathTemplate": "/gateway/User/{everything}",
       "UpstreamHttpMethod": [ "GET" ],
       "AuthenticationOptions": {
@@ -221,10 +274,13 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
       "UpstreamPathTemplate": "/gateway/User/{everything}",
       "UpstreamHttpMethod": [ "PUT" ],
       "AuthenticationOptions": {

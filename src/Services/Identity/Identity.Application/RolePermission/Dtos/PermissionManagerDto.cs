@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Identity.Application.RolePermission.Dtos
 {
-    public class AddRoleDto
+    public class PermissionManagerDto
     {
-        public required string name { get; set; }
-        public string[]? permissions { get; set; }
+        public string Type { get; set; }
+        public string[] Permissions { get; set; }
     }
 }

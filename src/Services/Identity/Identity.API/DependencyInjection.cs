@@ -1,10 +1,5 @@
-﻿using BuildingBlocks.Behaviors;
-using BuildingBlocks.Exceptions.Handler;
-using Identity.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
-using System.Drawing;
-using System.Reflection;
-
+﻿using BuildingBlocks.Exceptions.Handler;
+    
 namespace Identity.API
 {
     public static class DependencyInjection
