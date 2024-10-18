@@ -1,4 +1,5 @@
 ﻿using BuildingBlocks.Exceptions;
+using BuildingBlocks.Messaging.Events;
 using BuildingBlocks.Models;
 using Identity.Application.Email.Interfaces;
 using Identity.Application.Identity.Dtos;
@@ -10,6 +11,7 @@ using Identity.Infrastructure.Data;
 using Identity.Infrastructure.Identity.Configuration;
 using Identity.Infrastructure.Identity.Utils;
 using IdentityModel;
+using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.WebUtilities;
@@ -33,8 +35,8 @@ namespace Identity.Infrastructure.Identity.Services
         private readonly UserManager<Domain.Entities.User> _userManager;
         private readonly Jwt _jwt;
         private readonly Configuration.RefreshToken _refresh;
-
         private readonly IRolePermissionService _permissionService;
+        private readonly IPublishEndpoint _publishEndpoint;
 
         public AuthService(
             ApplicationDbContext context,
@@ -45,7 +47,8 @@ namespace Identity.Infrastructure.Identity.Services
             UserManager<Domain.Entities.User> userManager,
             IOptions<Jwt> jwt,
             IOptions<Configuration.RefreshToken> refresh,
-            IRolePermissionService permissionService)
+            IRolePermissionService permissionService,
+            IPublishEndpoint publishEndpoint)
         {
             _context = context;
             _googleAuthService = googleAuthService;
@@ -56,6 +59,7 @@ namespace Identity.Infrastructure.Identity.Services
             _emailSender = emailSender;
             _permissionService = permissionService;
             _refresh = refresh.Value;
+            _publishEndpoint = publishEndpoint;
         }
 
         /// <summary>
@@ -80,6 +84,7 @@ namespace Identity.Infrastructure.Identity.Services
                 Email = user.Email ?? "",
                 UserId = user.UserId
             };
+
 
             return new BaseResponse<LoginReponseDto>(response);
         }
@@ -138,6 +143,14 @@ namespace Identity.Infrastructure.Identity.Services
                     name = userToResponse.FullName,
                     phonenumber = userToResponse.PhoneNumber
                 };
+                var Event = new CreateUserEvent
+                {
+                    UserId = user.UserId,
+                    Name = user.FullName,
+                    IsCustomer = true,
+                };
+                _publishEndpoint.Publish(Event);
+
                 return new BaseResponse<CreateCustomerDto>(userDto);
             }
             throw new NotFoundException(result.Errors.First().ToString());

@@ -4,7 +4,7 @@ namespace Chat.API.Repository
 {
     public interface IMessageRepository
     {
-        public void Create(string content, string senderId, string groupId);
+        public void Create(Message message);
         public Task<List<Message>> GetAllMessageByGroupId(string groupId);
         
     }

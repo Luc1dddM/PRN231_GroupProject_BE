@@ -21,7 +21,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 using System.Text;
+using BuildingBlocks.Messaging.MassTransit;
+
 using CUser = Identity.Domain.Entities.User;
 namespace Identity.Infrastructure
 {
@@ -86,7 +89,7 @@ namespace Identity.Infrastructure
             services.AddAuthorization();
             services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
             services.AddSingleton<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
-
+            services.AddMessageBroker(configuration, Assembly.GetExecutingAssembly());
             return services;
         }
     }

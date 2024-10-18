@@ -8,7 +8,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -21,7 +21,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -34,7 +34,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -47,7 +47,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -60,7 +60,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -73,7 +73,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -86,7 +86,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -99,7 +99,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -119,7 +119,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -139,7 +139,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -161,7 +161,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -181,7 +181,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -205,17 +205,11 @@
           "Port": 8080
         }
       ],
-      "AddHeadersToRequest": {
-        "UserId": "Claims[http://schemas.microsoft.com/ws/2008/06/identity/claims/role] > value"
-      },
       "UpstreamPathTemplate": "/gateway/User/{everything}",
       "UpstreamHttpMethod": [ "GET" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
-      },
-      "RouteClaimsRequirement": {
-        "permissions": "ReadUser"
       }
     },
     //4.UpdateUserById Route
@@ -224,7 +218,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "identity.api",
+          "Host": "localhost",
           "Port": 8080
         }
       ],
@@ -674,7 +668,7 @@
         "AllowedScopes": []
       }
     },
-    //1. GetGroup
+    //2. GetGroup
     {
       "DownstreamPathTemplate": "/chat/group",
       "DownstreamScheme": "https",
@@ -688,6 +682,46 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/chat/group",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+    //3. GetTotalNotify
+    {
+      "DownstreamPathTemplate": "/chat/totalNotify",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 6019
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/chat/totalNotify",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+    //4. GetNotify
+    {
+      "DownstreamPathTemplate": "/chat/notify",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 6019
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/chat/notify",
       "UpstreamHttpMethod": [ "Get" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",

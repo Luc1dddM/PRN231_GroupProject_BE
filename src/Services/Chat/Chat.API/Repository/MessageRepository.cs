@@ -11,17 +11,12 @@ namespace Chat.API.Repository
         {
             _context = context;
         }
-        public void Create(string content, string senderId, string groupId)
+        public void Create(Message message)
         {
             try
             {
-                var message = new Message
-                {
-                    Content = content,
-                    SenderId = senderId,
-                    CreateAt = DateTime.Now,
-                    GroupId = groupId,
-                };
+                message.CreateAt = DateTime.Now;
+                
                 _context.Messages.Add(message);
                 _context.SaveChanges();
             }

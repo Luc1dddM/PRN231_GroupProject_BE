@@ -21,6 +21,11 @@ builder.Services.AddScoped<IUserMessageRepository, UserMessageRepository>();
 builder.Services.AddScoped<IGroupRepository, GroupRepository>();
 builder.Services.AddScoped<IGroupMemberRepository, GroupMemberRepository>();
 
+
+
+builder.Services.AddSingleton<IDictionary<string, List<string>>>(opt => new Dictionary<string, List<string>>());
+builder.Services.AddSingleton<IDictionary<string, ConnectionUser>>(opt => new Dictionary<string, ConnectionUser>());
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMessageBroker(builder.Configuration, Assembly.GetExecutingAssembly());
 var assembly = typeof(Program).Assembly;

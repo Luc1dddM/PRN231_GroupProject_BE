@@ -10,14 +10,10 @@ namespace Chat.API.Repository
         {
             _context = myDbContext;
         }
-        public void Create(string name)
+        public void Create(Group group)
         {
             try
             {
-                var group = new Group
-                {
-                    GroupName = name
-                };
                 _context.Groups.Add(group);
                 _context.SaveChanges();
             }

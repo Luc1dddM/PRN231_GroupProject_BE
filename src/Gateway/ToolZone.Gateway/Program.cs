@@ -15,7 +15,7 @@ if (builder.Environment.IsEnvironment("Production"))
 {
     builder.Configuration.AddUserSecrets<Program>();
 }
-
+builder.Services.AddSignalR();
 builder.Configuration.SetBasePath(builder.Environment.ContentRootPath)
                      .AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 
@@ -25,7 +25,8 @@ builder.Services.AddCors(options =>
     {
         builder.WithOrigins("http://localhost:5173")
                .AllowAnyHeader()
-               .AllowAnyMethod();
+               .AllowAnyMethod()
+               .AllowCredentials();
     });
 });
 
@@ -85,7 +86,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 var app = builder.Build();
-
+app.UseWebSockets();
 app.MapGet("/", () => "Hello World!");
 app.UseRouting();
 app.UseCors("Cors");
