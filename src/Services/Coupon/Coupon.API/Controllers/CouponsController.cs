@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using BuildingBlocks.Exceptions;
+using Coupon.API.Models;
 namespace Coupon.API.Controllers
 {
     [Route("api/[controller]")]
@@ -15,11 +16,19 @@ namespace Coupon.API.Controllers
             _couponRepository = couponRepository;
         }
 
-        // GET: api/coupons
+  /*      // GET: api/coupons
         [HttpGet]
         public async Task<IActionResult> GetAllCoupons()
         {
-            var coupons = await _couponRepository.GetAllCouponsAsync();
+            var coupons = await _couponRepository.GetAllCoupons();
+            return Ok(coupons);
+        }*/
+
+        // GET: api/coupons
+        [HttpGet]
+        public async Task<IActionResult> GetAllCoupons([FromQuery] GetListCouponParamsDto parameters)
+        {
+            var coupons = await _couponRepository.GetAllCoupons(parameters);
             return Ok(coupons);
         }
 
