@@ -43,7 +43,7 @@ namespace Identity.API.Controllers
         [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
         public async Task<IActionResult> CreateNewUser([FromForm] CreateNewUserDto Request, CancellationToken cancellation = default)
         {
-            var userId = HttpContext.Request.Headers["UserId"].ToString();
+            var userId = HttpContext.Request.Headers["UserId"];
             if (string.IsNullOrEmpty(userId)) return BadRequest(new Exception("User Id Is Null"));
             Request.CreatedBy = userId;
             var query = new CreateUserCommand(Request);

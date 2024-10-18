@@ -10,7 +10,10 @@ using Identity.Application.Identity.Commands.RenewToken;
 using Identity.Application.Identity.Commands.ResetPassword;
 using Identity.Application.Identity.Dtos;
 using Identity.Application.RolePermission.Commands.AddRole;
+using Identity.Application.RolePermission.Commands.GetListPermissions;
+using Identity.Application.RolePermission.Commands.GetRoles;
 using Identity.Application.RolePermission.Commands.UpdatePermission;
+using Identity.Application.RolePermission.Commands.UpdateRole;
 using Identity.Application.RolePermission.Commands.UpdateRoles;
 using Identity.Application.RolePermission.Dtos;
 using Identity.Application.User.Dtos;
@@ -87,6 +90,25 @@ namespace Identity.API.Controllers
             return Ok(result.response);
         }
 
+        [HttpGet]
+        [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
+        public async Task<IActionResult> GetRolesManager()
+        {
+
+            var query = new GetRolesQuery();
+            var result = await _mediator.Send(query);
+            return Ok(result.result);
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
+        public async Task<IActionResult> GetPermissions()
+        {
+            var query = new GetPermissionsQuery();
+            var result = await _mediator.Send(query);
+            return Ok(result.response);
+        }
+
         [HttpPost]
         [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
         public async Task<IActionResult> ReConfirmAccount([FromBody] ReConfirmMailDto request)
@@ -109,9 +131,9 @@ namespace Identity.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
-        public async Task<IActionResult> UpdateRoles([FromBody] UpdateRolesDto request)
+        public async Task<IActionResult> UpdateUserRoles([FromBody] UpdateRolesDto request)
         {
-            var command = request.Adapt<UpdateRolesCommand>();
+            var command = request.Adapt<UpdateUserRolesCommand>();
             var result = await _mediator.Send(command);
             return Ok(result.response);
         }
@@ -120,7 +142,16 @@ namespace Identity.API.Controllers
         [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
         public async Task<IActionResult> AddRole([FromBody] AddRoleDto request)
         {
-            var command = new AddRoleCommand(request.name);
+            var command = new AddRoleCommand(request.name, request.permissions);
+            var result = await _mediator.Send(command);
+            return Ok(result.response);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
+        public async Task<IActionResult> UpdateRole([FromBody] UpdateRoleDto request)
+        {
+            var command = new UpdateRoleCommand(request.RoleId, request.name, request.permissions);
             var result = await _mediator.Send(command);
             return Ok(result.response);
         }
