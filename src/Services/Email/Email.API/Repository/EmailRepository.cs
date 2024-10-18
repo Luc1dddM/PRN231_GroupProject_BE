@@ -4,6 +4,7 @@ using Email.API.Models;
 using Email.DTOs;
 using Email.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Security.AccessControl;
 using System.Text.Json;
 
@@ -285,7 +286,7 @@ public class EmailRepository : IEmailRepository
         return emailTemplate;
     }
 
-    public async Task<EmailListDTO> GetList(string[] statusesParam, string[] categoriesParam, string searchterm, string sortBy, string sortOrder, int pageNumberParam, int pageSizeParam)
+    public async Task<EmailListDTO> GetList(string[] statusesParam, string[] categoriesParam, string searchterm, string sortBy, string sortOrder, int? pageNumberParam, int? pageSizeParam)
     {
         //Get List from db
         var result = await _context.EmailTemplates.ToListAsync();
@@ -295,18 +296,29 @@ public class EmailRepository : IEmailRepository
         result = Search(result, searchterm);
         result = Sort(sortBy, sortOrder, result);
 
+        if(!pageNumberParam.HasValue && !pageSizeParam.HasValue)
+        {
+            return new EmailListDTO()
+            {
+                listEmail = result,
+                totalPages = 1
+            };
+        }
         //Calculate pagination
+        int pageNumber = pageNumberParam ?? 1;
+        int pageSize = pageSizeParam ?? 10;
         var totalItems = result.Count();
-        var TotalPages = (int)Math.Ceiling((double)totalItems / pageSizeParam);
+        var TotalPages = (int)Math.Ceiling((double)totalItems / pageSize);
 
         //Get final result base on page size and page number 
-        result = result.Skip((pageNumberParam - 1) * pageSizeParam)
-                .Take(pageSizeParam)
+        result = result.Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToList();
 
         return new EmailListDTO()
         {
             listEmail = result,
+            totalElements = totalItems,
             totalPages = TotalPages
         };
     }

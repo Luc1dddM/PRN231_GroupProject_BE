@@ -6,5 +6,6 @@ namespace Email.DTOs
     {
         public List<EmailTemplate> listEmail;
         public int totalPages;
+        public int totalElements;
     }
 }
