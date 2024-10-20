@@ -80,13 +80,13 @@ namespace ShoppingCart.API.Repository
 
         }
 
-        public async Task<CartDetail> GetCartDetailByCartHeaderId_ProductId(string cartHeaderId, string productId, CancellationToken cancellationToken = default)
+        public async Task<CartDetail> GetCartDetailByCartHeaderId_ProductCategoryId(string cartHeaderId, string productCategoryId, CancellationToken cancellationToken = default)
         {
             try
             {
                 var cDetail = await _context.CartDetails.Include(cd => cd.CartHeader)
                                                                     .FirstOrDefaultAsync(c => c.CartHeaderId.Equals(cartHeaderId) &&
-                                                                                              c.ProductId.Equals(productId), cancellationToken);
+                                                                                              c.ProductCategoryId.Equals(productCategoryId), cancellationToken);
                 return cDetail;
             }
             catch (Exception e)

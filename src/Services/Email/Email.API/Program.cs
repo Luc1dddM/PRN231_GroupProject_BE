@@ -8,7 +8,7 @@ using Email.API;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddMessageBroker(builder.Configuration, Assembly.GetExecutingAssembly());
+//builder.Services.AddMessageBroker(builder.Configuration, Assembly.GetExecutingAssembly());
 
 
 // Config DB

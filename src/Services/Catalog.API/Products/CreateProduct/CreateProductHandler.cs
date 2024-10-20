@@ -77,7 +77,7 @@ namespace Catalog.API.Products.CreateProduct
             _uploadImageRepository.UploadFile(command.ProductCreateDTO.Image
                 , product.ImageUrl);
 
-            var response = new BaseResponse<string>(product.ProductId);
+            var response = new BaseResponse<string>(product.ProductId, "Create product successfully");
 
             //return result
             return new CreateProductResult(response);

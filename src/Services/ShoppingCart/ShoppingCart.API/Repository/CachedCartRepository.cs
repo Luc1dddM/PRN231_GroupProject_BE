@@ -81,12 +81,12 @@ namespace ShoppingCart.API.Repository
 
         }
 
-        public async Task<CartDetail> GetCartDetailByCartHeaderId_ProductId(string cartHeaderId, string productId, CancellationToken cancellationToken = default)
+        public async Task<CartDetail> GetCartDetailByCartHeaderId_ProductCategoryId(string cartHeaderId, string productCategoryId, CancellationToken cancellationToken = default)
         {
             try
             {
                 //we don't cache onl;y cart detail, as we want to keep the full cart object in cache
-                var cartDetail = await _repository.GetCartDetailByCartHeaderId_ProductId(cartHeaderId, productId, cancellationToken);
+                var cartDetail = await _repository.GetCartDetailByCartHeaderId_ProductCategoryId(cartHeaderId, productCategoryId, cancellationToken);
                 if (cartDetail is null)
                 {
                     return null;

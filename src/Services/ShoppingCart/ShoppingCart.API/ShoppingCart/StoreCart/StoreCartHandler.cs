@@ -45,7 +45,7 @@
 
             foreach (var detail in command.CartHeader.CartDetails)
             {
-                var existingDetail = await _repository.GetCartDetailByCartHeaderId_ProductId(existingHeader.CartHeaderId, detail.ProductId, cancellationToken);
+                var existingDetail = await _repository.GetCartDetailByCartHeaderId_ProductCategoryId(existingHeader.CartHeaderId, detail.ProductCategoryId, cancellationToken);
 
                 if (existingDetail != null)
                 {
@@ -57,6 +57,7 @@
                 }
                 else
                 {
+                    // Scenario 2: No existing detail, create a new one
                     detail.CartDetailId = Guid.NewGuid().ToString();
                     detail.CartHeaderId = existingHeader.CartHeaderId;
                     await _repository.CreateCartDetails(detail, cancellationToken);
@@ -64,7 +65,7 @@
             }
 
             var result = await _repository.GetCart(userId, cancellationToken);
-            result.CartHeader.TotalPrice = result.CartDetails.Sum(c => c.Price * c.Quantity);
+            //result.CartHeader.TotalPrice = result.CartDetails.Sum(c => c.Price * c.Quantity);
 
             return new StoreCartResult(new BaseResponse<CartDto>
             {
