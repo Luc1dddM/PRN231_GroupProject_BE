@@ -80,13 +80,13 @@ namespace ShoppingCart.API.Repository
 
         }
 
-        public async Task<CartDetail> GetCartDetailByCartHeaderId_ProductId(string cartHeaderId, string productId, CancellationToken cancellationToken = default)
+        public async Task<CartDetail> GetCartDetailByCartHeaderId_ProductCategoryId(string cartHeaderId, string productCategoryId, CancellationToken cancellationToken = default)
         {
             try
             {
                 var cDetail = await _context.CartDetails.Include(cd => cd.CartHeader)
-                                                                    .FirstOrDefaultAsync(c => c.CartHeaderId.Equals(cartHeaderId) &&
-                                                                                              c.ProductId.Equals(productId), cancellationToken);
+                                                        .FirstOrDefaultAsync(c => c.CartHeaderId.Equals(cartHeaderId) &&
+                                                                             c.ProductCategoryId.Equals(productCategoryId), cancellationToken);
                 return cDetail;
             }
             catch (Exception e)
@@ -105,14 +105,10 @@ namespace ShoppingCart.API.Repository
 
                 if (cartDetail == null)
                 {
-                    throw new NotFoundException($"CartDetail with Id {cartDetailId} was not found");
+                    return null;
                 }
 
                 return cartDetail;
-            }
-            catch (NotFoundException e)
-            {
-                throw new NotFoundException($"CartDetail with Id {cartDetailId} was not found");
             }
             catch (Exception e)
             {

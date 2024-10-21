@@ -22,8 +22,6 @@
                 throw new NotFoundException("UserId did not have any value in the incoming request.");
             }
 
-            string resMessage = "";
-
             //checkif the cart header already existing for a user
             var existingHeader = await _repository.GetCartHeaderByUserId(userId, cancellationToken);
 
@@ -33,19 +31,17 @@
                 existingHeader.UpdatedDate = DateTime.Now;
                 existingHeader.UpdatedBy = userId;
                 await _repository.UpdateCartHeader(existingHeader, userId, cancellationToken);
-                resMessage = "Cart successfully updated.";
             }
             else
             {
                 //create new cart header
                 var newHeader = await _repository.CreateCartHeader(userId, cancellationToken);
                 existingHeader = newHeader;
-                resMessage = "Cart successfully added.";
             }
 
             foreach (var detail in command.CartHeader.CartDetails)
             {
-                var existingDetail = await _repository.GetCartDetailByCartHeaderId_ProductId(existingHeader.CartHeaderId, detail.ProductId, cancellationToken);
+                var existingDetail = await _repository.GetCartDetailByCartHeaderId_ProductCategoryId(existingHeader.CartHeaderId, detail.ProductCategoryId, cancellationToken);
 
                 if (existingDetail != null)
                 {
@@ -57,6 +53,7 @@
                 }
                 else
                 {
+                    // Scenario 2: No existing detail, create a new one
                     detail.CartDetailId = Guid.NewGuid().ToString();
                     detail.CartHeaderId = existingHeader.CartHeaderId;
                     await _repository.CreateCartDetails(detail, cancellationToken);
@@ -64,12 +61,12 @@
             }
 
             var result = await _repository.GetCart(userId, cancellationToken);
-            result.CartHeader.TotalPrice = result.CartDetails.Sum(c => c.Price * c.Quantity);
+            //result.CartHeader.TotalPrice = result.CartDetails.Sum(c => c.Price * c.Quantity);
 
             return new StoreCartResult(new BaseResponse<CartDto>
             {
                 IsSuccess = true,
-                Message = resMessage,
+                Message = "Cart successfully added.",
                 Result = result
             });
 

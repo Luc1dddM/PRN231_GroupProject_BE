@@ -14,7 +14,7 @@ namespace Chat.API.Groups.GetGroups
         public void AddRoutes(IEndpointRouteBuilder app)
         {
             app.MapGet("/chat/group",
-                async ( ISender sender) =>
+                async (ISender sender) =>
                 {
                     var result = await sender.Send(new GetGroupQuery());
 

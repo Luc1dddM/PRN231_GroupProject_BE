@@ -1,8 +1,6 @@
-﻿using BuildingBlocks.Models;
-
-namespace Ordering.Application.Orders.Queries.GetOrders
+﻿namespace Ordering.Application.Orders.Queries.GetOrders
 {
-    public record GetOrdersQuery() : IQuery<GetOrdersResult>;
+    public record GetOrdersQuery(GetListOrderParamsDto Param) : IQuery<GetOrdersResult>;
 
-    public record GetOrdersResult(BaseResponse<IEnumerable<OrderDto>> Result);
+    public record GetOrdersResult(BaseResponse<PaginatedList<OrderDto>> Result);
 }
