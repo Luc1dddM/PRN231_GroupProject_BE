@@ -2,8 +2,10 @@
 using Identity.Application.User.Commands.CreateUser;
 using Identity.Application.User.Commands.GetListUser;
 using Identity.Application.User.Commands.GetUserById;
+using Identity.Application.User.Commands.ImportUsers;
 using Identity.Application.User.Commands.Updateuser;
 using Identity.Application.User.Dtos;
+using Identity.Domain.Entities;
 using Identity.Infrastructure.Exceptions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -49,6 +51,25 @@ namespace Identity.API.Controllers
             var query = new CreateUserCommand(Request);
             var reponse = await _mediator.Send(query);
             return Ok(reponse.response);
+        }
+
+        [HttpPost]
+        [Route("/api/User/ImportUser")]
+        [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
+        public async Task<ActionResult> ImportUsers(IFormFile FileRequest, CancellationToken cancellation = default)
+        {
+            var userId = "1";
+            if (string.IsNullOrEmpty(userId)) return BadRequest(new Exception("User Id Is Null"));
+            var query = new ImportUserCommand(FileRequest, userId);
+            var reponse = await _mediator.Send(query);
+
+            if (reponse.result != null)
+            {
+
+                return File(reponse.result.Result.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ErrorReport.xlsx");
+            }
+
+            return Ok(); // Return s
         }
 
 
