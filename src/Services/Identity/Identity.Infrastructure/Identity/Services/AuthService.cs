@@ -1,15 +1,15 @@
 ﻿using BuildingBlocks.Exceptions;
+using BuildingBlocks.Messaging.Events;
 using BuildingBlocks.Models;
 using Identity.Application.Email.Interfaces;
 using Identity.Application.Identity.Dtos;
 using Identity.Application.Identity.Interfaces;
 using Identity.Application.RolePermission.Interfaces;
-using Identity.Domain.Entities;
-using Identity.Domain.Enums;
 using Identity.Infrastructure.Data;
 using Identity.Infrastructure.Identity.Configuration;
 using Identity.Infrastructure.Identity.Utils;
 using IdentityModel;
+using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.WebUtilities;
@@ -33,8 +33,8 @@ namespace Identity.Infrastructure.Identity.Services
         private readonly UserManager<Domain.Entities.User> _userManager;
         private readonly Jwt _jwt;
         private readonly Configuration.RefreshToken _refresh;
-
         private readonly IRolePermissionService _permissionService;
+        private readonly IPublishEndpoint _publishEndpoint;
 
         public AuthService(
             ApplicationDbContext context,
@@ -45,7 +45,8 @@ namespace Identity.Infrastructure.Identity.Services
             UserManager<Domain.Entities.User> userManager,
             IOptions<Jwt> jwt,
             IOptions<Configuration.RefreshToken> refresh,
-            IRolePermissionService permissionService)
+            IRolePermissionService permissionService,
+            IPublishEndpoint publishEndpoint)
         {
             _context = context;
             _googleAuthService = googleAuthService;
@@ -56,6 +57,7 @@ namespace Identity.Infrastructure.Identity.Services
             _emailSender = emailSender;
             _permissionService = permissionService;
             _refresh = refresh.Value;
+            _publishEndpoint = publishEndpoint;
         }
 
         /// <summary>
@@ -78,8 +80,10 @@ namespace Identity.Infrastructure.Identity.Services
                 Token = jwtResponse.Token,
                 RefreshToken = jwtResponse.RefreshToken,
                 Email = user.Email ?? "",
-                UserId = user.UserId
+                UserId = user.UserId,
+                UserType = "Customer"
             };
+
 
             return new BaseResponse<LoginReponseDto>(response);
         }
@@ -99,17 +103,22 @@ namespace Identity.Infrastructure.Identity.Services
                 throw new BadRequestException("You have to confirm your account by email");
             }
 
+            var roles = await _userManager.GetRolesAsync(user);
+
+            // Determine user type based on roles
+            var userType = roles.Contains("Customer") ? "customer" : "admin";
+
             var jwtResponse = await CreateJwtToken(user);
             var response = new LoginReponseDto()
             {
                 Token = jwtResponse.Token,
                 RefreshToken = jwtResponse.RefreshToken,
                 Email = user.Email ?? "",
-                UserId = user.UserId
+                UserId = user.UserId,
+                UserType = userType
             };
 
             return new BaseResponse<LoginReponseDto>(response);
-
         }
 
         public async Task<BaseResponse<CreateCustomerDto>> Register(string email, string name, string phonenumber, string password)
@@ -138,9 +147,17 @@ namespace Identity.Infrastructure.Identity.Services
                     name = userToResponse.FullName,
                     phonenumber = userToResponse.PhoneNumber
                 };
+                var Event = new CreateUserEvent
+                {
+                    UserId = user.UserId,
+                    Name = user.FullName,
+                    IsCustomer = true,
+                };
+                _publishEndpoint.Publish(Event);
+
                 return new BaseResponse<CreateCustomerDto>(userDto);
             }
-            throw new NotFoundException(result.Errors.First().ToString());
+            throw new Exception(result.Errors.ToString());
         }
 
         public async Task<BaseResponse<string>> ReConfirmEmail(string emailAddress)
@@ -362,6 +379,7 @@ namespace Identity.Infrastructure.Identity.Services
                 new Claim(JwtClaimTypes.Name, user.FullName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
+
             List<string> permissions = await _permissionService.GetPermissionsAsync(user.UserId);
 
             userClaims.AddRange(roles.Select(role => new Claim(ClaimsIdentity.DefaultRoleClaimType, role)));

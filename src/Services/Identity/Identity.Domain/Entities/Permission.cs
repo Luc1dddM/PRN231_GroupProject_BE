@@ -10,6 +10,7 @@ namespace Identity.Domain.Entities
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
+        public string TypePermission { get; set; }
         public virtual ICollection<Role>? Roles { get; set; }
     }
 }

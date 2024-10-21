@@ -8,9 +8,6 @@ using Email.API;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//builder.Services.AddMessageBroker(builder.Configuration, Assembly.GetExecutingAssembly());
-
-
 // Config DB
 builder.Services.AddDbContext<Prn231GroupProjectContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Database")));

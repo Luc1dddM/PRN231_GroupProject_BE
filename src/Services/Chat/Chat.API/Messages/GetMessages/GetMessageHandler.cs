@@ -38,6 +38,7 @@ namespace Chat.API.Messages.GetMessages
                 var message = new MessageDTO
                 {
                     Content = item.Content,
+                    SenderId = item.SenderId,
                     SenderName = _connectionUserRepository.GetUserById(item.SenderId).Name
                 };
                 listDTO.Add(message);

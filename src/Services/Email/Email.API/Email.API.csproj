@@ -37,16 +37,16 @@
 
 
 	<ItemGroup>
-	  <Protobuf Include="..\..\Coupon\Coupon.Grpc\Protos\coupon.proto" GrpcServices="Client">
-	    <Link>Protos\coupon.proto</Link>
-	  </Protobuf>
+	  <ContainerEnvironmentVariable Include="ASPNETCORE_HTTPS_PORTS">
+	    <Value>8081</Value>
+	  </ContainerEnvironmentVariable>
 	</ItemGroup>
 
 
 	<ItemGroup>
-	  <ContainerEnvironmentVariable Include="ASPNETCORE_HTTPS_PORTS">
-	    <Value>8081</Value>
-	  </ContainerEnvironmentVariable>
+	  <Protobuf Include="..\..\Coupon\Coupon.Grpc\Protos\coupon.proto" GrpcServices="Client">
+	    <Link>Protos\coupon.proto</Link>
+	  </Protobuf>
 	</ItemGroup>
 
 

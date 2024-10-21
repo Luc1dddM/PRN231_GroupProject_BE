@@ -1,4 +1,5 @@
 ﻿using BuildingBlocks.Models;
+using MassTransit;
 using Ordering.Application.Orders.Commands.CreateOrder;
 using Ordering.Domain.Models;
 using Ordering.Domain.ValueObjects;
@@ -18,7 +19,7 @@ namespace Ordering.API.Endpoints
     {
         public void AddRoutes(IEndpointRouteBuilder app)
         {
-            app.MapPost("/orders", async (CreateOrderRequest request, ISender sender, HttpClient httpClient) =>
+            app.MapPost("/orders", async (CreateOrderRequest request, ISender sender, HttpClient httpClient, IPublishEndpoint publishEndpoint) =>
             {
 
                 var shippingAddress = request.Order.ShippingAddress;
@@ -63,7 +64,12 @@ namespace Ordering.API.Endpoints
                 //var url = $"https://localhost:7090/send-email-order?orderId={response.Id}&userEmail={Uri.EscapeDataString(customerEmail)}&couponCode={Uri.EscapeDataString(request.Order.CouponCode)}";
 
                 //await httpClient.PostAsync(url, null);
-
+                await publishEndpoint.Publish(new
+                {
+                    OrderId = orderId,
+                    UserEmail = customerEmail,
+                    CouponCode = request.Order.CouponCode
+                });
                 return Results.Created(locationUri, new CreateOrderResponse(result.Result));
 
             })

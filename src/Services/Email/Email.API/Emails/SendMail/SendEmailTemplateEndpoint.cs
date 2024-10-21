@@ -1,9 +1,12 @@
-﻿using Carter;
+﻿using BuildingBlocks.Messaging.Events;
+using Carter;
 using Coupon.Grpc;
 using Email.API.Models;
 using Email.API.Repository;
 using Email.Models;
 using FluentValidation;
+using MassTransit;
+using MassTransit.Transports;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Http;
@@ -19,6 +22,35 @@ public class SendEmailTemplateEndpoint : ICarterModule
     }
     public void AddRoutes(IEndpointRouteBuilder app)
     {
+        app.MapPost("/test-send-email-order", async (HttpContext httpContext, string orderId, string userEmail, string couponCode, IPublishEndpoint publishEndpoint) =>
+        {
+            try
+            {
+                var sendMailOrderEvent = new SendMailOrderEvent
+                {
+                    OrderId = orderId,
+                    UserEmail = userEmail,
+                    CouponCode = couponCode
+                };
+                await publishEndpoint.Publish(sendMailOrderEvent);
+                Console.WriteLine("SendMailOrderEvent published: OrderId={OrderId}, UserEmail={UserEmail}, CouponCode={CouponCode}",
+                                        orderId, userEmail, couponCode);
+                return Results.Ok("Test Email sent successfully using template!");
+            }
+            catch (ValidationException ex)
+            {
+                return Results.Problem("Validation failed: " + ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem("An unexpected error occurred: " + ex.Message);
+            }
+        })
+        .WithName("TestSendEmailOrder")
+        .Produces(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .WithSummary("Test Send Email Order")
+        .WithDescription("Test Sends an email based on the order.");
         app.MapPost("/send-email-order", async (HttpContext httpContext, string orderId, string userEmail, string couponCode, IEmailRepository emailRepository) =>
         {
             try

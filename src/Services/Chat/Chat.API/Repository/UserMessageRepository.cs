@@ -1,4 +1,5 @@
 ﻿using Chat.API.Model;
+using Chat.API.Model.DTO;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,20 +9,51 @@ namespace Chat.API.Repository
     {
         private readonly MyDbContext _context;
         private readonly IGroupMemberRepository _groupMemberRepository;
+        private readonly IGroupRepository _groupRepository;
         public UserMessageRepository(MyDbContext context
-            ,IGroupMemberRepository groupMemberRepository)
+            ,IGroupMemberRepository groupMemberRepository
+            ,IGroupRepository groupRepository)
         {
             _context = context;
             _groupMemberRepository = groupMemberRepository;
+            _groupRepository = groupRepository;
         }
-        public int CountUnReadMessage(string receiverId, string groundId)
+
+        public int CountTotalUnReadMessage(string receiverId)
         {
             try
             {
-                var count = _context.UserMessages.Include(p => p.Message)
-                    .Where(u => u.ReceiverId.Equals(receiverId) 
-                    && u.Message.GroupId.Equals(groundId) && !u.Status).Count();
+                var count = _context.UserMessages.Where(u => u.ReceiverId.Equals(receiverId) && !u.Status).Count();
                 return count;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public List<UnReadNotifyDTO> CountUnReadMessage(string receiverId)
+        {
+            try
+            {
+                var message = _context.UserMessages.Include(p => p.Message)
+                    .Where(u => u.ReceiverId.Equals(receiverId) && !u.Status).AsQueryable();
+                var group = _groupRepository.GetGroupByUserId(receiverId).Result;
+                var result = new List<UnReadNotifyDTO>();
+                foreach (var item in group)
+                {
+                    var count = message.Where(m => m.Message.GroupId.Equals(item.GroupId)).Count();
+                    var tmp = new UnReadNotifyDTO
+                    {
+                        groupId = item.GroupId,
+                        Count = count
+                    };
+                    result.Add(tmp);    
+                }
+
+
+
+                return result;
             }
             catch(Exception ex)
             {
@@ -53,7 +85,7 @@ namespace Chat.API.Repository
             }
         }
 
-        public async Task UpdateUserMessageAsync(string groupId, string receiverId)
+        public void UpdateUserMessageAsync(string groupId, string receiverId)
         {
             try
             {
@@ -65,7 +97,7 @@ namespace Chat.API.Repository
                 {
                     item.Status = true;
                 }
-                await _context.SaveChangesAsync();
+                _context.SaveChanges();
             }
             catch (Exception ex)
             {

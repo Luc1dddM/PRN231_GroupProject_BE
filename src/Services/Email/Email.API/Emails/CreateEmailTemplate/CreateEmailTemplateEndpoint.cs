@@ -10,7 +10,7 @@ namespace Email.API.Emails.CreateEmailTemplate;
 
 public record CreateEmailTemplateRequest(string Name, string Description, string Subject, string Body, bool Active, string Category);
 
-public record CreateEmailTemplateResponse(int Id);
+public record CreateEmailTemplateResponse(string EmailTemplateId);
 
 public class CreateEmailTemplateEndpoint : ICarterModule
 {
@@ -41,7 +41,7 @@ public class CreateEmailTemplateEndpoint : ICarterModule
             var newEmailTemplate = await emailRepository.AddEmailTemplate(emailTemplate);
 
             return Results.Created($"/emails/{newEmailTemplate.EmailTemplateId}",
-                new CreateEmailTemplateResponse(int.Parse(newEmailTemplate.EmailTemplateId)));
+                new CreateEmailTemplateResponse(newEmailTemplate.EmailTemplateId));
         })
          .WithName("CreateEmailTemplate")
         .Produces<CreateEmailTemplateResponse>(StatusCodes.Status201Created)

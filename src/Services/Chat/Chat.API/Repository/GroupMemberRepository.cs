@@ -11,16 +11,16 @@ namespace Chat.API.Repository
         {
             _context = context;
         }
-        public void Create(List<string> userId, string groupId, string? addBy)
-        {
+        public void Create(List<ConnectionUser> user, string groupId, string? addBy)
+        { 
             try
             {
-                foreach (var item in userId)
+                foreach (var item in user)
                 {
                     var tmp = new GroupMember
                     {
                         GroupId = groupId,
-                        UserId = item,
+                        UserId = item.UserId,
                         AddBy = addBy,
                         AddedDate = DateTime.Now
                     };
@@ -41,6 +41,24 @@ namespace Chat.API.Repository
             try
             {
                 return await _context.GroupMembers.Where(g => g.GroupId.Equals(groupId)).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public void OutGroup(string userId)
+        {
+            try
+            {
+                var groupRemove = _context.GroupMembers.Where(g => g.UserId.Equals(userId)).ToList();
+                foreach (var item in groupRemove)
+                {
+                    _context.Remove(item);
+                    _context.SaveChanges();
+                }
             }
             catch (Exception ex)
             {
