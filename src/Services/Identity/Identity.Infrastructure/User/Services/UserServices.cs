@@ -1,23 +1,37 @@
 ﻿using BuildingBlocks.Exceptions;
 using BuildingBlocks.Models;
+using BuildingBlocks.Validation;
+using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
+using ExcelDataReader;
 using Identity.Application.File.Services;
 using Identity.Application.User.Dtos;
 using Identity.Application.User.Interfaces;
+using Identity.Domain.Entities;
 using Identity.Infrastructure.Data;
 using Identity.Infrastructure.Exceptions;
 using Mapster;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Text;
 
 namespace Identity.Infrastructure.User.Services
 {
     public class UserServices : IUserService
     {
+        private IWebHostEnvironment environment;
         private readonly ApplicationDbContext _context;
         private readonly IFileSerivce _fileService;
         private readonly UserManager<Domain.Entities.User> _userManager;
-        public UserServices(ApplicationDbContext context, UserManager<Domain.Entities.User> userManager, IFileSerivce fileSerivce)
+
+
+        const string DefaultPassword = "123456";
+        public UserServices(ApplicationDbContext context, UserManager<Domain.Entities.User> userManager, IFileSerivce fileSerivce, IWebHostEnvironment env)
         {
+            environment = env;
             _context = context;
             _userManager = userManager;
             _fileService = fileSerivce;
@@ -29,7 +43,7 @@ namespace Identity.Infrastructure.User.Services
 
             //Check if User is also Customer and Employee?
             if (dto.Roles.Contains("Customer") && dto.Roles.Count > 1)
-               throw new BadRequestException("User cannot be also Customer and Employee");
+                throw new BadRequestException("User cannot be also Customer and Employee");
 
             if (dto.ImageFile is not null)
             {
@@ -58,7 +72,7 @@ namespace Identity.Infrastructure.User.Services
 
         public async Task<BaseResponse<PaginatedList<UserDto>>> GetAllUser(GetListUserParamsDto parameters)
         {
-            IQueryable<Domain.Entities.User> query = _context.Users.AsQueryable();
+            IQueryable<Domain.Entities.User> query = _context.Users.Include(u => u.CreatedByUser).Include(u => u.UpdatedByUser).AsQueryable();
 
             // Step 1: Apply filters (e.g., Status and Dob)
             if (parameters.Statuses is not null || parameters.Genders is not null || parameters.Dob is not null)
@@ -86,6 +100,8 @@ namespace Identity.Infrastructure.User.Services
                     userDto.Id = user.UserId;
                     userDto.Email = user.Email;
                     userDto.roles = roles;
+                    userDto.UpdatedBy = user.UpdatedByUser?.FullName ?? string.Empty;
+                    userDto.CreatedBy = user.CreatedByUser?.FullName ?? string.Empty;
                     listEmployeesDto.Add(userDto);
                 }
             }
@@ -101,6 +117,18 @@ namespace Identity.Infrastructure.User.Services
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
             var userDto = user.Adapt<UserDto>();
+            if (!String.IsNullOrEmpty(user?.ProfilePicture) && user.ProfilePicture.StartsWith("http"))
+            {
+                userDto.ImageBase64 = user.ProfilePicture;
+            }
+            else
+            {
+                if (!String.IsNullOrEmpty(user?.ProfilePicture))
+                {
+                    userDto.ImageBase64 = "data:image/png;base64," + Convert.ToBase64String((File.ReadAllBytes(user.ProfilePicture)));
+                }
+            }
+
             if (user is not null)
             {
                 return new BaseResponse<UserDto>(userDto);
@@ -119,64 +147,192 @@ namespace Identity.Infrastructure.User.Services
                 throw new UserNotFoundException(id);
 
             //Check if User is also Customer and Employee?
-            if (request.Roles.Contains("Customer") && request.Roles.Count > 1)
-                throw new BadRequestException("User cannot be also Customer and Employee");
+            if(request.Roles != null)
+            {
+                if (request.Roles.Contains("Customer") && request.Roles.Count > 1)
+                    throw new BadRequestException("User cannot be also Customer and Employee");
 
+
+                var oldRole = await _userManager.GetRolesAsync(User);
+                var result = await _userManager.RemoveFromRolesAsync(User, oldRole);
+                await _userManager.AddToRolesAsync(User, request.Roles);
+            }
+
+
+            string oldImage;
             if (request.ImageFile != null)
             {
+                oldImage = User.ProfilePicture ?? "";
+                await _fileService.DeleteImage(oldImage);
+
                 var fileResult = _fileService.SaveImage(request.ImageFile);
                 if (fileResult.Item1 == 1)
                 {
                     User.ProfilePicture = fileResult.Item2;
                 }
-
             }
 
-            var oldRole = await _userManager.GetRolesAsync(User);
-                var result = await _userManager.RemoveFromRolesAsync(User, oldRole);
-                string errorMessages = "";
-                if (!result.Succeeded)
-                {
-                    errorMessages = string.Join(", ", result.Errors.Select(e => e.Description));
-                    throw new Exception(errorMessages);
-                }
+            User.Email = request.Email ?? User.Email;
+            User.Gender = request.Gender ?? User.Gender;
+            User.PhoneNumber = request.PhoneNumber ?? User.PhoneNumber;
+            User.FullName = request.FullName ?? User.FullName;
+            User.IsActive = request.IsActive ?? User.IsActive;
+            User.BirthDay = request.BirthDay;
+            User.UpdatedBy = request.UpdatedBy;
+            User.UpdatedAt = DateTime.Now;
 
-                result = await _userManager.AddToRolesAsync(User, request.Roles);
+            await _context.SaveChangesAsync();
 
-                if (!result.Succeeded)
-                {
-                    errorMessages = string.Join(", ", result.Errors.Select(e => e.Description));
-                    throw new Exception(errorMessages);
-                }
-
-                string oldImage = User.ProfilePicture ?? "";
-
-                User.Email = request.Email;
-                User.PhoneNumber = request.PhoneNumber;
-                User.FullName = request.FullName;
-                User.IsActive = request.IsActive;
-                User.BirthDay = request.BirthDay;
-                User.UpdatedBy = request.UpdatedBy;
-                User.UpdatedAt = DateTime.Now;
-
-                await _context.SaveChangesAsync();
-
-                if (!result.Succeeded)
-                {
-                    errorMessages = string.Join(", ", result.Errors.Select(e => e.Description));
-                    throw new Exception(errorMessages);
-                }
-
-                if (request.ImageFile != null)
-                {
-                    await _fileService.DeleteImage(oldImage);
-                }
-                var resultDto = User.Adapt<UserDto>();
-                resultDto.Id = User.UserId;
-                resultDto.roles = request.Roles;
-                return new BaseResponse<UserDto>(resultDto);
+            var resultDto = User.Adapt<UserDto>();
+            resultDto.Id = User.UserId;
+            resultDto.roles = request.Roles;
+            return new BaseResponse<UserDto>(resultDto);
         }
 
+        public async Task<BaseResponse<MemoryStream>> ImportUserTemplate(IFormFile excelFile, string userId)
+        {
+            try
+            {
+                var contentPath = environment.ContentRootPath;
+                var path = Path.Combine(contentPath, "Uploads\\Templates");
+                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+
+                var filePath = Path.Combine(path, excelFile.FileName);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await excelFile.CopyToAsync(stream);
+                }
+
+                List<Domain.Entities.User> templates = new List<Domain.Entities.User>();
+                List<(int RowIndex, List<string> Errors)> errorDetails = new List<(int, List<string>)>();
+
+
+                using (FileStream stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                {
+                    using (var reader = ExcelReaderFactory.CreateReader(stream))
+                    {
+                        bool isHeaderSkipped = false;
+                        int rowIndex = 0;
+
+                        while (reader.Read())
+                        {
+                            rowIndex++;
+                            List<string> validationErrors = new List<string>();
+
+                            if (!isHeaderSkipped)
+                            {
+                                isHeaderSkipped = true; // Skip header row
+                                continue;
+                            }
+
+                            /* === Validation  ===*/
+                            var error = "";
+
+                            //Validation Email
+                            if (!ImportFieldValidation.IsValidateEmail(reader.GetValue(0)?.ToString() ?? "", out error))
+                            {
+                                validationErrors.Add(error);
+                            }
+
+                            //Validation Full Name
+                            if(!ImportFieldValidation.IsValidString(reader.GetValue(1)?.ToString(), "Full Name", 6, null, out error))
+                            {
+                                validationErrors.Add(error);
+                            }
+
+                            //Validation Gender
+                            if (!ImportFieldValidation.IsValidGender(reader.GetValue(2)?.ToString(), out error))
+                            {
+                                validationErrors.Add(error);
+                            }
+
+                            //Validation Status
+                            if (!ImportFieldValidation.IsValidateBoolean(reader.GetValue(3)?.ToString(), out error))
+                            {
+                                validationErrors.Add(error);
+                            }
+
+                            //Skip row 
+                            if(validationErrors.Count > 0)
+                            {
+                                errorDetails.Add((rowIndex, validationErrors));
+                                continue;
+                            }
+
+                            var passwordHasher = new PasswordHasher<object>();
+                            // Hash the password
+                            var hashedPassword = passwordHasher.HashPassword(null, DefaultPassword);
+
+                            var user = new Domain.Entities.User()
+                            {
+                                Email = reader.GetValue(0)?.ToString() ?? "",
+                                NormalizedEmail = reader.GetValue(0)?.ToString().ToUpper() ?? "",
+                                EmailConfirmed = true,
+                                UserName = reader.GetValue(0)?.ToString() ?? "",
+                                PasswordHash = hashedPassword,
+                                FullName = reader.GetValue(1)?.ToString() ?? "",
+                                Gender = reader.GetValue(2)?.ToString() ?? "",
+                                IsActive = bool.Parse(reader.GetValue(3)?.ToString() ?? "False"),
+                                BirthDay = !string.IsNullOrEmpty(reader.GetValue(4)?.ToString()) ? DateOnly.ParseExact(reader.GetValue(1)?.ToString(), "d/M/yyyy") : DateOnly.FromDateTime(DateTime.Now),
+                                CreatedBy = "dc15ca24-a251-48a2-ba70-c570bccf9367",
+                                CreatedAt = DateTime.Now
+                            };
+                            templates.Add(user);
+                        }
+                    }
+                }
+
+                if (errorDetails.Any())
+                {
+                    using (var errorWorkbook = new XLWorkbook())
+                    {
+                        var worksheet = errorWorkbook.Worksheets.Add("Errors Report");
+
+                        // Add header
+                        worksheet.Cell(1, 1).Value = "Row Index";
+                        worksheet.Cell(1, 2).Value = "Error Messages";
+
+                        int errorRowIndex = 2; // Start from the second row, assuming the first row is for headers
+
+                        foreach (var (rowIndex, errors) in errorDetails)
+                        {
+                            // Split errors to handle multiple errors for the same row
+                            foreach (var error in errors)
+                            {
+                                worksheet.Cell(errorRowIndex, 1).Value = rowIndex; // Row index from the original data
+                                worksheet.Cell(errorRowIndex, 2).Value = error;    // Individual error message
+                                errorRowIndex++; // Move to the next row for the next error
+                            }
+                        }
+
+                        using (var errorMemoryStream = new MemoryStream())
+                        {
+                            errorWorkbook.SaveAs(errorMemoryStream);
+                            errorMemoryStream.Position = 0; // Reset stream position for reading
+                            return new BaseResponse<MemoryStream>(errorMemoryStream); // Return the MemoryStream
+                        }
+                    }
+                }
+
+                // Save valid templates to the database
+                if (templates.Any())
+                {
+                    await _context.Users.AddRangeAsync(templates);
+                    await _context.SaveChangesAsync();
+                }
+
+            }
+            catch (IndexOutOfRangeException ex)
+            {
+                throw new BadRequestException("File Import cuar m bij loix.. hayx down fiel cuar t di tml");
+            }
+            
+            return null;
+        }
 
         private IQueryable<Domain.Entities.User> Filter(string[] statuses, string[] genders, DateOnly? dob, IQueryable<Domain.Entities.User> list)
         {

@@ -34,11 +34,12 @@ namespace Identity.Infrastructure.FileUtils.Services
                 }
                 string uniqueString = Guid.NewGuid().ToString();
                 // we are trying to create a unique filename here
-                var newFileName = uniqueString + ext;
-                var fileWithPath = Path.Combine(path, newFileName);
-                var stream = new FileStream(fileWithPath, FileMode.Create);
-                imageFile.CopyTo(stream);
-                stream.Close();
+                var newFileName = path + "\\" + uniqueString + ext;
+                using (var stream = new FileStream(newFileName, FileMode.Create))
+                {
+                    imageFile.CopyTo(stream);
+                }
+
                 return new Tuple<int, string>(1, newFileName);
             }
             catch (Exception ex)
@@ -49,10 +50,8 @@ namespace Identity.Infrastructure.FileUtils.Services
 
         public async Task DeleteImage(string imageFileName)
         {
-            var contentPath = environment.ContentRootPath;
-            var path = Path.Combine(contentPath, $"Uploads", imageFileName);
-            if (File.Exists(path))
-                File.Delete(path);
+            if (File.Exists(imageFileName))
+                File.Delete(imageFileName);
         }
 
     }
