@@ -20,7 +20,16 @@ builder.Services.AddScoped<IUploadImageRepository, UploadImageRepository>();
 builder.Services.AddScoped<IMapper, Mapper>();
 builder.Services.AddMessageBroker(builder.Configuration,Assembly.GetExecutingAssembly());
 
-
+builder.Services.AddCors(opt =>
+{
+    opt.AddPolicy("reactApp", builder =>
+    {
+        builder.WithOrigins("http://localhost:5173")
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
+    });
+});
 
 
 var assembly = typeof(Program).Assembly;
@@ -42,6 +51,7 @@ var app = builder.Build();
 app.MapCarter();
 //*config HTTP request pipeline
 app.UseExceptionHandler(opts => { });
+app.UseCors("reactApp");
 
 
 

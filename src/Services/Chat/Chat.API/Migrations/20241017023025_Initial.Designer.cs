@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Chat.API.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    [Migration("20241012113651_Initial")]
+    [Migration("20241017023025_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -32,6 +32,9 @@ namespace Chat.API.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsCustomer")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -156,6 +159,43 @@ namespace Chat.API.Migrations
                     b.ToTable("Messages");
                 });
 
+            modelBuilder.Entity("Chat.API.Model.UserMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("MessageId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ReceiverId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserMessageId")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(450)")
+                        .HasDefaultValueSql("(CONVERT([nvarchar](36),newid()))");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MessageId");
+
+                    b.HasIndex("ReceiverId");
+
+                    b.HasIndex("UserMessageId")
+                        .IsUnique();
+
+                    b.ToTable("UserMessages");
+                });
+
             modelBuilder.Entity("Chat.API.Model.GroupMember", b =>
                 {
                     b.HasOne("Chat.API.Model.Group", "Group")
@@ -198,11 +238,34 @@ namespace Chat.API.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Chat.API.Model.UserMessage", b =>
+                {
+                    b.HasOne("Chat.API.Model.Message", "Message")
+                        .WithMany("UserMessages")
+                        .HasForeignKey("MessageId")
+                        .HasPrincipalKey("MessageId")
+                        .IsRequired()
+                        .HasConstraintName("FK_User_Message_Message");
+
+                    b.HasOne("Chat.API.Model.ConnectionUser", "ConnectionUser")
+                        .WithMany("UserMessages")
+                        .HasForeignKey("ReceiverId")
+                        .HasPrincipalKey("UserId")
+                        .IsRequired()
+                        .HasConstraintName("FK_User_Message_ConnectionUser");
+
+                    b.Navigation("ConnectionUser");
+
+                    b.Navigation("Message");
+                });
+
             modelBuilder.Entity("Chat.API.Model.ConnectionUser", b =>
                 {
                     b.Navigation("GroupMembers");
 
                     b.Navigation("Messages");
+
+                    b.Navigation("UserMessages");
                 });
 
             modelBuilder.Entity("Chat.API.Model.Group", b =>
@@ -210,6 +273,11 @@ namespace Chat.API.Migrations
                     b.Navigation("GroupMembers");
 
                     b.Navigation("Messages");
+                });
+
+            modelBuilder.Entity("Chat.API.Model.Message", b =>
+                {
+                    b.Navigation("UserMessages");
                 });
 #pragma warning restore 612, 618
         }

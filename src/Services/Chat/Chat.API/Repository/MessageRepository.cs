@@ -1,4 +1,5 @@
 ﻿using Chat.API.Model;
+using Microsoft.EntityFrameworkCore;
 
 namespace Chat.API.Repository
 {
@@ -10,17 +11,12 @@ namespace Chat.API.Repository
         {
             _context = context;
         }
-        public void Create(string content, string senderId, string groupId)
+        public void Create(Message message)
         {
             try
             {
-                var message = new Message
-                {
-                    Content = content,
-                    SenderId = senderId,
-                    CreateAt = DateTime.Now,
-                    GroupId = groupId,
-                };
+                message.CreateAt = DateTime.Now;
+                
                 _context.Messages.Add(message);
                 _context.SaveChanges();
             }
@@ -31,11 +27,11 @@ namespace Chat.API.Repository
             }
         }
 
-        public List<Message> GetAllMessageByGroupId(string groupId)
+        public Task<List<Message>> GetAllMessageByGroupId(string groupId)
         {
             try
             {
-                return _context.Messages.Where(m => m.GroupId.Equals(groupId)).ToList();
+                return _context.Messages.Where(m => m.GroupId.Equals(groupId)).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -43,5 +39,7 @@ namespace Chat.API.Repository
                 throw new Exception(ex.Message);
             }
         }
+
+
     }
 }

@@ -246,19 +246,19 @@ namespace Catalog.API.Repository
             switch (sortBy)
             {
                 case "name":
-                    list = sortOrder == "asc" ? list.OrderBy(e => e.Name) : list.OrderByDescending(e => e.Name);
+                    list = sortOrder == "ascend" ? list.OrderBy(e => e.Name) : list.OrderByDescending(e => e.Name);
                     break;
                 case "status":
-                    list = sortOrder == "asc" ? list.OrderBy(e => e.Status) : list.OrderByDescending(e => e.Status);
+                    list = sortOrder == "ascend" ? list.OrderBy(e => e.Status) : list.OrderByDescending(e => e.Status);
                     break;
                 case "type":
-                    list = sortOrder == "asc" ? list.OrderBy(e => e.Type): list.OrderByDescending(e => e.Type);
+                    list = sortOrder == "ascend" ? list.OrderBy(e => e.Type): list.OrderByDescending(e => e.Type);
                     break;
                 case "createdBy":
-                    list = sortOrder == "asc" ? list.OrderBy(e => e.CreatedBy): list.OrderByDescending(e => e.CreatedBy);
+                    list = sortOrder == "ascend" ? list.OrderBy(e => e.CreatedBy): list.OrderByDescending(e => e.CreatedBy);
                     break;
                 case "createdAt":
-                    list = sortOrder == "asc" ? list.OrderBy(e => e.CreatedAt) : list.OrderByDescending(e => e.CreatedAt);
+                    list = sortOrder == "ascend" ? list.OrderBy(e => e.CreatedAt) : list.OrderByDescending(e => e.CreatedAt);
                     break;
                 default:
                     list = list.OrderByDescending(e => e.CategoryId);

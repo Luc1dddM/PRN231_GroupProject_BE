@@ -12,17 +12,38 @@ namespace Chat.API.Repository
             
         }
 
-        public void Create(string UserId, string Name)
+        public void Create(ConnectionUser user)
         {
             try
             {
-                var user = new ConnectionUser
-                {
-                    UserId = UserId,
-                    Name = Name
-                };
                 _context.ConnectionUsers.Add(user);
                 _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public List<ConnectionUser> GetCustomer()
+        {
+            try
+            {
+                return _context.ConnectionUsers.Where(c => c.IsCustomer).ToList();
+            }
+            catch (Exception ex)
+            {
+
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public List<ConnectionUser> GetEmployee()
+        {
+            try
+            {
+                return _context.ConnectionUsers.Where(c => !c.IsCustomer).ToList();
             }
             catch (Exception ex)
             {
@@ -37,6 +58,22 @@ namespace Chat.API.Repository
             {
                 return _context.ConnectionUsers.FirstOrDefault(u => u.UserId.Equals(UserId));
 
+            }
+            catch (Exception ex)
+            {
+
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public void Update(ConnectionUser user)
+        {
+            try
+            {
+                var newUser = GetUserById(user.UserId);
+                newUser.Name = user.Name;
+                newUser.IsCustomer = user.IsCustomer;
+                _context.SaveChanges();
             }
             catch (Exception ex)
             {
