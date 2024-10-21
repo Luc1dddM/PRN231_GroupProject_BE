@@ -40,7 +40,7 @@ namespace ShoppingCart.API.Repository
             var cart = await _repository.GetCart(userId, cancellationToken);
 
             //and set key in redis distributed cache
-            await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(cart), cancellationToken);
+            await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(cart, _options), cancellationToken);
 
             return cart;
 
@@ -81,12 +81,12 @@ namespace ShoppingCart.API.Repository
 
         }
 
-        public async Task<CartDetail> GetCartDetailByCartHeaderId_ProductId(string cartHeaderId, string productId, CancellationToken cancellationToken = default)
+        public async Task<CartDetail> GetCartDetailByCartHeaderId_ProductCategoryId(string cartHeaderId, string productCategoryId, CancellationToken cancellationToken = default)
         {
             try
             {
                 //we don't cache onl;y cart detail, as we want to keep the full cart object in cache
-                var cartDetail = await _repository.GetCartDetailByCartHeaderId_ProductId(cartHeaderId, productId, cancellationToken);
+                var cartDetail = await _repository.GetCartDetailByCartHeaderId_ProductCategoryId(cartHeaderId, productCategoryId, cancellationToken);
                 if (cartDetail is null)
                 {
                     return null;
@@ -134,7 +134,7 @@ namespace ShoppingCart.API.Repository
                     CartDetails = new List<CartDetailDto>()
                 };
 
-                await _cache.SetStringAsync($"cartOfUser:{userId}", JsonSerializer.Serialize(cartDto), cancellationToken);
+                await _cache.SetStringAsync($"cartOfUser:{userId}", JsonSerializer.Serialize(cartDto, _options), cancellationToken);
 
                 return createdCartHeader;
             }
@@ -162,7 +162,7 @@ namespace ShoppingCart.API.Repository
 
                 if (!string.IsNullOrEmpty(cachedCartJson))
                 {
-                    var cartDto = JsonSerializer.Deserialize<CartDto>(cachedCartJson);
+                    var cartDto = JsonSerializer.Deserialize<CartDto>(cachedCartJson, _options);
 
                     if (cartDto != null)
                     {
@@ -178,7 +178,7 @@ namespace ShoppingCart.API.Repository
                             CartHeaderId = createdDetail.CartHeaderId,
                         });
 
-                        await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(cartDto), cancellationToken);
+                        await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(cartDto, _options), cancellationToken);
                     }
                 }
 
@@ -224,18 +224,18 @@ namespace ShoppingCart.API.Repository
 
                 if (!string.IsNullOrEmpty(cachedCartJson))
                 {
-                    var cartDto = JsonSerializer.Deserialize<CartDto>(cachedCartJson);
+                    var cartDto = JsonSerializer.Deserialize<CartDto>(cachedCartJson, _options);
 
                     if (cartDto != null)
                     {
-                        var cDetailToUpdate = cartDto.CartDetails.FirstOrDefault(cd => cd.ProductId == cartDetail.ProductId);
+                        var cDetailToUpdate = cartDto.CartDetails.FirstOrDefault(cd => cd.CartDetailId == cartDetail.CartDetailId);
                         if (cDetailToUpdate != null)
                         {
                             cDetailToUpdate.ProductCategoryId = cartDetail.ProductCategoryId;
                             cDetailToUpdate.Quantity = cartDetail.Quantity;
                             cDetailToUpdate.Color = cartDetail.Color;
                         }
-                        await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(cartDto), cancellationToken);
+                        await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(cartDto, _options), cancellationToken);
                     }
                 }
 

@@ -499,8 +499,8 @@
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5050
+          "Host": "Catalog.API",
+          "Port": 6006
         }
       ],
       "AddHeadersToRequest": {
@@ -694,43 +694,63 @@
         "AllowedScopes": []
       }
     },
-
-    //ShoppingCart Route
-    //1. Store Cart, CartDetail - Update Cart, CartDetails
+    //3. GetGroup
     {
-      "DownstreamPathTemplate": "/cart",
+      "DownstreamPathTemplate": "/chat",
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 6017
+          "Port": 6019
         }
       ],
       "AddHeadersToRequest": {
         "UserId": "Claims[id] > value"
       },
-      "UpstreamPathTemplate": "/gateway/cart",
-      "UpstreamHttpMethod": [ "Post" ],
+      "UpstreamPathTemplate": "/gateway/chat",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "OPTIONS" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
       }
     },
 
-    //2. Get Cart - Delete Cart
+    //ShoppingCart Route
+    //1. Store Cart, CartDetail - Update Cart, CartDetails
     {
-      "DownstreamPathTemplate": "/cart/{userId}",
-      "DownstreamScheme": "https",
+      "DownstreamPathTemplate": "/cart",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 6017
+          "Host": "shoppingcart.api",
+          "Port": 6007
         }
       ],
       "AddHeadersToRequest": {
         "UserId": "Claims[id] > value"
       },
-      "UpstreamPathTemplate": "/gateway/cart/{userId}",
+      "UpstreamPathTemplate": "/gateway/cart",
+      "UpstreamHttpMethod": [ "Put", "Post"  ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+
+    //2. Get Cart
+    {
+      "DownstreamPathTemplate": "/cart",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "shoppingcart.api",
+          "Port": 6007
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/cart",
       "UpstreamHttpMethod": [ "Get", "Delete" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
@@ -738,14 +758,35 @@
       }
     },
 
-    //3. Checkout Cart
+    //3. Delete Cart
     {
-      "DownstreamPathTemplate": "/cart/checkout",
-      "DownstreamScheme": "https",
+      "DownstreamPathTemplate": "/cart/{cartDetailId}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 6017
+          "Host": "shoppingcart.api",
+          "Port": 6007
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/cart/{cartDetailId}",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+
+    //4. Checkout Cart
+    {
+      "DownstreamPathTemplate": "/cart/checkout",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "shoppingcart.api",
+          "Port": 6007
         }
       ],
       "AddHeadersToRequest": {
