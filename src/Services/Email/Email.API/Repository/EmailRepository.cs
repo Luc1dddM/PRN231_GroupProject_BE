@@ -362,28 +362,28 @@ public class EmailRepository : IEmailRepository
         switch (sortBy)
         {
             case "name":
-                list = sortOrder == "asc" ? list.OrderBy(e => e.Name).ToList() : list.OrderByDescending(e => e.Name).ToList();
+                list = sortOrder == "ascend" ? list.OrderBy(e => e.Name).ToList() : list.OrderByDescending(e => e.Name).ToList();
                 break;
             case "description":
-                list = sortOrder == "asc" ? list.OrderBy(e => e.Description).ToList() : list.OrderByDescending(e => e.Description).ToList();
+                list = sortOrder == "ascend" ? list.OrderBy(e => e.Description).ToList() : list.OrderByDescending(e => e.Description).ToList();
                 break;
             case "subject":
-                list = sortOrder == "asc" ? list.OrderBy(e => e.Subject).ToList() : list.OrderByDescending(e => e.Subject).ToList();
+                list = sortOrder == "ascend" ? list.OrderBy(e => e.Subject).ToList() : list.OrderByDescending(e => e.Subject).ToList();
                 break;
             case "body":
-                list = sortOrder == "asc" ? list.OrderBy(e => e.Body).ToList() : list.OrderByDescending(e => e.Body).ToList();
+                list = sortOrder == "ascend" ? list.OrderBy(e => e.Body).ToList() : list.OrderByDescending(e => e.Body).ToList();
                 break;
             case "active":
-                list = sortOrder == "asc" ? list.OrderBy(e => e.Active).ToList() : list.OrderByDescending(e => e.Active).ToList();
+                list = sortOrder == "ascend" ? list.OrderBy(e => e.Active).ToList() : list.OrderByDescending(e => e.Active).ToList();
                 break;
             case "category":
-                list = sortOrder == "asc" ? list.OrderBy(e => e.Category).ToList() : list.OrderByDescending(e => e.Category).ToList();
+                list = sortOrder == "ascend" ? list.OrderBy(e => e.Category).ToList() : list.OrderByDescending(e => e.Category).ToList();
                 break;
             case "createdBy":
-                list = sortOrder == "asc" ? list.OrderBy(e => e.CreatedBy).ToList() : list.OrderByDescending(e => e.CreatedBy).ToList();
+                list = sortOrder == "ascend" ? list.OrderBy(e => e.CreatedBy).ToList() : list.OrderByDescending(e => e.CreatedBy).ToList();
                 break;
             case "createdDate":
-                list = sortOrder == "asc" ? list.OrderBy(e => e.CreatedDate).ToList() : list.OrderByDescending(e => e.CreatedDate).ToList();
+                list = sortOrder == "ascend" ? list.OrderBy(e => e.CreatedDate).ToList() : list.OrderByDescending(e => e.CreatedDate).ToList();
                 break;
             default:
                 list = list.OrderByDescending(e => e.Id).ToList();
