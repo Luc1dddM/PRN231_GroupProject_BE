@@ -1,19 +1,30 @@
 ﻿
 
+using BuildingBlocks.Exceptions;
 using BuildingBlocks.Models;
+using BuildingBlocks.Validation;
 using Coupon.API.Models;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
+using System;
+using ExcelDataReader;
+using ClosedXML.Excel;
+using DocumentFormat.OpenXml.InkML;
+using Microsoft.Extensions.Hosting;
+
 
 namespace Coupon.API.Repository
 {
     public class CouponRepository : ICouponRepository
     {
+        private IWebHostEnvironment environment;
         private readonly Prn231GroupProjectContext _dbContext;
 
-        public CouponRepository(Prn231GroupProjectContext dbContext)
+        public CouponRepository(Prn231GroupProjectContext dbContext, IWebHostEnvironment env)
         {
             _dbContext = dbContext;
+            environment = env;
         }
 
         public async Task<Models.Coupon> CreateCoupon(Models.Coupon coupon,string userId)
@@ -45,7 +56,8 @@ namespace Coupon.API.Repository
             // Step 1: Apply filters (e.g., Status, MinAmount, MaxAmount)
             if (parameters.Statuse is not null || parameters.MinAmount.HasValue || parameters.MaxAmount.HasValue)
             {
-                query = Filter(parameters.Statuse, parameters.MinAmount, parameters.MaxAmount, query);
+                query = Filter(parameters.Statuse, parameters.MinAmount, parameters.MaxAmount, query, parameters.StartDate, parameters.EndDate);
+
             }
 
             // Step 2: Apply keyword search
@@ -97,7 +109,7 @@ namespace Coupon.API.Repository
             }
         }
 
-        private IQueryable<Models.Coupon> Filter(string[] statuses, double? minAmount, double? maxAmount, IQueryable<Models.Coupon> list)
+        private IQueryable<Models.Coupon> Filter(string[] statuses, double? minAmount, double? maxAmount, IQueryable<Models.Coupon> list, DateTime? startDate, DateTime? endDate)
         {
             if (minAmount.HasValue)
             {
@@ -112,6 +124,24 @@ namespace Coupon.API.Repository
             if (statuses != null && statuses.Length > 0)
             {
                 list = list.Where(e => statuses.Contains(e.Status.ToString()));
+            }
+
+            if (statuses != null && statuses.Length > 0)
+            {
+                list = list.Where(e => statuses.Contains(e.Status.ToString()));
+            }
+
+            if (startDate.HasValue)
+            {
+                list = list.Where(e => e.CreatedDate >= startDate.Value);
+            }
+
+
+            if (endDate.HasValue)
+            {
+
+                endDate = endDate.Value.AddDays(1).AddTicks(-1);
+                list = list.Where(e => e.CreatedDate <= endDate.Value);
             }
 
             return list;
@@ -179,6 +209,191 @@ namespace Coupon.API.Repository
             return list;
         }
 
+        public async Task<Models.Coupon?> GetCouponById(int id)
+        {
+            return await _dbContext.Coupons.FirstOrDefaultAsync(c => c.Id == id);
+        }
+
+        public async Task<BaseResponse<MemoryStream>> ImportCoupons(IFormFile excelFile, string userId)
+        {
+            var coupons = new List<Models.Coupon>();
+            var errorDetails = new List<(int RowIndex, List<string> Errors)>();
+
+            try
+            {
+                var contentPath = environment.ContentRootPath;
+                var path = Path.Combine(contentPath, "Uploads\\Templates");
+                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+
+                var filePath = Path.Combine(path, excelFile.FileName);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await excelFile.CopyToAsync(stream);
+                }
+
+                using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                {
+                    using (var reader = ExcelReaderFactory.CreateReader(stream))
+                    {
+                        bool isHeaderSkipped = false;
+                        int rowIndex = 0;
+
+                        while (reader.Read())
+                        {
+                            rowIndex++;
+                            var validationErrors = new List<string>();
+
+                            if (!isHeaderSkipped)
+                            {
+                                isHeaderSkipped = true; // Skip header row
+                                continue;
+                            }
+
+                            // Validation
+                            var couponCode = reader.GetValue(0)?.ToString();
+                            if (string.IsNullOrWhiteSpace(couponCode))
+                            {
+                                validationErrors.Add("Coupon Code is required.");
+                            }
+
+                            // Check for duplicate CouponCode in the database
+                            var existingCoupon = await _dbContext.Coupons
+                                .FirstOrDefaultAsync(c => c.CouponCode == couponCode);
+
+                            if (existingCoupon != null)
+                            {
+                                validationErrors.Add($"Coupon Code '{couponCode}' already exists.");
+                            }
+
+                            if (!int.TryParse(reader.GetValue(1)?.ToString(), out int quantity) || quantity < 0)
+                            {
+                                validationErrors.Add("Quantity must be a non-negative integer.");
+                            }
+
+                            if (!double.TryParse(reader.GetValue(2)?.ToString(), out double discountAmount) || discountAmount < 0)
+                            {
+                                validationErrors.Add("Discount Amount must be a non-negative number.");
+                            }
+
+                            // Validation for Min Amount
+                            double? minAmount = null;
+                            if (!string.IsNullOrWhiteSpace(reader.GetValue(3)?.ToString()))
+                            {
+                                if (double.TryParse(reader.GetValue(3)?.ToString(), out double min))
+                                {
+                                    minAmount = min;
+                                }
+                                else
+                                {
+                                    validationErrors.Add("Min Amount must be a valid number.");
+                                }
+                            }
+
+                            // Validation for Max Amount
+                            double? maxAmount = null;
+                            if (!string.IsNullOrWhiteSpace(reader.GetValue(4)?.ToString()))
+                            {
+                                if (double.TryParse(reader.GetValue(4)?.ToString(), out double max))
+                                {
+                                    maxAmount = max;
+                                }
+                                else
+                                {
+                                    validationErrors.Add("Max Amount must be a valid number.");
+                                }
+                            }
+
+                            // Validation Status
+                            if (!bool.TryParse(reader.GetValue(5)?.ToString(), out bool status))
+                            {
+                                validationErrors.Add("Status must be 'true' or 'false'.");
+                            }
+
+                            // Skip row if there are validation errors
+                            if (validationErrors.Count > 0)
+                            {
+                                errorDetails.Add((rowIndex, validationErrors));
+                                continue;
+                            }
+
+                            var coupon = new Models.Coupon
+                            {
+                                CouponCode = couponCode,
+                                Quantity = quantity,
+                                DiscountAmount = discountAmount,
+                                MinAmount = minAmount,
+                                MaxAmount = maxAmount,
+                                Status = status,
+                                CreatedBy = userId,
+                                CreatedDate = DateTime.UtcNow,
+                            };
+
+                            coupons.Add(coupon);
+                        }
+                    }
+                }
+
+                // Handle errors
+                if (errorDetails.Any())
+                {
+                    return CreateErrorReport(errorDetails); // Create error report here
+                }
+
+                // Save valid coupons to the database
+                if (coupons.Any())
+                {
+                    await _dbContext.Coupons.AddRangeAsync(coupons);
+                    await _dbContext.SaveChangesAsync();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                // Handle exceptions (logging, etc.)
+                throw new BadRequestException("Error occurred during file import: " + ex.Message);
+            }
+
+            return new BaseResponse<MemoryStream>(null); // Return a success response
+        }
+
+
+        private BaseResponse<MemoryStream> CreateErrorReport(List<(int RowIndex, List<string> Errors)> errorDetails)
+        {
+            using (var errorWorkbook = new XLWorkbook())
+            {
+                var worksheet = errorWorkbook.Worksheets.Add("Errors Report");
+
+                // Add header
+                worksheet.Cell(1, 1).Value = "Row Index";
+                worksheet.Cell(1, 2).Value = "Error Messages";
+
+                int errorRowIndex = 2;
+
+                foreach (var (rowIndex, errors) in errorDetails)
+                {
+                    foreach (var error in errors)
+                    {
+                        worksheet.Cell(errorRowIndex, 1).Value = rowIndex;
+                        worksheet.Cell(errorRowIndex, 2).Value = error;
+                        errorRowIndex++;
+                    }
+                }
+
+                using (var errorMemoryStream = new MemoryStream())
+                {
+                    errorWorkbook.SaveAs(errorMemoryStream);
+                    errorMemoryStream.Position = 0; // Reset stream position for reading
+                    return new BaseResponse<MemoryStream>(errorMemoryStream); // Return the MemoryStream
+                }
+            }
+        }
+
 
     }
+
 }

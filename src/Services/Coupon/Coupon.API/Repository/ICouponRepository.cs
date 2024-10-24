@@ -10,5 +10,7 @@ namespace Coupon.API.Repository
         Task<PaginatedList<CouponListDTO>> GetAllCoupons(GetListCouponParamsDto parameters);
         Task<Models.Coupon> CreateCoupon(Models.Coupon coupon, string userId);
         Task<Models.Coupon?> UpdateCoupon(Models.Coupon coupon, string userId);
+        Task<Models.Coupon?> GetCouponById(int id);
+        Task<BaseResponse<MemoryStream>> ImportCoupons(IFormFile excelFile, string userId);
     }
 }

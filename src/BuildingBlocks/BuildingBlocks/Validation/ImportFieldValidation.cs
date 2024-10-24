@@ -130,5 +130,86 @@ namespace BuildingBlocks.Validation
             }
         }
 
+        public static bool IsValidCouponCode(string couponCode, out string errorMessage)
+        {
+            if (string.IsNullOrEmpty(couponCode))
+            {
+                errorMessage = "Coupon Code is required.";
+                return false;
+            }
+
+            if (couponCode.Length < 5)
+            {
+                errorMessage = "Coupon Code must be at least 5 characters.";
+                return false;
+            }
+
+            errorMessage = null;
+            return true;
+        }
+
+        public static bool IsValidQuantity(string quantityStr, out string errorMessage)
+        {
+            if (string.IsNullOrEmpty(quantityStr) || !int.TryParse(quantityStr, out var quantity) || quantity <= 0)
+            {
+                errorMessage = "Quantity must be a positive integer.";
+                return false;
+            }
+
+            errorMessage = null;
+            return true;
+        }
+
+        public static bool IsValidDiscountAmount(string discountAmountStr, out string errorMessage)
+        {
+            if (string.IsNullOrEmpty(discountAmountStr) || !decimal.TryParse(discountAmountStr, out var discountAmount) || discountAmount < 0)
+            {
+                errorMessage = "Discount Amount must be a non-negative number.";
+                return false;
+            }
+
+            errorMessage = null;
+            return true;
+        }
+
+        public static bool IsValidMinMaxAmount(string amountStr, out string errorMessage)
+        {
+            if (string.IsNullOrEmpty(amountStr) || !decimal.TryParse(amountStr, out var amount) || amount < 0)
+            {
+                errorMessage = "Min/Max Amount must be a non-negative number.";
+                return false;
+            }
+
+            errorMessage = null;
+            return true;
+        }
+
+        public static bool IsValidStatus(string status, out string errorMessage)
+        {
+            if (string.IsNullOrEmpty(status) || !(status.Equals("Active", StringComparison.OrdinalIgnoreCase) || status.Equals("Inactive", StringComparison.OrdinalIgnoreCase)))
+            {
+                errorMessage = "Status must be 'Active' or 'Inactive'.";
+                return false;
+            }
+
+            errorMessage = null;
+            return true;
+        }
+
+        private static void ValidateNullableDouble(object value, string fieldName, List<string> validationErrors)
+        {
+            if (string.IsNullOrWhiteSpace(value?.ToString()))
+            {
+                // If the value is null or empty, it is valid since it can be nullable
+                return;
+            }
+
+            // If the value is provided, try to parse it
+            if (!double.TryParse(value.ToString(), out _))
+            {
+                validationErrors.Add($"{fieldName} must be a valid number.");
+            }
+        }
+
     }
 }
