@@ -8,6 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.104.1" />
+    <PackageReference Include="ExcelDataReader" Version="3.7.0" />
     <PackageReference Include="Google.Apis.Auth" Version="1.68.0" />
     <PackageReference Include="IdentityModel" Version="7.0.0" />
     <PackageReference Include="log4net" Version="3.0.0" />

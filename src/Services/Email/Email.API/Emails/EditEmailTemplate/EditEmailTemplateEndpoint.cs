@@ -19,7 +19,7 @@ public class EditEmailTemplateEndpoint : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         // Lấy id từ query string
-        app.MapPut("/emails", async (HttpContext httpContext, string id, EditEmailTemplateRequest request, IEmailRepository emailRepository) =>
+        app.MapPut("/emails/{id}", async (HttpContext httpContext, string id, EditEmailTemplateRequest request, IEmailRepository emailRepository) =>
         {
             var userId = httpContext.Request.Headers["UserId"].ToString();
 

@@ -14,7 +14,11 @@ namespace Identity.Domain.Entities
         public DateOnly BirthDay { get; set; } = DateOnly.FromDateTime(DateTime.Now);  
         public DateTime? CreatedAt { get;  set; }
         public string? CreatedBy { get;  set; }
+        [ForeignKey("CreatedBy")]
+        public virtual User? CreatedByUser { get; set; }
         public string? UpdatedBy { get;  set; }
+        [ForeignKey("UpdatedBy")]
+        public virtual User? UpdatedByUser { get; set; }
         public DateTime? UpdatedAt { get;  set; }
         public virtual RefreshToken RefreshToken { get; set; }
     }

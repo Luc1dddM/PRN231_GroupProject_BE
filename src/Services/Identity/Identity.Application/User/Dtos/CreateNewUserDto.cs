@@ -17,7 +17,7 @@ namespace Identity.Application.User.Dtos
         public required string FullName { get; set; }
         public required bool IsActive { get; set; }
         public required DateOnly BirthDay {  get; set; }
-        public required List<string> Role { get; set; }
+        public required List<string> Roles { get; set; }
         public string? CreatedBy { get; set; }
     }
 }

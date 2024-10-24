@@ -1,7 +1,8 @@
 ﻿using Coupon.API.Repository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-
+using BuildingBlocks.Exceptions;
+using Coupon.API.Models;
 namespace Coupon.API.Controllers
 {
     [Route("api/[controller]")]
@@ -15,11 +16,19 @@ namespace Coupon.API.Controllers
             _couponRepository = couponRepository;
         }
 
-        // GET: api/coupons
+  /*      // GET: api/coupons
         [HttpGet]
         public async Task<IActionResult> GetAllCoupons()
         {
-            var coupons = await _couponRepository.GetAllCouponsAsync();
+            var coupons = await _couponRepository.GetAllCoupons();
+            return Ok(coupons);
+        }*/
+
+        // GET: api/coupons
+        [HttpGet]
+        public async Task<IActionResult> GetAllCoupons([FromQuery] GetListCouponParamsDto parameters)
+        {
+            var coupons = await _couponRepository.GetAllCoupons(parameters);
             return Ok(coupons);
         }
 
@@ -29,26 +38,20 @@ namespace Coupon.API.Controllers
         {
             if (coupon == null)
             {
-                return BadRequest("Coupon data is null.");
+                throw new BadRequestException("Coupon data is null.");
             }
 
             var userId = HttpContext.Request.Headers["UserId"].ToString();
             if (string.IsNullOrEmpty(userId))
             {
-                return BadRequest("UserId header is missing.");
+                throw new UnAuthorizeException("UserId header is missing.");
             }
-            coupon.CreatedBy = userId; 
+
+            coupon.CreatedBy = userId;
             coupon.CreatedDate = DateTime.UtcNow;
 
-            try
-            {
-                var createdCoupon = await _couponRepository.CreateCoupon(coupon, userId);
-                return CreatedAtAction(nameof(GetAllCoupons), new { id = createdCoupon.Id }, createdCoupon);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            var createdCoupon = await _couponRepository.CreateCoupon(coupon, userId);
+            return CreatedAtAction(nameof(GetAllCoupons), new { id = createdCoupon.Id }, createdCoupon);
         }
 
 
@@ -58,28 +61,22 @@ namespace Coupon.API.Controllers
         {
             if (coupon == null || coupon.Id != id)
             {
-                return BadRequest("Invalid coupon data.");
+                throw new BadRequestException("Invalid coupon data.");
             }
 
             var userId = HttpContext.Request.Headers["UserId"].ToString();
             if (string.IsNullOrEmpty(userId))
             {
-                return BadRequest("UserId header is missing.");
+                throw new UnAuthorizeException("UserId header is missing.");
             }
 
-            try
+            var updatedCoupon = await _couponRepository.UpdateCoupon(coupon, userId);
+            if (updatedCoupon == null)
             {
-                var updatedCoupon = await _couponRepository.UpdateCoupon(coupon, userId);
-                if (updatedCoupon == null)
-                {
-                    return NotFound($"Coupon with id {id} not found.");
-                }
-                return Ok(updatedCoupon);
+                throw new NotFoundException($"Coupon with id {id} not found.");
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+
+            return Ok(updatedCoupon);
         }
     }
 }

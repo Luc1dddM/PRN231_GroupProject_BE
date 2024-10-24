@@ -5,8 +5,6 @@ using Identity.Application.Email.Interfaces;
 using Identity.Application.Identity.Dtos;
 using Identity.Application.Identity.Interfaces;
 using Identity.Application.RolePermission.Interfaces;
-using Identity.Domain.Entities;
-using Identity.Domain.Enums;
 using Identity.Infrastructure.Data;
 using Identity.Infrastructure.Identity.Configuration;
 using Identity.Infrastructure.Identity.Utils;
@@ -82,7 +80,8 @@ namespace Identity.Infrastructure.Identity.Services
                 Token = jwtResponse.Token,
                 RefreshToken = jwtResponse.RefreshToken,
                 Email = user.Email ?? "",
-                UserId = user.UserId
+                UserId = user.UserId,
+                UserType = "Customer"
             };
 
 
@@ -104,17 +103,22 @@ namespace Identity.Infrastructure.Identity.Services
                 throw new BadRequestException("You have to confirm your account by email");
             }
 
+            var roles = await _userManager.GetRolesAsync(user);
+
+            // Determine user type based on roles
+            var userType = roles.Contains("Customer") ? "customer" : "admin";
+
             var jwtResponse = await CreateJwtToken(user);
             var response = new LoginReponseDto()
             {
                 Token = jwtResponse.Token,
                 RefreshToken = jwtResponse.RefreshToken,
                 Email = user.Email ?? "",
-                UserId = user.UserId
+                UserId = user.UserId,
+                UserType = userType
             };
 
             return new BaseResponse<LoginReponseDto>(response);
-
         }
 
         public async Task<BaseResponse<CreateCustomerDto>> Register(string email, string name, string phonenumber, string password)
@@ -153,7 +157,7 @@ namespace Identity.Infrastructure.Identity.Services
 
                 return new BaseResponse<CreateCustomerDto>(userDto);
             }
-            throw new NotFoundException(result.Errors.First().ToString());
+            throw new Exception(result.Errors.ToString());
         }
 
         public async Task<BaseResponse<string>> ReConfirmEmail(string emailAddress)
@@ -375,6 +379,7 @@ namespace Identity.Infrastructure.Identity.Services
                 new Claim(JwtClaimTypes.Name, user.FullName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
+
             List<string> permissions = await _permissionService.GetPermissionsAsync(user.UserId);
 
             userClaims.AddRange(roles.Select(role => new Claim(ClaimsIdentity.DefaultRoleClaimType, role)));

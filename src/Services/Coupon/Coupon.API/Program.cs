@@ -1,6 +1,9 @@
+using BuildingBlocks.Exceptions.Handler;
 using Coupon.API.Models;
 using Coupon.API.Repository;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
+using BuildingBlocks.Messaging.MassTransit;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +26,10 @@ builder.Services.AddDbContext<Prn231GroupProjectContext>(options =>
 
 builder.Services.AddTransient<ICouponRepository, CouponRepository>();
 
+builder.Services.AddExceptionHandler<CustomExceptionHandler>();
+
+builder.Services.AddMessageBroker(builder.Configuration, Assembly.GetExecutingAssembly());
+
 var app = builder.Build();
 
 app.UseCors("LocalPolicy");
@@ -34,7 +41,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseExceptionHandler(opts => { });
 app.UseAuthorization();
 
 app.MapControllers();

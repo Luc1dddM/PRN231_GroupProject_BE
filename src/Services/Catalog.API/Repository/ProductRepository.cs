@@ -69,7 +69,7 @@ namespace Catalog.API.Repository
         {
             try
             {
-                return  _dbContext.Products.ToList();
+                return _dbContext.Products.ToList();
             }
             catch (Exception ex)
             {
@@ -108,16 +108,16 @@ namespace Catalog.API.Repository
             {
 
                 var ProductRaw = await _dbContext.Products.FirstOrDefaultAsync(p => p.ProductId.Equals(productId), cancellationToken);
-                var Brand =  _dbContext.ProductCategories.Include(c => c.Category).FirstOrDefault(p => p.Category.Type.Equals("Brand") && p.ProductId.Equals(productId));
-                var Device =  _dbContext.ProductCategories.Include(c => c.Category).FirstOrDefault(p => p.Category.Type.Equals("Device") && p.ProductId.Equals(productId));
-                var Color =  _dbContext.ProductCategories.Where(p => p.Category.Type.Equals("Color") && p.ProductId.Equals(productId)).ToList();
+                var Brand = _dbContext.ProductCategories.Include(c => c.Category).FirstOrDefault(p => p.Category.Type.Equals("Brand") && p.ProductId.Equals(productId));
+                var Device = _dbContext.ProductCategories.Include(c => c.Category).FirstOrDefault(p => p.Category.Type.Equals("Device") && p.ProductId.Equals(productId));
+                var Color = _dbContext.ProductCategories.Where(p => p.Category.Type.Equals("Color") && p.ProductId.Equals(productId)).ToList();
 
                 if (ProductRaw == null) { throw new ProductNotFoundException(productId); }
                 var productDetailDTO = new ProductDetailForUpdateDTO
                 {
                     product = ProductRaw.Adapt<ProductDTO>(),
-                    brand = Brand!=null ? Brand.Adapt<ProductCategoryDTO>():null,
-                    device = Device != null ?  Device.Adapt<ProductCategoryDTO>() : null,
+                    brand = Brand != null ? Brand.Adapt<ProductCategoryDTO>() : null,
+                    device = Device != null ? Device.Adapt<ProductCategoryDTO>() : null,
                     color = Color != null ? Color.Adapt<List<ProductCategoryDTO>>() : null,
                 };
                 return productDetailDTO;
@@ -135,17 +135,24 @@ namespace Catalog.API.Repository
             {
 
                 var ProductRaw = await _dbContext.Products.FirstOrDefaultAsync(p => p.ProductId.Equals(productId), cancellationToken);
-                var Color = _dbContext.ProductCategories.Where(p => p.Category.Type.Equals("Color") && p.ProductId.Equals(productId)).ToList();
+                var Color = _dbContext.ProductCategories.Include(p => p.Category).Where(p => p.Category.Type.Equals("Color") && p.ProductId.Equals(productId)).ToList();
 
                 if (ProductRaw == null) { throw new ProductNotFoundException(productId); }
                 var productDetailDTO = new ProductDetailForOrderDTO
                 {
                     product = ProductRaw.Adapt<ProductDTO>(),
-                    color = Color.Adapt<List<ProductCategoryDTO>>()
-
+                    color = Color.Select(c => new ProductCategoryDTO
+                    {
+                        ProductCategoryId = c.ProductCategoryId,
+                        CategoryId = c.CategoryId,
+                        ProductId = c.ProductId,
+                        ColorName = c.Category.Name,
+                        Quantity = c.Quantity,
+                        Status = c.Status
+                    }).ToList()
                 };
 
-                
+
                 return productDetailDTO;
 
             }
@@ -158,12 +165,12 @@ namespace Catalog.API.Repository
         public List<ProductDTO> GetListCustomer(GetListProductParamsDto getListProductParamsDto)
         {
             //Get List from db
-            var result = _dbContext.Products.Include(p => p.ProductCategories).ThenInclude(p => p.Category).Where(p => p.Status&& p.ProductCategories.Any() && p.ProductCategories.Any(pc => pc.Category.Type.Equals("Color") && pc.Status));
+            var result = _dbContext.Products.Include(p => p.ProductCategories).ThenInclude(p => p.Category).Where(p => p.Status && p.ProductCategories.Any() && p.ProductCategories.Any(pc => pc.Category.Type.Equals("Color") && pc.Status));
 
             //Call filter function 
             result = Filter(getListProductParamsDto.colorParam, getListProductParamsDto.brand, getListProductParamsDto.device, getListProductParamsDto.Price1, getListProductParamsDto.Price2, result);
             result = Search(result, getListProductParamsDto.Keyword);
-            result = Sort(getListProductParamsDto.SortBy,getListProductParamsDto.SortOrder,result);
+            result = Sort(getListProductParamsDto.SortBy, getListProductParamsDto.SortOrder, result);
             var tmp = result.ToList();
             var fResult = tmp.Adapt<List<ProductDTO>>();
 
@@ -233,7 +240,7 @@ namespace Catalog.API.Repository
             switch (sortBy)
             {
                 case "name":
-                    list = sortOrder == "asc" ? list.OrderBy(u => u.Name): list.OrderByDescending(u => u.Name);
+                    list = sortOrder == "asc" ? list.OrderBy(u => u.Name) : list.OrderByDescending(u => u.Name);
                     break;
                 case "price":
                     list = sortOrder == "asc" ? list.OrderBy(u => u.Price) : list.OrderByDescending(u => u.Price);
@@ -244,7 +251,7 @@ namespace Catalog.API.Repository
             }
             return list;
         }
-         
+
 
 
         public async Task Update(Product product, string user, CancellationToken cancellationToken = default)
@@ -256,7 +263,7 @@ namespace Catalog.API.Repository
                 newProduct.Name = product.Name;
                 newProduct.Description = product.Description;
                 newProduct.Price = product.Price;
-                newProduct.ImageUrl = product.ImageUrl.Contains(".jpg") ? product.ImageUrl: product.ImageUrl+".jpg";
+                newProduct.ImageUrl = product.ImageUrl.Contains(".jpg") ? product.ImageUrl : product.ImageUrl + ".jpg";
                 newProduct.Status = product.Status;
                 newProduct.UpdateBy = user;
                 newProduct.UpdateDate = DateTime.Now;

@@ -93,7 +93,33 @@
       "UpstreamPathTemplate": "/gateway/Identity/ForgorPassword",
       "UpstreamHttpMethod": [ "POST" ]
     },
-    //8. UpdatePermission route
+    //8. GetRoles route
+    {
+      "DownstreamPathTemplate": "/api/Identity/GetRolesManager",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/Identity/GetRolesManager",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+    //8. GetPermissions route
+    {
+      "DownstreamPathTemplate": "/api/Identity/GetPermissions",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/Identity/GetPermissions",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+    //9. UpdatePermission route
     {
       "DownstreamPathTemplate": "/api/Identity/UpdatePermission",
       "DownstreamScheme": "http",
@@ -113,7 +139,7 @@
         "permissions": "UpdatePermission"
       }
     },
-    //9. AddRole route
+    //10. AddRole route
     {
       "DownstreamPathTemplate": "/api/Identity/AddRole",
       "DownstreamScheme": "http",
@@ -133,7 +159,28 @@
         "permissions": "ReadUser"
       }
     },
-    //10. UpdateRoles route
+
+    //10. AddRole route
+    {
+      "DownstreamPathTemplate": "/api/Identity/UpdateRole",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/Identity/UpdateRole",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "RouteClaimsRequirement": {
+        "permissions": "ReadUser"
+      }
+    },
+    //11. UpdateRoles route
     {
       "DownstreamPathTemplate": "/api/Identity/UpdateRoles",
       "DownstreamScheme": "http",
@@ -185,6 +232,9 @@
           "Port": 8080
         }
       ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
       "UpstreamPathTemplate": "/gateway/User",
       "UpstreamHttpMethod": [ "POST" ],
       "AuthenticationOptions": {
@@ -222,6 +272,9 @@
           "Port": 8080
         }
       ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
       "UpstreamPathTemplate": "/gateway/User/{everything}",
       "UpstreamHttpMethod": [ "PUT" ],
       "AuthenticationOptions": {
@@ -233,17 +286,39 @@
       }
     },
 
-
+    //5.ImportUser Route
+    {
+      "DownstreamPathTemplate": "/api/User/ImportUser",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 8080
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/User/ImportUser",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "RouteClaimsRequirement": {
+        "permissions": "UpdateUser"
+      }
+    },
 
     //Email Routes
     //1. GetEmail route
     {
       "DownstreamPathTemplate": "/emails",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 7090
+          "Port": 5259
         }
       ],
       "AddHeadersToRequest": {
@@ -260,11 +335,11 @@
     //2. GetEmailById route
     {
       "DownstreamPathTemplate": "/emails/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 7090
+          "Port": 5259
         }
       ],
       "AddHeadersToRequest": {
@@ -281,11 +356,11 @@
     //3. CreateEmail route
     {
       "DownstreamPathTemplate": "/emails",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 7090
+          "Port": 5259
         }
       ],
       "AddHeadersToRequest": {
@@ -301,18 +376,18 @@
 
     //4. UpdateEmail route
     {
-      "DownstreamPathTemplate": "/emails",
-      "DownstreamScheme": "https",
+      "DownstreamPathTemplate": "/emails/{id}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 7090
+          "Port": 5259
         }
       ],
       "AddHeadersToRequest": {
         "UserId": "Claims[id] > value"
       },
-      "UpstreamPathTemplate": "/gateway/emails",
+      "UpstreamPathTemplate": "/gateway/emails/{id}",
       "UpstreamHttpMethod": [ "Put" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
@@ -323,11 +398,11 @@
     //5. DetailSendMail route
     {
       "DownstreamPathTemplate": "/sent-emails/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 7090
+          "Port": 5259
         }
       ],
       "AddHeadersToRequest": {
@@ -344,11 +419,11 @@
     //6. SendMail route
     {
       "DownstreamPathTemplate": "/send-email-template",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 7090
+          "Port": 5259
         }
       ],
       "AddHeadersToRequest": {
@@ -365,11 +440,11 @@
     //7. SendMailToAll route
     {
       "DownstreamPathTemplate": "/send-email-to-all",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 7090
+          "Port": 5259
         }
       ],
       "AddHeadersToRequest": {
@@ -386,11 +461,11 @@
     //8. SendMail order route
     {
       "DownstreamPathTemplate": "/send-email-order",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 7090
+          "Port": 5259
         }
       ],
       "AddHeadersToRequest": {
@@ -493,8 +568,8 @@
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5050
+          "Host": "Catalog.API",
+          "Port": 6006
         }
       ],
       "AddHeadersToRequest": {
@@ -732,39 +807,61 @@
     //ShoppingCart Route
     //1. Store Cart, CartDetail - Update Cart, CartDetails
     {
-      "DownstreamPathTemplate": "/cart",
+      "DownstreamPathTemplate": "/chat",
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 6017
+          "Port": 6019
         }
       ],
       "AddHeadersToRequest": {
         "UserId": "Claims[id] > value"
       },
-      "UpstreamPathTemplate": "/gateway/cart",
-      "UpstreamHttpMethod": [ "Post" ],
+      "UpstreamPathTemplate": "/gateway/chat",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "OPTIONS" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
       }
     },
 
-    //2. Get Cart - Delete Cart
+    //ShoppingCart Route
+    //1. Store Cart, CartDetail - Update Cart, CartDetails
     {
-      "DownstreamPathTemplate": "/cart/{userId}",
-      "DownstreamScheme": "https",
+      "DownstreamPathTemplate": "/cart",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 6017
+          "Host": "shoppingcart.api",
+          "Port": 6007
         }
       ],
       "AddHeadersToRequest": {
         "UserId": "Claims[id] > value"
       },
-      "UpstreamPathTemplate": "/gateway/cart/{userId}",
+      "UpstreamPathTemplate": "/gateway/cart",
+      "UpstreamHttpMethod": [ "Put", "Post"  ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+
+    //2. Get Cart
+    {
+      "DownstreamPathTemplate": "/cart",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "shoppingcart.api",
+          "Port": 6007
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/cart",
       "UpstreamHttpMethod": [ "Get", "Delete" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
@@ -772,14 +869,35 @@
       }
     },
 
-    //3. Checkout Cart
+    //3. Delete Cart
     {
-      "DownstreamPathTemplate": "/cart/checkout",
-      "DownstreamScheme": "https",
+      "DownstreamPathTemplate": "/cart/{cartDetailId}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 6017
+          "Host": "shoppingcart.api",
+          "Port": 6007
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/cart/{cartDetailId}",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+
+    //4. Checkout Cart
+    {
+      "DownstreamPathTemplate": "/cart/checkout",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "shoppingcart.api",
+          "Port": 6007
         }
       ],
       "AddHeadersToRequest": {

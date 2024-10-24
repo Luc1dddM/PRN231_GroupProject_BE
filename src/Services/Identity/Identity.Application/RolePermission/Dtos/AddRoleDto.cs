@@ -9,5 +9,6 @@ namespace Identity.Application.RolePermission.Dtos
     public class AddRoleDto
     {
         public required string name { get; set; }
+        public string[]? permissions { get; set; }
     }
 }

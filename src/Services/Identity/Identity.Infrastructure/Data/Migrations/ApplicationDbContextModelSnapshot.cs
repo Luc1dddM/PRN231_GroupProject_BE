@@ -73,6 +73,10 @@ namespace Identity.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("TypePermission")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.ToTable("Permissions", (string)null);
@@ -81,17 +85,20 @@ namespace Identity.Infrastructure.Data.Migrations
                         new
                         {
                             Id = 1,
-                            Name = "ReadUser"
+                            Name = "ReadUser",
+                            TypePermission = "User"
                         },
                         new
                         {
                             Id = 2,
-                            Name = "DeleteUser"
+                            Name = "DeleteUser",
+                            TypePermission = "User"
                         },
                         new
                         {
                             Id = 3,
-                            Name = "UpdateUser"
+                            Name = "UpdateUser",
+                            TypePermission = "User"
                         });
                 });
 
@@ -244,7 +251,7 @@ namespace Identity.Infrastructure.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -299,7 +306,7 @@ namespace Identity.Infrastructure.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -311,6 +318,8 @@ namespace Identity.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedBy");
+
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -318,6 +327,8 @@ namespace Identity.Infrastructure.Data.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.HasIndex("UpdatedBy");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -425,6 +436,25 @@ namespace Identity.Infrastructure.Data.Migrations
                     b.Navigation("Permission");
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("Identity.Domain.Entities.User", b =>
+                {
+                    b.HasOne("Identity.Domain.Entities.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .HasPrincipalKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Identity.Domain.Entities.User", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedBy")
+                        .HasPrincipalKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("UpdatedByUser");
                 });
 
             modelBuilder.Entity("Identity.Domain.Entities.UserLogin", b =>

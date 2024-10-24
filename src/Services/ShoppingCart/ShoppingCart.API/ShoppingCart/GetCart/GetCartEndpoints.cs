@@ -7,10 +7,10 @@
     {
         public void AddRoutes(IEndpointRouteBuilder app)
         {
-            app.MapGet("/cart/{userId}", async (string userId, ISender sender) =>
+            app.MapGet("/cart", async (ISender sender) =>
             {
 
-                var result = await sender.Send(new GetCartQuery(userId));
+                var result = await sender.Send(new GetCartQuery());
 
 
                 return Results.Ok(new GetCartResponse(result.Result));

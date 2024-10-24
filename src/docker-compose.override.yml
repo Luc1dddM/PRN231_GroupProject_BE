@@ -56,12 +56,15 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
+    depends_on:
+      - messagebroker
     ports:
       - "6005:8080"
       - "6015:8081"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+
 
   messagebroker:
     container_name: messagebroker
@@ -87,8 +90,8 @@ services:
       - messagebroker
       - coupon.grpc 
     ports:
-      - "6007:8080"
-      - "6017:8081"
+      - "6008:8080"
+      - "6018:8081"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
@@ -100,8 +103,8 @@ services:
     depends_on:
       - rediscache
     ports:
-      - "6008:8080"
-      - "6018:8081"
+      - "6007:8080"
+      - "6017:8081"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro

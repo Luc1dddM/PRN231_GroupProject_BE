@@ -12,6 +12,7 @@ namespace Identity.Infrastructure.Data
         }
         public DbSet<Role> Roles { get; set; }
         public DbSet<Permission> Permissions { get; set; }
+        public DbSet<Domain.Entities.RolePermission> RolePermission { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
