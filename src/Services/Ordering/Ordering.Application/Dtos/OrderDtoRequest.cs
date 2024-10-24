@@ -4,7 +4,7 @@ namespace Ordering.Application.Dtos
 {
     public record  OrderDtoRequest(Guid CustomerId,
                                   AddressDto ShippingAddress,
-                                  PaymentDto Payment,
+                                  string Payment,
                                   OrderStatus Status,
                                   string? CouponCode,
                                   List<OrderItemDto> OrderItems

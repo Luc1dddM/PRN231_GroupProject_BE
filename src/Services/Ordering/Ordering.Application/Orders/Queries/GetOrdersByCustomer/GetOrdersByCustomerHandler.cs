@@ -73,7 +73,7 @@ namespace Ordering.Application.Orders.Queries.GetOrdersByCustomer
 
             if (paymentMethods != null && paymentMethods.Length > 0 && paymentMethods.Any(p => !string.IsNullOrWhiteSpace(p)))
             {
-                queryList = queryList.Where(o => paymentMethods.Contains(o.Payment.PaymentMethod));
+                queryList = queryList.Where(o => paymentMethods.Contains(o.Payment));
             }
 
             return queryList;

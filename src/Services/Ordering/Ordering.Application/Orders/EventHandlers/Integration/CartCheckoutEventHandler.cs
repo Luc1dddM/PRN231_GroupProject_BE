@@ -45,14 +45,7 @@ namespace Ordering.Application.Orders.EventHandlers.Integration
                     message.Ward
                 );
 
-            var paymentDto = new PaymentDto
-                (
-                    message.CardName,
-                    message.CardNumber,
-                    message.Expiration,
-                    message.CVV,
-                    message.PaymentMethod
-                );
+            var paymentDto = message.Payment;
 
             var orderId = Guid.NewGuid();
 

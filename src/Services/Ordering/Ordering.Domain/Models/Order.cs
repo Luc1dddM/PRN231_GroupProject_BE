@@ -9,7 +9,8 @@
         public IReadOnlyList<OrderItem> OrderItems => _orderItems.AsReadOnly();
         public CustomerId CustomerId { get; private set; } = default!; //"private set" mean it can only be modified within the Order class itself.
         public Address ShippingAddress { get; private set; } = default!;
-        public Payment Payment { get; private set; } = default!;
+        //public Payment Payment { get; private set; } = default!;
+        public string Payment { get; private set; } = default!;
         public OrderStatus Status { get; private set; } = OrderStatus.Pending;
         public string? CouponId { get; set; } = default!;
         public decimal TotalPrice
@@ -20,7 +21,7 @@
 
 
 
-        public static Order Create(OrderId orderId, CustomerId customerId, Address shippingAddress, Payment payment, string couponId)
+        public static Order Create(OrderId orderId, CustomerId customerId, Address shippingAddress, string payment, string couponId)
         {
             var order = new Order
             {

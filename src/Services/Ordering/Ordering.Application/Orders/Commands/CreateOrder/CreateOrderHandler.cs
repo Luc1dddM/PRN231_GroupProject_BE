@@ -47,6 +47,7 @@ namespace Ordering.Application.Orders.Commands.CreateOrder
                 var order = await CreateNewOrder(command.Order, userId);
                 var orderItem = MapOrderItemToReduceQuantity(order.OrderItems, userId);
                 _publishEndpoint.Publish(orderItem);
+
                 //save to database
                 _context.Orders.Add(order);
 
@@ -119,11 +120,7 @@ namespace Ordering.Application.Orders.Commands.CreateOrder
                 orderId: OrderId.Of(Guid.NewGuid()),
                 customerId: CustomerId.Of(Guid.Parse(userId)),
                 shippingAddress: shippingAddress,
-                payment: Payment.Of(orderDto.Payment.CardName,
-                                    orderDto.Payment.CardNumber,
-                                    orderDto.Payment.Expiration,
-                                    orderDto.Payment.Cvv,
-                                    orderDto.Payment.PaymentMethod),
+                payment: orderDto.Payment,
                 couponId: null
                 );
 
@@ -146,6 +143,16 @@ namespace Ordering.Application.Orders.Commands.CreateOrder
                     {
                         //ApplyCoupon() method is contain inside the Order domain
                         newOrder.ApplyCoupon((decimal)coupon.DiscountAmount); //apply the discount to the order
+
+                        // Publish CouponQuantityUsedEvent after applying the coupon
+                        var couponUsedEvent = new CouponQuantityUsedEvent
+                        {
+                            CouponCode = coupon.CouponCode,
+                            QuantityUsed = 1 // Assuming 1 coupon used per order
+                        };
+
+                        // Publish the event
+                        await _publishEndpoint.Publish(couponUsedEvent);
                     }
                 }
                 else
@@ -168,7 +175,6 @@ namespace Ordering.Application.Orders.Commands.CreateOrder
                 string.IsNullOrWhiteSpace(orderDto.ShippingAddress.FirstName) ||
                 string.IsNullOrWhiteSpace(orderDto.ShippingAddress.LastName) ||
                 string.IsNullOrWhiteSpace(orderDto.ShippingAddress.Phone) ||
-                string.IsNullOrWhiteSpace(orderDto.ShippingAddress.EmailAddress) ||
                 string.IsNullOrWhiteSpace(orderDto.ShippingAddress.AddressLine) ||
                 string.IsNullOrWhiteSpace(orderDto.ShippingAddress.City) ||
                 string.IsNullOrWhiteSpace(orderDto.ShippingAddress.District) ||
@@ -177,14 +183,9 @@ namespace Ordering.Application.Orders.Commands.CreateOrder
                 throw new BadRequestException("All shipping address fields are required.");
             }
 
-            if (orderDto.Payment == null ||
-                string.IsNullOrWhiteSpace(orderDto.Payment.CardName) ||
-                string.IsNullOrWhiteSpace(orderDto.Payment.CardNumber) ||
-                string.IsNullOrWhiteSpace(orderDto.Payment.Expiration) ||
-                string.IsNullOrWhiteSpace(orderDto.Payment.Cvv) ||
-                string.IsNullOrWhiteSpace(orderDto.Payment.PaymentMethod))
+            if (orderDto.Payment == null)
             {
-                throw new BadRequestException("All payment fields are required.");
+                throw new BadRequestException("Payment fields are required.");
             }
 
             if (orderDto.OrderItems == null || !orderDto.OrderItems.Any())

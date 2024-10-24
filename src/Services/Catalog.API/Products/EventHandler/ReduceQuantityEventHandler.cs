@@ -26,8 +26,12 @@ namespace Catalog.API.Products.EventHandler
         {
             try
             {
-                var list = context.Message.Adapt<UpdateQuantityForOrder>();
-                foreach (var item in list.listProductCatgory)
+                //var list = context.Message.Adapt<UpdateQuantityForOrder>();
+                var lists = new UpdateQuantityForOrder
+                {
+                    listProductCatgory = context.Message.listProductCategory,
+                };
+                foreach (var item in lists.listProductCatgory)
                 {
                     _productCategoruRepository.UpdateQuantityForOrder(item.productCategoryId, item.quantity, item.user, item.IsCancel);
                 }

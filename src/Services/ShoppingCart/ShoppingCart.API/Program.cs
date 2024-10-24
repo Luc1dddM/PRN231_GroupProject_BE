@@ -1,4 +1,5 @@
 using BuildingBlocks.Messaging.MassTransit;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,7 +45,7 @@ builder.Services.AddStackExchangeRedisCache(opt =>
 });
 
 //Async Communication Services
-builder.Services.AddMessageBroker(builder.Configuration);
+builder.Services.AddMessageBroker(builder.Configuration, Assembly.GetExecutingAssembly());
 
 //Cross-cutting Services
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();

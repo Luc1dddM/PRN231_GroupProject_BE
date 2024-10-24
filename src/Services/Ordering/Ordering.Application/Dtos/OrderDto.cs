@@ -10,7 +10,7 @@ namespace Ordering.Application.Dtos
                            Guid CustomerId,
                            AddressDto ShippingAddress,
                            decimal TotalPrice,
-                           PaymentDto Payment,
+                           string Payment,
                            string Status,
                            List<OrderItemDto> OrderItems,
                            string? CouponId);

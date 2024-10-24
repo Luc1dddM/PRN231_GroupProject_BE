@@ -62,6 +62,7 @@ namespace ShoppingCart.API.ShoppingCart.CheckoutCart
             return new CheckoutCartResult(new BaseResponse<object>
             {
                 IsSuccess = true,
+                Result = eventMessage,
                 Message = "Cart Checkout Successful."
             });
 
@@ -87,11 +88,7 @@ namespace ShoppingCart.API.ShoppingCart.CheckoutCart
                 City = requestDto.City,
                 District = requestDto.District,
                 Ward = requestDto.Ward,
-                CardName = requestDto.CardName,
-                CardNumber = requestDto.CardNumber,
-                Expiration = requestDto.Expiration,
-                CVV = requestDto.CVV,
-                PaymentMethod = requestDto.PaymentMethod,
+                Payment = requestDto.Payment,
                 CouponCode = requestDto.CouponCode
             };
 
@@ -139,11 +136,7 @@ namespace ShoppingCart.API.ShoppingCart.CheckoutCart
                 Ward = dto.Ward,
 
                 //payment
-                CardName = dto.CardName,
-                CardNumber = dto.CardNumber,
-                Expiration = dto.Expiration,
-                CVV = dto.CVV,
-                PaymentMethod = dto.PaymentMethod
+                Payment = dto.Payment,
             };
         }
     }

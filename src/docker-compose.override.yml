@@ -100,6 +100,7 @@ services:
       - ASPNETCORE_HTTPS_PORTS=8081
     depends_on:
       - rediscache
+      - messagebroker
     ports:
       - "6007:8080"
       - "6017:8081"
@@ -112,6 +113,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
+    depends_on:
+      - messagebroker
     ports:
       - "6006:8080"
       - "6016:8081"

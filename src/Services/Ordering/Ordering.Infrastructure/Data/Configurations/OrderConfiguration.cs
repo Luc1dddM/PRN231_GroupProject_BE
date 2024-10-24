@@ -71,26 +71,26 @@ namespace Ordering.Infrastructure.Data.Configurations
             );
 
 
-            builder.ComplexProperty(
-               o => o.Payment, paymentBuilder =>
-               {
-                   paymentBuilder.Property(p => p.CardName)
-                       .HasMaxLength(50);
+            //builder.ComplexProperty(
+            //   o => o.Payment, paymentBuilder =>
+            //   {
+            //       paymentBuilder.Property(p => p.CardName)
+            //           .HasMaxLength(50);
 
-                   paymentBuilder.Property(p => p.CardNumber)
-                       .HasMaxLength(24)
-                       .IsRequired();
+            //       paymentBuilder.Property(p => p.CardNumber)
+            //           .HasMaxLength(24)
+            //           .IsRequired();
 
-                   paymentBuilder.Property(p => p.Expiration)
-                       .HasMaxLength(10);
+            //       paymentBuilder.Property(p => p.Expiration)
+            //           .HasMaxLength(10);
 
-                   paymentBuilder.Property(p => p.CVV)
-                       .HasMaxLength(3);
+            //       paymentBuilder.Property(p => p.CVV)
+            //           .HasMaxLength(3);
 
-                   paymentBuilder.Property(p => p.PaymentMethod);
-               }
-            );
-
+            //       paymentBuilder.Property(p => p.PaymentMethod);
+            //   }
+            //);
+            builder.Property(o => o.Payment);
             builder.Property(o => o.Status)
             .HasDefaultValue(OrderStatus.Pending)
             .HasConversion(
