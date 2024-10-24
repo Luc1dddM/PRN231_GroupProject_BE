@@ -1,23 +1,36 @@
-﻿using Coupon.Grpc;
+﻿using BuildingBlocks.Exceptions;
+using BuildingBlocks.Models;
+using BuildingBlocks.Validation;
+using ClosedXML.Excel;
+using Coupon.Grpc;
 using Email.API.DTOs;
 using Email.API.Models;
 using Email.DTOs;
 using Email.Models;
+using ExcelDataReader;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
+using System;
+using System.Data;
+using System.DirectoryServices.ActiveDirectory;
 using System.Linq;
 using System.Security.AccessControl;
+using System.Text;
 using System.Text.Json;
 
 namespace Email.API.Repository;
 
 public class EmailRepository : IEmailRepository
 {
+    private IWebHostEnvironment environment;
     private readonly ISenderEmail _emailSender;
     private readonly HttpClient _httpClient;
     private readonly Prn231GroupProjectContext _context;
     private readonly CouponProtoService.CouponProtoServiceClient _couponServiceClient;
-    public EmailRepository(ISenderEmail emailSender, Prn231GroupProjectContext context, CouponProtoService.CouponProtoServiceClient couponServiceClient, HttpClient httpClient)
+    public EmailRepository(ISenderEmail emailSender, Prn231GroupProjectContext context, CouponProtoService.CouponProtoServiceClient couponServiceClient, HttpClient httpClient, IWebHostEnvironment env)
     {
+        environment = env;
         _emailSender = emailSender;
         _context = context;
         _couponServiceClient = couponServiceClient;
@@ -404,6 +417,182 @@ public class EmailRepository : IEmailRepository
         }
         return list;
     }
+
+    public async Task<BaseResponse<MemoryStream>> ImportEmailTemplate(IFormFile excelFile, string userId)
+    {
+        try
+        {
+            var contentPath = environment.ContentRootPath;
+            var path = Path.Combine(contentPath, "Uploads\\Templates");
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+
+            var filePath = Path.Combine(path, excelFile.FileName);
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await excelFile.CopyToAsync(stream);
+            }
+
+            List<EmailTemplate> templates = new List<EmailTemplate>();
+            List<(int RowIndex, List<string> Errors)> errorDetails = new List<(int, List<string>)>();
+
+
+            using (FileStream stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                using (var reader = ExcelReaderFactory.CreateReader(stream))
+                {
+                    bool isHeaderSkipped = false;
+                    int rowIndex = 0;
+
+                    while (reader.Read())
+                    {
+                        rowIndex++;
+                        List<string> validationErrors = new List<string>();
+
+                        if (!isHeaderSkipped)
+                        {
+                            isHeaderSkipped = true; // Skip header row
+                            continue;
+                        }
+
+                        /* === Validation  ===*/
+                        var error = "";
+
+                        //Validation Status
+                        if (!ImportFieldValidation.IsValidateBoolean(reader.GetValue(4)?.ToString(), out error))
+                        {
+                            validationErrors.Add(error);
+                        }
+
+                        //Skip row 
+                        if (validationErrors.Count > 0)
+                        {
+                            errorDetails.Add((rowIndex, validationErrors));
+                            continue;
+                        }
+
+
+                        var user = new EmailTemplate()
+                        {
+                            Name = reader.GetValue(0).ToString() ?? "Error Name!",
+                            Description = reader.GetValue(1).ToString() ?? "Error Description!",
+                            Subject = reader.GetValue(2).ToString() ?? "Error Subject!",
+                            Body = reader.GetValue(3).ToString() ?? "Error Body!",
+                            Active = bool.Parse(reader.GetValue(4).ToString() ?? "False"),
+                            Category = reader.GetValue(5).ToString() ?? "Error Category!",
+                            CreatedBy = userId,
+                            CreatedDate = DateTime.Now
+                        };
+                        templates.Add(user);
+                    }
+                }
+            }
+
+            if (errorDetails.Any())
+            {
+                using (var errorWorkbook = new XLWorkbook())
+                {
+                    var worksheet = errorWorkbook.Worksheets.Add("Errors Report");
+
+                    // Add header
+                    worksheet.Cell(1, 1).Value = "Row Index";
+                    worksheet.Cell(1, 2).Value = "Error Messages";
+
+                    int errorRowIndex = 2; // Start from the second row, assuming the first row is for headers
+
+                    foreach (var (rowIndex, errors) in errorDetails)
+                    {
+                        // Split errors to handle multiple errors for the same row
+                        foreach (var error in errors)
+                        {
+                            worksheet.Cell(errorRowIndex, 1).Value = rowIndex; // Row index from the original data
+                            worksheet.Cell(errorRowIndex, 2).Value = error;    // Individual error message
+                            errorRowIndex++; // Move to the next row for the next error
+                        }
+                    }
+
+                    using (var errorMemoryStream = new MemoryStream())
+                    {
+                        errorWorkbook.SaveAs(errorMemoryStream);
+                        errorMemoryStream.Position = 0; // Reset stream position for reading
+                        return new BaseResponse<MemoryStream>(errorMemoryStream); // Return the MemoryStream
+                    }
+                }
+            }
+
+            // Save valid templates to the database
+            if (templates.Any())
+            {
+                await _context.EmailTemplates.AddRangeAsync(templates);
+                await _context.SaveChangesAsync();
+            }
+
+        }
+        catch (IndexOutOfRangeException ex)
+        {
+            throw new BadRequestException("File Import error");
+        }
+
+        return null;
+    }
+
+   /* public async Task<byte[]> ExportEmailFilter(string[] statusesParam, string[] categoriesParam, string searchterm, int pageNumberParam, int pageSizeParam)
+    {
+        try
+        {
+            //Get List from db
+            var result = await _context.EmailTemplates.ToListAsync();
+
+            //Call filter function 
+            result = Filter(statusesParam, categoriesParam, result);
+            result = Search(result, searchterm);
+
+            DataTable dt = new DataTable();
+            dt.Columns.Add("Template Name", typeof(string));
+            dt.Columns.Add("Active", typeof(bool));
+            dt.Columns.Add("Description", typeof(string));
+            dt.Columns.Add("Category", typeof(string));
+            dt.Columns.Add("Created By", typeof(string));
+            dt.Columns.Add("Created Date", typeof(DateTime));
+            dt.Columns.Add("Updated By", typeof(string));
+            dt.Columns.Add("Updated Date", typeof(string));
+
+            foreach (var item in result)
+            {
+                DataRow row = dt.NewRow();
+                row[0] = item.Name;
+                row[1] = item.Active;
+                row[2] = item.Description;
+                row[3] = item.Category;
+                row[4] = await _userRepo.GetUserNameById(item.CreatedBy);
+                row[5] = item.CreatedDate;
+                row[6] = !string.IsNullOrEmpty(item.UpdatedBy) ? await _userRepo.GetUserNameById(item.UpdatedBy) : "";
+                row[7] = item.UpdatedDate;
+                dt.Rows.Add(row);
+            }
+
+            var memory = new MemoryStream();
+            using (var excel = new ExcelPackage(memory))
+            {
+                var worksheet = excel.Workbook.Worksheets.Add("Sheet1");
+
+                worksheet.Cells["A1"].LoadFromDataTable(dt, true);
+                worksheet.Cells["A1:AN1"].Style.Font.Bold = true;
+                worksheet.DefaultRowHeight = 25;
+
+
+                return excel.GetAsByteArray();
+            }
+
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+    }*/
 }
 
 

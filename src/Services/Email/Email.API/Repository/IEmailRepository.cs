@@ -1,4 +1,5 @@
-﻿using Email.API.Models;
+﻿using BuildingBlocks.Models;
+using Email.API.Models;
 using Email.DTOs;
 using Email.Models;
 
@@ -26,5 +27,7 @@ namespace Email.API.Repository
         public Task<EmailTemplate> AddEmailTemplate(EmailTemplate newEmailTemplate);
         public Task<EmailTemplate> UpdateEmailTemplate(EmailTemplate newEmailTemplate);
         public Task<EmailTemplate> GetEmailTemplateById(string id);
+
+        public Task<BaseResponse<MemoryStream>> ImportEmailTemplate(IFormFile file, string userId);
     }
 }
