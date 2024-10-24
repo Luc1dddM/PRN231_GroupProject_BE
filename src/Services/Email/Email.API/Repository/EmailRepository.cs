@@ -539,7 +539,7 @@ public class EmailRepository : IEmailRepository
         return null;
     }
 
-   /* public async Task<byte[]> ExportEmailFilter(string[] statusesParam, string[] categoriesParam, string searchterm, int pageNumberParam, int pageSizeParam)
+    public async Task<byte[]> ExportEmailFilter(string[] statusesParam, string[] categoriesParam, string searchterm, int pageNumberParam, int pageSizeParam)
     {
         try
         {
@@ -567,9 +567,9 @@ public class EmailRepository : IEmailRepository
                 row[1] = item.Active;
                 row[2] = item.Description;
                 row[3] = item.Category;
-                row[4] = await _userRepo.GetUserNameById(item.CreatedBy);
+                row[4] = item.CreatedBy;
                 row[5] = item.CreatedDate;
-                row[6] = !string.IsNullOrEmpty(item.UpdatedBy) ? await _userRepo.GetUserNameById(item.UpdatedBy) : "";
+                row[6] = item.UpdatedBy;
                 row[7] = item.UpdatedDate;
                 dt.Rows.Add(row);
             }
@@ -592,7 +592,7 @@ public class EmailRepository : IEmailRepository
         {
             throw new Exception(ex.Message);
         }
-    }*/
+    }
 }
 
 

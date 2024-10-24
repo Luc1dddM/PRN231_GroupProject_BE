@@ -479,6 +479,54 @@
       }
     },
 
+    //9.ImportEmail Route
+    {
+      "DownstreamPathTemplate": "/api/ImportEmail",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5259
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/ImportEmail",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "RouteClaimsRequirement": {
+        "permissions": "UpdateUser"
+      }
+    },
+
+    //10.ExportEmail Route
+    {
+      "DownstreamPathTemplate": "/api/ExportEmail",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5259
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/ExportEmail",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "RouteClaimsRequirement": {
+        "permissions": "UpdateUser"
+      }
+    },
+
 
     //Catalog Routes
     //1. CreateProduct route
@@ -841,7 +889,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/cart",
-      "UpstreamHttpMethod": [ "Put", "Post"  ],
+      "UpstreamHttpMethod": [ "Put", "Post" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []

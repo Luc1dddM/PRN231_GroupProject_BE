@@ -5,6 +5,7 @@ using Email.API.Repository;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using Email.API;
+using OfficeOpenXml;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,7 +44,7 @@ builder.Services.AddTransient<IEmailRepository, EmailRepository>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-
+ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 var app = builder.Build();
 
 
