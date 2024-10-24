@@ -64,7 +64,7 @@ namespace Coupon.API.Controllers
                 throw new BadRequestException("Invalid coupon data.");
             }
 
-            var userId = HttpContext.Request.Headers["UserId"].ToString();
+            var userId = "test";
             if (string.IsNullOrEmpty(userId))
             {
                 throw new UnAuthorizeException("UserId header is missing.");

@@ -4,6 +4,9 @@ namespace Coupon.API.Models
 {
     public class CouponListDTO
     {
+        public int Id { get; set; }
+
+        public string CouponId { get; set; } = Guid.NewGuid().ToString();
         public string CouponCode { get; set; } = null!;
 
         public double DiscountAmount { get; set; }
