@@ -1,6 +1,7 @@
 ﻿using BuildingBlocks.Models;
 using Identity.Application.User.Dtos;
 using Microsoft.AspNetCore.Http;
+using System.Data;
 
 namespace Identity.Application.User.Interfaces
 {
@@ -11,5 +12,6 @@ namespace Identity.Application.User.Interfaces
         public Task<BaseResponse<UserDto>> CreateNewUser(CreateNewUserDto dto);
         public Task<BaseResponse<UserDto>> UpdateUser(string id, UpdateUserDto request);
         public Task<BaseResponse<MemoryStream>> ImportUserTemplate(IFormFile file, string userId);
+        public Task<BaseResponse<DataTable>> ExportUser(ExportListParamsDto parameters);
     }
 }
