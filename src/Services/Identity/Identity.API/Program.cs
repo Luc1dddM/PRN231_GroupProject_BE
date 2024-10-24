@@ -1,4 +1,3 @@
-using BuildingBlocks.Exceptions.Handler;
 using Identity.API;
 using Identity.Application;
 using Identity.Infrastructure;

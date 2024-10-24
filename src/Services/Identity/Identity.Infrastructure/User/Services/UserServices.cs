@@ -75,10 +75,7 @@ namespace Identity.Infrastructure.User.Services
             IQueryable<Domain.Entities.User> query = _context.Users.Include(u => u.CreatedByUser).Include(u => u.UpdatedByUser).AsQueryable();
 
             // Step 1: Apply filters (e.g., Status and Dob)
-            if (parameters.Statuses is not null || parameters.Genders is not null || parameters.Dob is not null)
-            {
-                query = Filter(parameters.Statuses, parameters.Genders, parameters.Dob, query);
-            }
+            query = Filter(parameters.Statuses, parameters.Genders, parameters.BirthDayFrom, parameters.BirthDayTo, query);
 
             // Step 2: Apply keyword search
             query = Search(query, parameters?.Keyword ?? "");
@@ -147,7 +144,7 @@ namespace Identity.Infrastructure.User.Services
                 throw new UserNotFoundException(id);
 
             //Check if User is also Customer and Employee?
-            if(request.Roles != null)
+            if (request.Roles != null)
             {
                 if (request.Roles.Contains("Customer") && request.Roles.Count > 1)
                     throw new BadRequestException("User cannot be also Customer and Employee");
@@ -239,7 +236,7 @@ namespace Identity.Infrastructure.User.Services
                             }
 
                             //Validation Full Name
-                            if(!ImportFieldValidation.IsValidString(reader.GetValue(1)?.ToString(), "Full Name", 6, null, out error))
+                            if (!ImportFieldValidation.IsValidString(reader.GetValue(1)?.ToString(), "Full Name", 6, null, out error))
                             {
                                 validationErrors.Add(error);
                             }
@@ -257,7 +254,7 @@ namespace Identity.Infrastructure.User.Services
                             }
 
                             //Skip row 
-                            if(validationErrors.Count > 0)
+                            if (validationErrors.Count > 0)
                             {
                                 errorDetails.Add((rowIndex, validationErrors));
                                 continue;
@@ -330,15 +327,19 @@ namespace Identity.Infrastructure.User.Services
             {
                 throw new BadRequestException("File Import cuar m bij loix.. hayx down fiel cuar t di tml");
             }
-            
+
             return null;
         }
 
-        private IQueryable<Domain.Entities.User> Filter(string[] statuses, string[] genders, DateOnly? dob, IQueryable<Domain.Entities.User> list)
+        private IQueryable<Domain.Entities.User> Filter(string[] statuses, string[] genders, DateOnly? birthDayFrom, DateOnly? birthDayTo, IQueryable<Domain.Entities.User> list)
         {
-            if (dob is not null)
+            if (birthDayFrom is not null)
             {
-                list = list.Where(e => e.BirthDay == dob);
+                list = list.Where(e => e.BirthDay >= birthDayFrom);
+            }
+            if (birthDayTo is not null)
+            {
+                list = list.Where(e => e.BirthDay <= birthDayTo);
             }
             if (statuses != null && statuses.Length > 0)
             {

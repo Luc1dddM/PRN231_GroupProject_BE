@@ -47,11 +47,11 @@ builder.Services.AddAuthentication(options =>
     o.SaveToken = true;
     o.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = false,
+        ValidateIssuer = true,
         ValidIssuer = appSettings.ValidIssuer,
         ValidAudience = appSettings.ValidAudience,
         ValidateIssuerSigningKey = true,
-        ValidateAudience = false,
+        ValidateAudience = true,
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero,
         RequireExpirationTime = true,
@@ -61,10 +61,27 @@ builder.Services.AddAuthentication(options =>
 
     o.Events = new JwtBearerEvents
     {
+        OnMessageReceived = context =>
+        {
+            // Check if the request is for the /RenewToken endpoint
+            var path = context.HttpContext.Request.Path;
+            if (path.StartsWithSegments("/gateway/Identity/RenewToken"))
+            {
+                // Do not check the token for this specific route
+                context.Token = null;
+            }
+            return Task.CompletedTask;
+        },
         OnAuthenticationFailed = context =>
         {
             if (context.Exception is SecurityTokenExpiredException)
             {
+                var path = context.HttpContext.Request.Path;
+                if (path.StartsWithSegments("/gateway/Identity/RenewToken"))
+                {
+                  return Task.CompletedTask;
+                }
+                
                 context.Response.StatusCode = 410;
                 context.Response.ContentType = "application/json";
                 context.Response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0";
