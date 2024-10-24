@@ -9,7 +9,8 @@
         "identity.api": "StartDebugging",
         "toolzone.gateway": "StartDebugging",
         "coupon.api": "StartDebugging",
-        "shoppingcart.api": "StartDebugging"
+        "shoppingcart.api": "StartDebugging",
+        "chat.api": "StartDebugging"
       }
     }
   }

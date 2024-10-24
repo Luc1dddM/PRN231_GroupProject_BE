@@ -53,3 +53,9 @@ services:
     build:
       context: .
       dockerfile: Services/Catalog.API/Dockerfile
+  chat.api:
+    image: ${DOCKER_REGISTRY-}chatapi
+    build:
+      context: .
+      dockerfile: Services/Chat/Chat.API/Dockerfile
+
