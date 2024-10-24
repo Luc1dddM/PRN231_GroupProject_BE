@@ -236,11 +236,11 @@ namespace Identity.Infrastructure.Identity.Services
             var secretKeyBytes = Encoding.ASCII.GetBytes(_jwt.Secret);
             var tokenValidateParam = new TokenValidationParameters
             {
-                ValidateIssuer = false,
+                ValidateIssuer = true,
                 ValidIssuer = _jwt.ValidIssuer,
                 ValidAudience = _jwt.ValidAudience,
                 ValidateIssuerSigningKey = true,
-                ValidateAudience = false,
+                ValidateAudience = true,
                 ValidateLifetime = false,
                 ClockSkew = TimeSpan.Zero,
                 RequireExpirationTime = true,
@@ -314,7 +314,7 @@ namespace Identity.Infrastructure.Identity.Services
                 issuer: _jwt.ValidIssuer,
                 notBefore: DateTime.UtcNow,
                 audience: _jwt.ValidAudience,
-                expires: DateTime.UtcNow.AddMinutes(int.Parse(_jwt.DurationInMinutes)),
+                expires: DateTime.UtcNow.AddMinutes(1),
                 claims: userClaims,
                 signingCredentials: new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature));
 

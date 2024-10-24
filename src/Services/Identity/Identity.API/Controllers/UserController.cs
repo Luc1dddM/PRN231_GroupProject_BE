@@ -1,5 +1,7 @@
 ﻿using BuildingBlocks.Models;
+using ClosedXML.Excel;
 using Identity.Application.User.Commands.CreateUser;
+using Identity.Application.User.Commands.ExportUsers;
 using Identity.Application.User.Commands.GetListUser;
 using Identity.Application.User.Commands.GetUserById;
 using Identity.Application.User.Commands.ImportUsers;
@@ -54,7 +56,7 @@ namespace Identity.API.Controllers
         }
 
         [HttpPost]
-        [Route("/api/User/ImportUser")]
+        [Route("/api/User/ImportUsers")]
         [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
         public async Task<ActionResult> ImportUsers(IFormFile FileRequest, CancellationToken cancellation = default)
         {
@@ -67,6 +69,26 @@ namespace Identity.API.Controllers
             {
 
                 return File(reponse.result.Result.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ErrorReport.xlsx");
+            }
+
+            return Ok(); // Return s
+        }
+
+        [HttpPost]
+        [Route("/api/User/ExportUsers")]
+        [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
+        public async Task<ActionResult> ExportUsers([FromBody] ExportListParamsDto paramters)
+        {
+            var query = new ExportUsersQuery(paramters);
+            var reponse = await _mediator.Send(query);
+            using (XLWorkbook wb = new XLWorkbook())
+            {
+                wb.AddWorksheet(reponse.response.Result, "Employee Records");
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    wb.SaveAs(ms);
+                    return File(ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "users.xlsx");
+                }
             }
 
             return Ok(); // Return s

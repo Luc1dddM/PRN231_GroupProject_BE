@@ -286,9 +286,9 @@
       }
     },
 
-    //5.ImportUser Route
+    //5.ImportUsers Route
     {
-      "DownstreamPathTemplate": "/api/User/ImportUser",
+      "DownstreamPathTemplate": "/api/User/ImportUsers",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -299,17 +299,36 @@
       "AddHeadersToRequest": {
         "UserId": "Claims[id] > value"
       },
-      "UpstreamPathTemplate": "/gateway/User/ImportUser",
+      "UpstreamPathTemplate": "/gateway/User/ImportUsers",
       "UpstreamHttpMethod": [ "POST" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
       },
       "RouteClaimsRequirement": {
-        "permissions": "UpdateUser"
+        "permissions": "CreateUser"
       }
     },
-
+    //6.ExportUsers Route
+    {
+      "DownstreamPathTemplate": "/api/User/ExportUsers",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/User/ExportUsers",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "RouteClaimsRequirement": {
+        "permissions": "ReadUser"
+      }
+    },
     //Email Routes
     //1. GetEmail route
     {

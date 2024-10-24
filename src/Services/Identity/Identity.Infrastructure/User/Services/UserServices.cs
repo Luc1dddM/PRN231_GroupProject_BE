@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Data;
 using System.Text;
 
 namespace Identity.Infrastructure.User.Services
@@ -75,10 +76,7 @@ namespace Identity.Infrastructure.User.Services
             IQueryable<Domain.Entities.User> query = _context.Users.Include(u => u.CreatedByUser).Include(u => u.UpdatedByUser).AsQueryable();
 
             // Step 1: Apply filters (e.g., Status and Dob)
-            if (parameters.Statuses is not null || parameters.Genders is not null || parameters.Dob is not null)
-            {
-                query = Filter(parameters.Statuses, parameters.Genders, parameters.Dob, query);
-            }
+            query = Filter(parameters.Statuses, parameters.Genders, parameters.BirthDayFrom, parameters.BirthDayTo, query);
 
             // Step 2: Apply keyword search
             query = Search(query, parameters?.Keyword ?? "");
@@ -111,6 +109,63 @@ namespace Identity.Infrastructure.User.Services
             var employees = await PaginatedList<UserDto>.CreateAsync(listEmployeesDto.AsQueryable(), parameters.PageNumber, parameters.PageSize);
 
             return new BaseResponse<PaginatedList<UserDto>>(employees);
+        }
+
+        public async Task<BaseResponse<DataTable>> ExportUser(ExportListParamsDto parameters)
+        {
+            //Create data table to push data want to export
+            DataTable dt = new DataTable();
+            dt.TableName = "UserTable";
+            dt.Columns.Add("Full Name", typeof(string));
+            dt.Columns.Add("Email", typeof(string));
+            dt.Columns.Add("Phone Number", typeof(string));
+            dt.Columns.Add("Roles", typeof(string));
+            dt.Columns.Add("Gender", typeof(string));
+            dt.Columns.Add("Birth Day", typeof(DateOnly));
+            dt.Columns.Add("Status", typeof(string));
+            dt.Columns.Add("Created At", typeof(DateTime));
+            dt.Columns.Add("Created By", typeof(string));
+            dt.Columns.Add("Updated At", typeof(DateTime));
+            dt.Columns.Add("Updated By", typeof(string));
+
+            IQueryable<Domain.Entities.User> query = _context.Users.Include(u => u.CreatedByUser).Include(u => u.UpdatedByUser).AsQueryable();
+
+            // Step 1: Apply filters (e.g., Status and Dob)
+            query = Filter(parameters.Statuses, parameters.Genders, parameters.BirthDayFrom, parameters.BirthDayTo, query);
+
+            // Step 2: Apply keyword search
+            query = Search(query, parameters?.Keyword ?? "");
+
+            // Step 3: Apply sorting
+            query = SortUser(parameters.SortBy, parameters.SortOrder, query);
+
+            // Step 4: Fetch all users who meet the criteria
+            var allUsers = await query.AsNoTracking().ToListAsync();
+
+            // Step 5: Filter users who are not "Customer" or "Admin" (client-side filtering)
+            var listEmployeesDto = new List<UserDto>();
+            foreach (var user in allUsers)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                if (!roles.Contains("Admin"))
+                {
+                    var userDto = user.Adapt<UserDto>();
+                    userDto.Id = user.UserId;
+                    userDto.Email = user.Email;
+                    userDto.roles = roles;
+                    userDto.UpdatedBy = user.UpdatedByUser?.FullName ?? string.Empty;
+                    userDto.CreatedBy = user.CreatedByUser?.FullName ?? string.Empty;
+                    listEmployeesDto.Add(userDto);
+                }
+            }
+
+            foreach (var item in listEmployeesDto)
+            {
+                var Status = item.IsActive ? "Active" : "In Active";
+                var roles = item.roles.Count > 0 ? string.Join(", ", item.roles) : "";
+                dt.Rows.Add(item.FullName, item.Email, item.PhoneNumber, roles, item.Gender, item.BirthDay, Status, item.CreatedAt, item.CreatedBy, item.UpdatedAt, item.UpdatedBy);
+            }
+            return new BaseResponse<DataTable>(dt);
         }
 
         public async Task<BaseResponse<UserDto>> GetUserById(string id)
@@ -147,7 +202,7 @@ namespace Identity.Infrastructure.User.Services
                 throw new UserNotFoundException(id);
 
             //Check if User is also Customer and Employee?
-            if(request.Roles != null)
+            if (request.Roles != null)
             {
                 if (request.Roles.Contains("Customer") && request.Roles.Count > 1)
                     throw new BadRequestException("User cannot be also Customer and Employee");
@@ -239,7 +294,7 @@ namespace Identity.Infrastructure.User.Services
                             }
 
                             //Validation Full Name
-                            if(!ImportFieldValidation.IsValidString(reader.GetValue(1)?.ToString(), "Full Name", 6, null, out error))
+                            if (!ImportFieldValidation.IsValidString(reader.GetValue(1)?.ToString(), "Full Name", 6, null, out error))
                             {
                                 validationErrors.Add(error);
                             }
@@ -257,7 +312,7 @@ namespace Identity.Infrastructure.User.Services
                             }
 
                             //Skip row 
-                            if(validationErrors.Count > 0)
+                            if (validationErrors.Count > 0)
                             {
                                 errorDetails.Add((rowIndex, validationErrors));
                                 continue;
@@ -330,15 +385,19 @@ namespace Identity.Infrastructure.User.Services
             {
                 throw new BadRequestException("File Import cuar m bij loix.. hayx down fiel cuar t di tml");
             }
-            
+
             return null;
         }
 
-        private IQueryable<Domain.Entities.User> Filter(string[] statuses, string[] genders, DateOnly? dob, IQueryable<Domain.Entities.User> list)
+        private IQueryable<Domain.Entities.User> Filter(string[] statuses, string[] genders, DateOnly? birthDayFrom, DateOnly? birthDayTo, IQueryable<Domain.Entities.User> list)
         {
-            if (dob is not null)
+            if (birthDayFrom is not null)
             {
-                list = list.Where(e => e.BirthDay == dob);
+                list = list.Where(e => e.BirthDay >= birthDayFrom);
+            }
+            if (birthDayTo is not null)
+            {
+                list = list.Where(e => e.BirthDay <= birthDayTo);
             }
             if (statuses != null && statuses.Length > 0)
             {
