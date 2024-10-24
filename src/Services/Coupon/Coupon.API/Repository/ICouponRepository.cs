@@ -1,6 +1,8 @@
 ﻿
 using BuildingBlocks.Models;
+using Coupon.API.DTOs;
 using Coupon.API.Models;
+using System.Data;
 
 namespace Coupon.API.Repository
 {
@@ -12,5 +14,7 @@ namespace Coupon.API.Repository
         Task<Models.Coupon?> UpdateCoupon(Models.Coupon coupon, string userId);
         Task<Models.Coupon?> GetCouponById(int id);
         Task<BaseResponse<MemoryStream>> ImportCoupons(IFormFile excelFile, string userId);
+
+        Task<BaseResponse<DataTable>> ExportCoupon(ExportListCouponParamDto parameters);
     }
 }

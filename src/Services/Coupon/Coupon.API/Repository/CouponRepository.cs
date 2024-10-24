@@ -12,6 +12,8 @@ using ExcelDataReader;
 using ClosedXML.Excel;
 using DocumentFormat.OpenXml.InkML;
 using Microsoft.Extensions.Hosting;
+using System.Data;
+using Coupon.API.DTOs;
 
 
 namespace Coupon.API.Repository
@@ -54,7 +56,7 @@ namespace Coupon.API.Repository
             IQueryable<Models.Coupon> query = _dbContext.Coupons.AsQueryable();
 
             // Step 1: Apply filters (e.g., Status, MinAmount, MaxAmount)
-            if (parameters.Statuse is not null || parameters.MinAmount.HasValue || parameters.MaxAmount.HasValue)
+            if (parameters.Statuse is not null || parameters.MinAmount.HasValue || parameters.MaxAmount.HasValue || parameters.StartDate.HasValue || parameters.EndDate.HasValue)
             {
                 query = Filter(parameters.Statuse, parameters.MinAmount, parameters.MaxAmount, query, parameters.StartDate, parameters.EndDate);
 
@@ -109,7 +111,7 @@ namespace Coupon.API.Repository
             }
         }
 
-        private IQueryable<Models.Coupon> Filter(string[] statuses, double? minAmount, double? maxAmount, IQueryable<Models.Coupon> list, DateTime? startDate, DateTime? endDate)
+        private IQueryable<Models.Coupon> Filter(string[] statuses, double? minAmount, double? maxAmount, IQueryable<Models.Coupon> list, DateOnly? startDate, DateOnly? endDate)
         {
             if (minAmount.HasValue)
             {
@@ -130,18 +132,16 @@ namespace Coupon.API.Repository
             {
                 list = list.Where(e => statuses.Contains(e.Status.ToString()));
             }
-
-            if (startDate.HasValue)
+            if (startDate is not null)
             {
-                list = list.Where(e => e.CreatedDate >= startDate.Value);
+             
+                list = list.Where(e => DateOnly.FromDateTime(e.CreatedDate) >= startDate);
             }
 
-
-            if (endDate.HasValue)
+            if (endDate is not null)
             {
-
-                endDate = endDate.Value.AddDays(1).AddTicks(-1);
-                list = list.Where(e => e.CreatedDate <= endDate.Value);
+               
+                list = list.Where(e => DateOnly.FromDateTime(e.CreatedDate) <= endDate);
             }
 
             return list;
@@ -391,6 +391,51 @@ namespace Coupon.API.Repository
                     return new BaseResponse<MemoryStream>(errorMemoryStream); // Return the MemoryStream
                 }
             }
+        }
+
+        public async Task<BaseResponse<DataTable>> ExportCoupon(ExportListCouponParamDto parameters)
+        {
+
+            DataTable dt = new DataTable();
+            dt.TableName = "CouponTable";
+            dt.Columns.Add("Coupon Code", typeof(string));
+            dt.Columns.Add("Discount Amount", typeof(double));
+            dt.Columns.Add("Quantity", typeof(int));
+            dt.Columns.Add("Status", typeof(string));
+            dt.Columns.Add("Min Amount", typeof(double));
+            dt.Columns.Add("Max Amount", typeof(double));
+            dt.Columns.Add("Created By", typeof(string));
+            dt.Columns.Add("Created Date", typeof(DateTime));
+            dt.Columns.Add("Updated By", typeof(string));
+            dt.Columns.Add("Updated Date", typeof(DateTime));
+
+            IQueryable<Models.Coupon> query = _dbContext.Coupons.AsQueryable();
+            // Step 1: Apply filters (e.g., Status, MinAmount, MaxAmount)
+            if (parameters.Statuse is not null || parameters.MinAmount.HasValue || parameters.MaxAmount.HasValue || parameters.StartDate.HasValue || parameters.EndDate.HasValue)
+            {
+                query = Filter(parameters.Statuse, parameters.MinAmount, parameters.MaxAmount, query, parameters.StartDate, parameters.EndDate);
+
+            }
+
+            // Step 2: Apply keyword search
+            query = Search(query, parameters?.Keyword ?? "");
+
+            // Step 3: Apply sorting
+            query = Sort(parameters.SortBy, parameters.SortOrder, query);
+
+            // Bước 4: Lấy tất cả các coupon đáp ứng tiêu chí
+            var allCoupons = await query.AsNoTracking().ToListAsync();
+
+            // Bước 5: Thêm dữ liệu vào DataTable
+            foreach (var coupon in allCoupons)
+            {
+                var status = coupon.Status ? "Active" : "In Active";
+                dt.Rows.Add(coupon.CouponCode, coupon.DiscountAmount, coupon.Quantity, status, coupon.MinAmount, coupon.MaxAmount,
+                            coupon.CreatedBy ?? string.Empty, coupon.CreatedDate,
+                            coupon.UpdatedBy ?? string.Empty, coupon.UpdatedDate);
+            }
+
+            return new BaseResponse<DataTable>(dt);
         }
 
 

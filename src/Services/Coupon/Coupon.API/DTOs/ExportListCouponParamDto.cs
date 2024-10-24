@@ -2,24 +2,13 @@
 {
     public class ExportListCouponParamDto
     {
-        public string CouponCode { get; set; } = null!;
-
-        public double DiscountAmount { get; set; }
-
-        public int Quantity { get; set; }
-
-        public bool Status { get; set; }
-
+        public string? Keyword { get; set; }
         public double? MinAmount { get; set; }
-
         public double? MaxAmount { get; set; }
-
-        public string CreatedBy { get; set; } = null!;
-
-        public DateTime CreatedDate { get; set; }
-
-        public string? UpdatedBy { get; set; }
-
-        public DateTime? UpdatedDate { get; set; }
+        public string[]? Statuse { get; set; }
+        public DateOnly? StartDate { get; set; }
+        public DateOnly? EndDate { get; set; }
+        public string? SortBy { get; set; } = "Id";
+        public string? SortOrder { get; set; } = "desc";
     }
 }

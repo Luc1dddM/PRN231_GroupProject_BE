@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using BuildingBlocks.Exceptions;
 using Coupon.API.Models;
 using BuildingBlocks.Models;
+using ClosedXML.Excel;
+using System.Composition;
+using Coupon.API.DTOs;
 namespace Coupon.API.Controllers
 {
     [Route("api/[controller]")]
@@ -113,5 +116,37 @@ namespace Coupon.API.Controllers
 
             return Ok(new { Message = "Coupons imported successfully." });
         }
+
+
+
+        [HttpPost]
+        [Route("ExportCoupons")]
+        [ProducesResponseType(typeof(BaseResponse<bool>), 200)]
+        public async Task<ActionResult> ExportUsers([FromBody] ExportListCouponParamDto parameters)
+        {
+            var response = await _couponRepository.ExportCoupon(parameters);
+
+            if (response == null || response.Result == null)
+            {
+                return NotFound(new BaseResponse<bool>("No users found to export."));
+            }
+
+            // Tạo workbook Excel
+            using (XLWorkbook wb = new XLWorkbook())
+            {
+                // Thêm worksheet với dữ liệu người dùng
+                wb.AddWorksheet(response.Result, "Coupon Records");
+
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    // Lưu workbook vào MemoryStream
+                    wb.SaveAs(ms);
+
+                    // Trả về file Excel
+                    return File(ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "coupons.xlsx");
+                }
+            }
+        }
+
     }
 }
