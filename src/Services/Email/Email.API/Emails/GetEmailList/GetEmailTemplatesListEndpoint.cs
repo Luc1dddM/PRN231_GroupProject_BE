@@ -22,8 +22,6 @@ public class GetEmailTemplatesListEndpoint : ICarterModule
         {
             var result = await emailRepository.GetList(request.Statuses, request.Categories, request.SearchTerm, request.SortBy, request.SortOrder, request.PageNumber, request.PageSize);
 
-           
-
             return Results.Ok(new
             {
                 listEmail = result.listEmail,
