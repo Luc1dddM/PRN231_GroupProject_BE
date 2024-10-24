@@ -29,5 +29,6 @@ namespace Email.API.Repository
         public Task<EmailTemplate> GetEmailTemplateById(string id);
 
         public Task<BaseResponse<MemoryStream>> ImportEmailTemplate(IFormFile file, string userId);
+        public Task<byte[]> ExportEmailFilter(string[] statusesParam, string[] categoriesParam, string searchterm, int pageNumberParam, int pageSizeParam);
     }
 }
