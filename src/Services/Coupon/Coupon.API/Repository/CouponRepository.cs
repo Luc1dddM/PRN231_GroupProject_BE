@@ -124,7 +124,7 @@ namespace Coupon.API.Repository
             {
                 var searchTermLower = searchTerm.ToLower();
 
-                // Kiểm tra nếu searchTerm có thể chuyển đổi thành double
+                // Kiểm tra nếu searchTerm có thể chuyển đổi thành double   
                 if (double.TryParse(searchTerm, out var searchTermValue))
                 {
                     list = list.Where(p =>
