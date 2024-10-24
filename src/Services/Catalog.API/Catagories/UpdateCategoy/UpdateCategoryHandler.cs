@@ -22,7 +22,7 @@ namespace Catalog.API.Categories.UpdateCategory
                 .NotEmpty().WithMessage("Name is required");
 
             RuleFor(command => command.Type).NotEmpty().WithMessage("Type is required");
-            RuleFor(command => command.Status).NotEmpty().WithMessage("Status is required");
+
 
         }
     }

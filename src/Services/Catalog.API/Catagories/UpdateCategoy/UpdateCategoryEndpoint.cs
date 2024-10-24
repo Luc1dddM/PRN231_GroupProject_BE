@@ -5,18 +5,18 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Catalog.API.Categories.UpdateCategory
 {
-    public record UpdateCategoryRequest(string Id, string Name, string Type, bool Status);
+    public record UpdateCategoryRequest(string Name, string Type, bool Status);
     public record UpdateCategoryResponse(BaseResponse<bool> IsSuccess);
 
     public class UpdateCategoryEndpoint : ICarterModule
     {
         public void AddRoutes(IEndpointRouteBuilder app)
         {
-            app.MapPut("/Categories",
+            app.MapPut("/Categories/{id}",
                 [IgnoreAntiforgeryToken]
-            async (UpdateCategoryRequest request, ISender sender) =>
+            async (string id,UpdateCategoryRequest request, ISender sender) =>
                 {
-                    var command = request.Adapt<UpdateCategoryCommand>();
+                    var command = new UpdateCategoryCommand(id,request.Name,request.Type,request.Status);
 
                     var result = await sender.Send(command);
 

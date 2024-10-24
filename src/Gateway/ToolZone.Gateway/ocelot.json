@@ -503,10 +503,10 @@
     //1. CreateProduct route
     {
       "DownstreamPathTemplate": "/products",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "Catalog.API",
+          "Host": "localhost",
           "Port": 6006
         }
       ],
@@ -523,10 +523,10 @@
     //2. GetProducts route
     {
       "DownstreamPathTemplate": "/products/{everything}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "Catalog.API",
+          "Host": "localhost",
           "Port": 6006
         }
       ],
@@ -544,10 +544,10 @@
     //3. GetProductsForCustomer route
     {
       "DownstreamPathTemplate": "/productsForCustomer",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "Catalog.API",
+          "Host": "localhost",
           "Port": 6006
         }
       ],
@@ -564,10 +564,10 @@
     //4. GetProductById route
     {
       "DownstreamPathTemplate": "/products/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "Catalog.API",
+          "Host": "localhost",
           "Port": 6006
         }
       ],
@@ -584,10 +584,10 @@
     //5. GetProductByIdForOrder route
     {
       "DownstreamPathTemplate": "/products/Order/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "Catalog.API",
+          "Host": "localhost",
           "Port": 6006
         }
       ],
@@ -604,10 +604,10 @@
     //6. UpdateProduct route
     {
       "DownstreamPathTemplate": "/products",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "Catalog.API",
+          "Host": "localhost",
           "Port": 6006
         }
       ],
@@ -624,10 +624,10 @@
     //7. AddColor route
     {
       "DownstreamPathTemplate": "/products/AddColor",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "Catalog.API",
+          "Host": "localhost",
           "Port": 6006
         }
       ],
@@ -644,10 +644,10 @@
     //8. GetCategory route
     {
       "DownstreamPathTemplate": "/categories",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "Catalog.API",
+          "Host": "localhost",
           "Port": 6006
         }
       ],
@@ -664,10 +664,10 @@
     //9. GetCategoryById route
     {
       "DownstreamPathTemplate": "/categories/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "Catalog.API",
+          "Host": "localhost",
           "Port": 6006
         }
       ],
@@ -684,10 +684,10 @@
     //10. CreateCategory route
     {
       "DownstreamPathTemplate": "/categories",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "Catalog.API",
+          "Host": "localhost",
           "Port": 6006
         }
       ],
@@ -703,18 +703,18 @@
     },
     //11. UpdateCategory route
     {
-      "DownstreamPathTemplate": "/categories",
-      "DownstreamScheme": "https",
+      "DownstreamPathTemplate": "/categories/{id}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "Catalog.API",
+          "Host": "localhost",
           "Port": 6006
         }
       ],
       "AddHeadersToRequest": {
         "UserId": "Claims[id] > value"
       },
-      "UpstreamPathTemplate": "/gateway/categories",
+      "UpstreamPathTemplate": "/gateway/categories/{id}",
       "UpstreamHttpMethod": [ "Put" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
@@ -724,10 +724,10 @@
     //12. GetColor route
     {
       "DownstreamPathTemplate": "/categories/color/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "Catalog.API",
+          "Host": "localhost",
           "Port": 6006
         }
       ],
@@ -736,6 +736,26 @@
       },
       "UpstreamPathTemplate": "/gateway/categories/color/{id}",
       "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+    //13. ExportCategories route
+    {
+      "DownstreamPathTemplate": "/Categories/ExportCategories",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 6006
+        }
+      ],
+      "AddHeadersToRequest": {
+        "UserId": "Claims[id] > value"
+      },
+      "UpstreamPathTemplate": "/gateway/Categories/ExportCategories",
+      "UpstreamHttpMethod": [ "Post" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
@@ -860,7 +880,7 @@
         "UserId": "Claims[id] > value"
       },
       "UpstreamPathTemplate": "/gateway/cart",
-      "UpstreamHttpMethod": [ "Put", "Post"  ],
+      "UpstreamHttpMethod": [ "Put", "Post" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []

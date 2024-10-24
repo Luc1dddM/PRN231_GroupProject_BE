@@ -19,7 +19,7 @@ namespace Catalog.API.Categories.CreateCategory
         {
             RuleFor(x => x.Name).NotEmpty().WithMessage("Name is required");
             RuleFor(x => x.Type).NotEmpty().WithMessage("Type is required");
-            RuleFor(x => x.Status).NotEmpty().WithMessage("Status is required");
+            RuleFor(x => x.Status).NotNull().WithMessage("Status is required");
         }
     }
 

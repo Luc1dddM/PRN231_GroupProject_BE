@@ -1,6 +1,8 @@
 ﻿using Catalog.API.Models;
 using Catalog.API.Models.DTO;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 using System.Threading;
 
 namespace Catalog.API.Repository
@@ -412,6 +414,29 @@ namespace Catalog.API.Repository
             try
             {
                 return _dbContext.Categories.FirstOrDefault(c => c.Name.ToLower().Equals(name.ToLower())) ?? throw new Exception("The category is not exist!");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public Task<List<Category>> ExportCategoriesFilter(ExportListParamsDto paremetors)
+        {
+            try
+            {
+
+                //Get List from db
+                var result = _dbContext.Categories.AsQueryable();
+
+                //Call filter function 
+                result = Filter(paremetors.statuses, paremetors.types, result);
+                result = Search(result, paremetors.keyword);
+                result = Sort(paremetors.sortBy, paremetors.sortOrder, result);
+
+                return result.ToListAsync();
+                
+
             }
             catch (Exception ex)
             {

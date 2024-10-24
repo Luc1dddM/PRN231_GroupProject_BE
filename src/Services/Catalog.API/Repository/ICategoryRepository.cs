@@ -1,5 +1,6 @@
 ﻿using Catalog.API.Models;
 using Catalog.API.Models.DTO;
+using System.Data;
 
 
 namespace Catalog.API.Repository
@@ -23,7 +24,7 @@ namespace Catalog.API.Repository
         public void Create(Category category, string user);
         /*public Task ImportCategories(IFormFile excelFile, string user);
         public Task<Byte[]> ExportCategoriesFilter(string[] statusesParam, string[] categoriesParam, string searchterm, int pageNumberParam, int pageSizeParam);*/
-
+        public Task<List<Category>> ExportCategoriesFilter(ExportListParamsDto paremetors);
         public void update(Category category, string user);
 
         public bool haveDevice(Product Product);
